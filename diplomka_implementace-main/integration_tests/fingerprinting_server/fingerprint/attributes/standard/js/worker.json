@@ -1,0 +1,8 @@
+{
+    "name" : "worker",
+    "description" : "Information of worker",
+    "files" : ["worker.js"],
+    "variables" :["worker.workerBasics.isWorkerRemoved"], 
+    "hash" : "False"
+  }
+  

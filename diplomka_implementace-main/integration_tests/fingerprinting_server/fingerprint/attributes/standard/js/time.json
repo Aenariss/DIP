@@ -1,0 +1,8 @@
+{
+    "name" : "Time",
+    "description" : "Information regarding time.",
+    "files" : ["time.js"],
+    "variables" :[], 
+    "hash" : "False"
+  }
+  

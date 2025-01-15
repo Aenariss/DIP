@@ -1,0 +1,16 @@
+{
+    "experiment_name": "exp01",
+    "browsers": [ "firefox=esr", "firefox=beta", "firefox=canary", "firefox=dev", "firefox=115", "firefox=116.0b1" ],
+    "pets": {
+      
+        "firefox=esr": [["None"], ["JS_0"], ["JS_1"], ["JS_2"], ["JS_3"]],
+        "firefox=beta": [["None"], ["JS_0"], ["JS_1"], ["JS_2"], ["JS_3"]],
+        "firefox=canary": [["None"], ["JS_0"], ["JS_1"], ["JS_2"], ["JS_3"]],
+        "firefox=dev": [["None"], ["JS_0"], ["JS_1"], ["JS_2"], ["JS_3"]],
+        "firefox=115": [["None"], ["JS_0"], ["JS_1"], ["JS_2"], ["JS_3"]],
+        "firefox=116.0b1": [["None"], ["JS_0"], ["JS_1"], ["JS_2"], ["JS_3"]]
+    },
+    "delay": 45,
+    "mode": "threaded",
+    "integration_testing": true
+}

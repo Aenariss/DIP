@@ -1,0 +1,16 @@
+{
+    "name" : "Navigator info",
+    "description" : "Navigator attribuetes.",
+    "files" : ["navigator.js"],
+    "variables" : ["navigator.userAgent", 
+                   "navigator.appVersion", 
+                   "navigator.platform",
+                   "navigator.vendor",
+                   "navigator.language",
+                   "navigator.languages",
+                   "navigator.cookieEnabled",
+                   "navigator.doNotTrack",
+                   "navigator.oscpu"],
+    "hash" : "False"
+  }
+  

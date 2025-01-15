@@ -1,0 +1,17 @@
+{
+    "name" : "Geolocation",
+    "description" : "User's geolocation information",
+    "files" : ["geolocation.js"],
+    "variables" : [ "geolocation.accuracy",
+                    "geolocation.altitude",
+                    "geolocation.altitudeAccuracy",
+                    "geolocation.heading",
+                    "geolocation.latitude",
+                    "geolocation.longitude",
+                    "geolocation.speed",
+                    "geolocation.timestamp",
+                    "geolocation.valid",
+                    "geolocation.info"],
+    "hash" : "False"
+  }
+  

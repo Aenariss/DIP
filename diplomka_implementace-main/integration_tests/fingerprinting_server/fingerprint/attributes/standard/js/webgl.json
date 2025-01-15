@@ -1,0 +1,29 @@
+{
+    "name" : "webgl",
+    "description" : "WebGL info",
+    "files" : ["webgl.js"],
+    "variables": [
+      "WebGL.webglVendor",
+      "WebGL.webglRenderer",
+      "WebGL.maxVertexUniformComponents",
+      "WebGL.maxVertexUniformBlocks",
+      "WebGL.maxVertexOutputComponents",
+      "WebGL.maxVaryingComponents",
+      "WebGL.maxTransformFeedbackInterleavedComponents",
+      "WebGL.maxFragmentUniformComponents",
+      "WebGL.maxFragmentUniformBlocks",
+      "WebGL.maxFragmentInputComponents",
+      "WebGL.maxUniformBufferBindings",
+      "WebGL.maxCombinedUniformBlocks",
+      "WebGL.maxCombinedVertexUniformComponents",
+      "WebGL.maxCombinedFragmentUniformComponents",
+      "WebGL.maxVertexAttribs",
+      "WebGL.maxVertexUniformVectors",
+      "WebGL.maxVertexTextureImageUnits",
+      "WebGL.maxTextureSize",
+      "WebGL.maxCubeMapTextureSize",
+      "WebGL.max3DTextureSize",
+      "WebGL.maxArrayTextureLayers"
+  ], 
+    "hash" : "False"
+  }

@@ -1,0 +1,8 @@
+{
+    "name" : "Audio",
+    "description" : "Information of audio output.",
+    "files" : ["audio.js"],
+    "variables" :[], 
+    "hash" : "False"
+  }
+  

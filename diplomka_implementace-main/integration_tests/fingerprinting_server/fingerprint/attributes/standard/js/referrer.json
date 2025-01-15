@@ -1,0 +1,8 @@
+{
+    "name" : "Referrer",
+    "description" : "Returns referring page",
+    "files" : ["referrer.js"],
+    "variables" : [],
+    "hash" : "False"
+  }
+  

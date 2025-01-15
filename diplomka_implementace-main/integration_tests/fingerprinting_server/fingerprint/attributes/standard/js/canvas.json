@@ -1,0 +1,10 @@
+{
+  "name" : "canvas",
+  "description" : "Information about users canvas.",
+  "files" : ["canvas.js"],
+  "variables" :[
+                "canvas.spoof",
+                "canvas.pointInPath",
+                "canvas.pointInStroke"], 
+  "hash" : "True"
+}
