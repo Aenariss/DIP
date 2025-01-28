@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chained Script Loading</title>
+    <script type="module" src="script1.js"></script>
+</head>
+<body>
+    <h1>Chained Script Loading Example</h1>
+    <iframe src="nextPage.html" title="tmp"></iframe>
+    <script>eval("console.log(\"welcome\")")</script>
+</body>
+</html>
