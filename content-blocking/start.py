@@ -34,6 +34,7 @@ args = parser.parse_args()
 
 def start() -> None:
     """Main driver function"""
+
     # Load options for the evaluation
     if not os.path.exists(OPTIONS_FILE):
         print("Could not load ``options.json`` file!")
@@ -47,12 +48,17 @@ def start() -> None:
         if not os.path.exists(TRAFFIC_FOLDER):
             print("Creating the traffic folder...")
             os.makedirs(TRAFFIC_FOLDER)
+            f = open(TRAFFIC_FOLDER + ".empty", 'w', encoding='utf-8')
+            f.close()
+
         # Delete existing logs if the folder exists
         else:
             print("Removing existing traffic files...")
             for file in os.listdir(TRAFFIC_FOLDER):
                 filename = TRAFFIC_FOLDER + file
-                if os.path.isfile(filename):
+
+                # Remove existing file except for the placeholder file
+                if os.path.isfile(filename) and file != ".empty":
                     os.remove(filename)
 
         print("Loading the traffic...")

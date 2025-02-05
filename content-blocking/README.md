@@ -16,4 +16,5 @@ The workflow is as follows:
 4. The page with the simulated resource requests will be visited for each extension/browser specified in ``config.json``.
 5. The results (containing the blocked requests) will be saved in ``results/log.txt``.
 
-Requirements for the evaluation are listed in ``requirements.txt``. Can be installed using ``pip install -r requirements.txt``
+Python requirements for the evaluation are listed in ``requirements.txt``. Can be installed using ``pip install -r requirements.txt``
+Also requires: Npcap (https://npcap.com/) for the DNS sniffing

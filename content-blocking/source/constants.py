@@ -26,7 +26,7 @@ RESULTS_FOLDER = "./results/"
 
 # Paths - files
 PAGES_FILE = "page_list.txt"
-OPTIONS_FILE = "options.json"
+OPTIONS_FILE = "config.json"
 
 # User option strings from options.json
 PAGE_WAIT_TIME = "page_wait_time"
