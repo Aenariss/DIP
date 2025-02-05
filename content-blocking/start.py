@@ -19,9 +19,10 @@
 # Built-in modules
 import argparse
 import os
+import json
 
-# My modules
-from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR
+# Custom modules
+from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, OPTIONS_FILE
 from source.load_traffic import load_traffic
 
 parser = argparse.ArgumentParser(prog="Content-blocking evaluation",
@@ -33,20 +34,30 @@ args = parser.parse_args()
 
 def start() -> None:
     """Main driver function"""
+    # Load options for the evaluation
+    if not os.path.exists(OPTIONS_FILE):
+        print("Could not load ``options.json`` file!")
+
+    with open(OPTIONS_FILE, encoding="utf-8") as f:
+        options = json.load(f)
+
     # If load was specified, go through the specified pages and observe traffic
     if args.load:
         # (Re)create the traffic folder
         if not os.path.exists(TRAFFIC_FOLDER):
+            print("Creating the traffic folder...")
             os.makedirs(TRAFFIC_FOLDER)
         # Delete existing logs if the folder exists
         else:
+            print("Removing existing traffic files...")
             for file in os.listdir(TRAFFIC_FOLDER):
                 filename = TRAFFIC_FOLDER + file
                 if os.path.isfile(filename):
                     os.remove(filename)
 
-        load_traffic()
-        print("Traffic observation finished!")
+        print("Loading the traffic...")
+        load_traffic(options)
+        print("Traffic loading finished!")
 
     # Check that the traffic folder exists
     if not os.path.exists(TRAFFIC_FOLDER):
@@ -58,10 +69,17 @@ def start() -> None:
         if len([file for file in os.listdir(TRAFFIC_FOLDER)
                 if os.path.isfile(TRAFFIC_FOLDER + file)]) == 0:
             print("Couldn't find the folder with the observed traffic!\n" +
-                "Did you specify at least 1 page in the page_list.txt file? " +
+                "Did you specify at least 1 page in the ``page_list.txt`` file? " +
                 "If so, run the program with '--load' argument first!")
             exit(GENERAL_ERROR)
 
     # Start the evaluation...
+    # Create request-trees from the initiator data
+    # Create test page which fetches all the observed resources
+    # For each fetch, replay dns response
+    # Add mechanism for adding multiple extensions and browsers and repeat for each
 
 start()
+
+# tbd: run multiple instances in parallel to speed-up data collection
+# collect dns data to replicate

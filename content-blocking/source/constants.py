@@ -1,5 +1,5 @@
-# error_codes.py
-# Specifies errors to be returned
+# constants.py
+# Specifies constants
 # Copyright (C) 2025 Vojtěch Fiala
 #
 # This program is free software: you can redistribute it and/or modify
@@ -26,3 +26,7 @@ RESULTS_FOLDER = "./results/"
 
 # Paths - files
 PAGES_FILE = "page_list.txt"
+OPTIONS_FILE = "options.json"
+
+# User option strings from options.json
+PAGE_WAIT_TIME = "page_wait_time"

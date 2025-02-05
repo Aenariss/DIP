@@ -19,12 +19,12 @@
 # Built-in modules
 import json
 
-# My modules
+# Custom modules
 from source.load_page_file import load_pages
 from source.page_traffic import get_page_traffic
 from source.constants import TRAFFIC_FOLDER, FILE_ERROR
 
-def load_traffic() -> None:
+def load_traffic(options: dict) -> None:
     """Function to observe traffic on given list of pages"""
     pages = load_pages()
 
@@ -33,7 +33,7 @@ def load_traffic() -> None:
 
     # Go through each page and observe traffic
     for page in pages:
-        traffic = get_page_traffic(page)
+        traffic = get_page_traffic(page, options)
         save_traffic(traffic, page, str(filename_counter))
         filename_counter += 1
 

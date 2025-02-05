@@ -1,2 +1,3 @@
-./diplomka_implementace-main/pulseaudio/
-./content-blocking/source/__pycache__/*
+diplomka_implementace-main/pulseaudio/
+content-blocking/source/__pycache__/*
+content-blocking/traffic/*.json

@@ -16,7 +16,7 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-# My modules
+# Custom modules
 from source.constants import FILE_ERROR
 
 def load_pages() -> list[str]:
