@@ -1,5 +1,5 @@
-# load_page_file.py
-# Loads all pages specified in pageList.txt and returns them as an array.
+# file_loading.py
+# Provides function for data loading such as from page_list.txt
 # Copyright (C) 2025 Vojtěch Fiala
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,6 +16,9 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
+# Built-in modules
+import json
+
 # Custom modules
 from source.constants import FILE_ERROR
 
@@ -24,7 +27,17 @@ def load_pages() -> list[str]:
     try:
         with open("page_list.txt", 'r', encoding='utf-8') as f:
             # strip newline characters at the end of each line
-            return [line[:-1] for line in f.readlines()]
+            return [line[:-1] if line[-1] == '\n' else line for line in f.readlines()]
     except OSError:
         print("Error reading the content of page_list.txt! Is the file present?")
+        exit(FILE_ERROR)
+
+def load_json(path) -> dict:
+    """Function to load a given JSON file and return its content as dict"""
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data
+    except OSError:
+        print("Error reading the content of " + path + "! Is the file present?")
         exit(FILE_ERROR)

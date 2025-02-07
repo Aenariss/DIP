@@ -1,5 +1,5 @@
-# page_traffic.py
-# Observe traffic on a given page and return it as a dictionary.
+# page_http_traffic.py
+# Observe HTTP traffic on a given page and return it as a dictionary.
 # Copyright (C) 2025 Vojtěch Fiala
 #
 # This program is free software: you can redistribute it and/or modify

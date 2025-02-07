@@ -24,6 +24,7 @@ import json
 # Custom modules
 from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, OPTIONS_FILE
 from source.load_traffic import load_traffic
+from source.request_tree import create_trees
 
 parser = argparse.ArgumentParser(prog="Content-blocking evaluation",
                                  description="Evaluates given content-blocking\
@@ -71,16 +72,17 @@ def start() -> None:
               "Run the program with '--load' argument first!")
         exit(GENERAL_ERROR)
     else:
-        # If the traffic folder is empty, it needs to be loaded
+        # If the traffic folder is empty (only the .empty file), it needs to be loaded
         if len([file for file in os.listdir(TRAFFIC_FOLDER)
-                if os.path.isfile(TRAFFIC_FOLDER + file)]) == 0:
+                if os.path.isfile(TRAFFIC_FOLDER + file)]) == 1:
             print("Couldn't find the folder with the observed traffic!\n" +
                 "Did you specify at least 1 page in the ``page_list.txt`` file? " +
                 "If so, run the program with '--load' argument first!")
             exit(GENERAL_ERROR)
 
+    request_trees = create_trees()
     # Start the evaluation...
-    # Create request-trees from the initiator data
+
     # Create test page which fetches all the observed resources
     # For each fetch, replay dns response
     # Add mechanism for adding multiple extensions and browsers and repeat for each
@@ -88,4 +90,3 @@ def start() -> None:
 start()
 
 # tbd: run multiple instances in parallel to speed-up data collection
-# collect dns data to replicate

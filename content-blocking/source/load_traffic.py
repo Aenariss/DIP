@@ -27,8 +27,8 @@ from scapy.all import AsyncSniffer
 from scapy.layers.dns import DNSRR, DNS
 
 # Custom modules
-from source.load_page_file import load_pages
-from source.page_traffic import get_page_traffic
+from source.file_loading import load_pages
+from source.page_http_traffic import get_page_traffic
 from source.constants import TRAFFIC_FOLDER, FILE_ERROR
 
 def load_traffic(options: dict) -> None:
