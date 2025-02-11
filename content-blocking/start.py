@@ -20,11 +20,15 @@
 import argparse
 import os
 import json
+from time import sleep
 
 # Custom modules
 from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, OPTIONS_FILE
 from source.load_traffic import load_traffic
 from source.request_tree import create_trees
+from source.test_page_server import start_testing_server, stop_testing_server
+from source.dns_repeater import DNSRepeater
+
 
 parser = argparse.ArgumentParser(prog="Content-blocking evaluation",
                                  description="Evaluates given content-blocking\
@@ -81,12 +85,29 @@ def start() -> None:
             exit(GENERAL_ERROR)
 
     request_trees = create_trees()
+
+    # For each loaded page, create a testing server and visit it
+    for (key, _) in request_trees.items():
+        
+        # Start the testing server as another process for each logged page traffic
+        server = start_testing_server(request_trees[key].get_all_requests())
+
+        # Setup DNS resolving so that the same IPs as observed are used
+        dns_repeater = DNSRepeater(key)
+        dns_repeater.start()
+
+        sleep(20)
+        #test_server_visit()
+
+        dns_repeater.stop()
+        stop_testing_server(server)
+
     # Start the evaluation...
 
-    # Create test page which fetches all the observed resources
     # For each fetch, replay dns response
     # Add mechanism for adding multiple extensions and browsers and repeat for each
 
-start()
+if __name__ == "__main__":
+    start()
 
 # tbd: run multiple instances in parallel to speed-up data collection

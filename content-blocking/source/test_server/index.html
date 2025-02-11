@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Content Blocking Test</title>
+    <script>
+        let resources = {{ resources|tojson }};
+        let loaded = 0;
+        let blocked = 0;
+
+        async function testResourceLoading() {
+            for (let url of resources) {
+                var success;
+                try {
+                    let response = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+                    if (response.ok || response.type === 'opaque') {
+                        loaded++;
+                        success = true;
+                    } else {
+                        blocked++;
+                        success = false;
+                    }
+                } catch (error) {
+                    blocked++;
+                    success = false;
+                }
+                updateResults(success, url);
+            }
+        }
+
+        function updateResults(response, url) {
+            document.getElementById('loaded-count').innerText = loaded;
+            document.getElementById('blocked-count').innerText = blocked;
+            
+            let status = response ?  "Loaded" : "Not loaded";
+
+            let status_update =  url + "... " + status + '<br>'
+            document.getElementById('current_resource').innerHTML += status_update;
+        }
+
+        window.onload = testResourceLoading;
+    </script>
+</head>
+<body>
+    <h1>Content Blocking Test</h1>
+    <p>Loaded resources: <span id="loaded-count">0</span></p>
+    <p>Blocked resources: <span id="blocked-count">0</span></p>
+
+    <p>Resource status: <p id="current_resource"></p></p>
+</body>
+</html>

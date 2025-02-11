@@ -28,5 +28,8 @@ RESULTS_FOLDER = "./results/"
 PAGES_FILE = "page_list.txt"
 OPTIONS_FILE = "config.json"
 
+# Paths - system
+HOSTS_FILE = "C:/Windows/System32/drivers/etc/hosts"
+
 # User option strings from options.json
 PAGE_WAIT_TIME = "page_wait_time"

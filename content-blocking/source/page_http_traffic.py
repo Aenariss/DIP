@@ -62,7 +62,7 @@ def get_page_traffic(page: str, options: dict) -> dict:
 
     return network_logs
 
-def get_network_requests(logs: dict) -> dict:
+def get_network_requests(logs: dict) -> list[dict]:
     """Function to extract only the initiator chain from the observed data"""
     parsed_logs = []
     # Go through all the recorded logs
@@ -70,7 +70,7 @@ def get_network_requests(logs: dict) -> dict:
         log = json.loads(log["message"])["message"]
 
         # Filter in only the logs with required data
-        if "Network.requestWillBeSent" == log["method"]:
+        if log["method"] == "Network.requestWillBeSent":
             # Skip internal devtools requests
             if "devtools://" in log["params"]["request"]["url"]:
                 continue
@@ -78,6 +78,10 @@ def get_network_requests(logs: dict) -> dict:
 
             # Unimportant for evaluation? used only for checks
             tmp_log["requested_by"] = log["params"]["documentURL"]
+
+            # Used to establish which request was sent first to later match DNS responses
+            tmp_log["time"] = log["params"]["timestamp"]
+
 
             # "Name" of the reosurce in the F12 Network traffic
             tmp_log["requested_resource"] = log["params"]["request"]["url"]

@@ -25,10 +25,13 @@ from source.constants import TRAFFIC_FOLDER
 
 class RequestNode:
     """Class representing each node in the request tree"""
-    def __init__(self, resource: str, children: list["RequestNode"]=None) -> None:
+    def __init__(self, ip_addr: str, time: str, resource: str,\
+                 children: list["RequestNode"]=None) -> None:
         """Init method for setting up each instance"""
         self.resource = resource
         self.children = children
+        self.ip_addr = ip_addr
+        self.time = time
 
         # In case children were specified, correctly set-up the parent-child relation
         if children:
@@ -41,6 +44,14 @@ class RequestNode:
     def get_resource(self) -> str:
         """Method to return the URL of the resource stored in the node"""
         return self.resource
+
+    def get_time(self) -> str:
+        """Method to return the timestamp of the resource stored in the node"""
+        return self.time
+
+    def get_ip(self) -> str:
+        """Method to return the ip address of the resource stored in the node"""
+        return self.ip_addr   
 
     def __child_already_present(self, child_node: "RequestNode") -> bool:
         """Internal method to to avoid child duplicates"""
@@ -80,6 +91,34 @@ class RequestNode:
         """Method to return all children of the node"""
         return self.children
 
+    def get_all_children(self) -> list["RequestNode"]:
+        """Method to return all children of the node -- even transitively
+           Returns the children ordered by time they were logged
+        """
+        children = self.recursion_get_all_children()
+
+        # Sort the children by time, only do it once here
+        children.sort(key=lambda child: int(child.get_time()))
+
+        # Leave only the URLs
+        children = list(map(lambda node: node.get_resource(), children))
+        return children
+
+    def recursion_get_all_children(self) -> list["RequestNode"]:
+        """Internal method to return all children of the node -- even transitively"""
+        children = []
+
+        # Add the current node resource
+        children.append(self)
+
+        for child in self.get_children():
+
+            # Add the transitive children (children of children...)
+            transitive_children = child.recursion_get_all_children()
+            children.extend(transitive_children)
+
+        return children
+
     def get_parent(self) -> "RequestNode":
         """Method to return the parent of the node"""
         return self.parent
@@ -93,25 +132,16 @@ class RequestTree:
         """Method to retunr the root of the tree (initial page URL)"""
         return self.root_node
 
-    def get_all_request(self, start_node: RequestNode=None) -> list[RequestNode]:
+    def get_all_requests(self, start_node: RequestNode=None) -> list[RequestNode]:
         """Method to recursively get all resources requested on a page"""
+        
         resource_list = []
         if not start_node:
             start_node = self.get_root()
 
-        # Add the current node
-        resource_list.append(start_node.get_resource())
+        children = start_node.get_all_children()
+        resource_list.extend(children)
 
-        # Recursively go through all the children
-        for child_node in start_node.get_children():
-            child_resources = self.get_all_request(start_node=child_node)
-
-            # Add resources from each children to the result
-            resource_list.extend(child_resources)
-
-        # Remove duplicates because some resource may be requested by multiple resources
-        # For the evaluation purposes, this is unimportant - it is still preserved in the chain
-        resource_list = list(dict.fromkeys(resource_list))
         return resource_list
 
     def __recursive_node_check(self, node: RequestNode, searched_resource: str)\
@@ -159,7 +189,8 @@ def fix_missing_parent(observed_traffic: dict, resource: dict, tree: RequestTree
     # Find every parent resource that requested the resource
     direct_parents = look_for_specific_initiator(observed_traffic,\
                                                 resource["initiator"]["url"])
-    new_parent_node = RequestNode(resource["initiator"]["url"], children=[node])
+    time = resource["time"]
+    new_parent_node = RequestNode(TMP_IP_ADDR, time, resource["initiator"]["url"], children=[node])
 
     # If direct parent wasnt found, set current root as the parent
     # (maybe look recursively deeper instead?)
@@ -203,6 +234,8 @@ def construct_tree(tree: RequestTree, resource_counter: int, node: RequestNode,\
     global_level = node
     return tree, global_level
 
+TMP_IP_ADDR = "127.0.0.1"
+
 def reconstruct_tree(observed_traffic: dict) -> RequestTree:
     tree = None
     requests_count = len(observed_traffic)
@@ -211,7 +244,8 @@ def reconstruct_tree(observed_traffic: dict) -> RequestTree:
     for resource_number in range(requests_count):
         resource = observed_traffic[resource_number]
         current_resource = resource["requested_resource"]
-        node = RequestNode(current_resource, children=[])
+        time = resource["time"]
+        node = RequestNode(TMP_IP_ADDR, time, current_resource, children=[])
 
         # If requested_by matches requested_resource and initiator type is "other"
         # it's a redirect and go globally a level deeper
