@@ -20,14 +20,15 @@
 import argparse
 import os
 import json
-from time import sleep
 
 # Custom modules
-from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, OPTIONS_FILE
+from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, OPTIONS_FILE, RESULTS_FOLDER
 from source.load_traffic import load_traffic
 from source.request_tree import create_trees
 from source.test_page_server import start_testing_server, stop_testing_server
 from source.dns_repeater import DNSRepeater
+from source.visit_test_server import visit_test_server
+from source.calculate_blocked import calculate_blocked
 
 
 parser = argparse.ArgumentParser(prog="Content-blocking evaluation",
@@ -35,10 +36,17 @@ parser = argparse.ArgumentParser(prog="Content-blocking evaluation",
                                       tools on given pages")
 parser.add_argument('-l', '--load', action="store_true",
                     help="Whether to observe network traffic anew using page_list.txt")
+parser.add_argument('-lo', '--load-only', action="store_true",
+            help="Whether to only observe network traffic anew using page_list.txt and stop")
 args = parser.parse_args()
 
 def start() -> None:
     """Main driver function"""
+
+    if args.load:
+        if args.load_only:
+            print("You can only use one argument! Either '--load' or '--load-only'!")
+            exit(GENERAL_ERROR)
 
     # Load options for the evaluation
     if not os.path.exists(OPTIONS_FILE):
@@ -47,8 +55,8 @@ def start() -> None:
     with open(OPTIONS_FILE, encoding="utf-8") as f:
         options = json.load(f)
 
-    # If load was specified, go through the specified pages and observe traffic
-    if args.load:
+    # If load or load-only was specified, go through the specified pages and observe traffic
+    if args.load or args.load_only:
         # (Re)create the traffic folder
         if not os.path.exists(TRAFFIC_FOLDER):
             print("Creating the traffic folder...")
@@ -70,6 +78,10 @@ def start() -> None:
         load_traffic(options)
         print("Traffic loading finished!")
 
+        # if load-only was specified, don't do anything else and quit
+        if args.load_only:
+            return
+
     # Check that the traffic folder exists
     if not os.path.exists(TRAFFIC_FOLDER):
         print("Couldn't find the folder with the observed traffic!\n" +
@@ -86,26 +98,59 @@ def start() -> None:
 
     request_trees = create_trees()
 
+    # TBD: make this more effective (squash all DNSes and requests together?)
+    # Loading extensions takes a long time, repeating for each page would take a lot
     # For each loaded page, create a testing server and visit it
     for (key, _) in request_trees.items():
-        
-        # Start the testing server as another process for each logged page traffic
-        server = start_testing_server(request_trees[key].get_all_requests())
 
         # Setup DNS resolving so that the same IPs as observed are used
         dns_repeater = DNSRepeater(key)
         dns_repeater.start()
 
-        sleep(20)
-        #test_server_visit()
+        # Start the testing server as another process for each logged page traffic
+        server = start_testing_server(request_trees[key].get_all_requests())
 
-        dns_repeater.stop()
+        # Visit the server and log the console outputs
+        console_output = visit_test_server(key, {}, request_trees[key].get_all_requests())
+
+        # Calculate how many requests in the chain would have been blocked
+        blocked_pages, blocked_fp_attempts = calculate_blocked(request_trees[key], console_output)
+
         stop_testing_server(server)
+        dns_repeater.stop()
 
+        save_results(request_trees[key], key, request_trees[key].get_root().get_resource(),\
+                     blocked_pages, blocked_fp_attempts)
     # Start the evaluation...
 
-    # For each fetch, replay dns response
-    # Add mechanism for adding multiple extensions and browsers and repeat for each
+    # Don't close the console - wait ofr user input before quitting
+    _ = input("Press a key to exit...\n")
+
+def save_results(tree: dict, filename: str, pagename: str, blocked_pages: int, \
+                 blocked_fp_attempts: int) -> None:
+    """Function to save results for a given page to a file"""
+
+    # Try creating results folder if it doesnt exist
+    if not os.path.exists(RESULTS_FOLDER):
+        print("Creating the results folder...")
+        os.makedirs(RESULTS_FOLDER)
+
+    tree_image = tree.print_tree()
+
+    result_dict = {"page":pagename, "blocked_resources":blocked_pages,\
+                    "blocked_fp_attempts":blocked_fp_attempts}
+    result_file_path = RESULTS_FOLDER + filename
+    tree_file = RESULTS_FOLDER + filename.split('.')[0] + "_tree" + ".json"
+
+    with open(result_file_path, 'w', encoding='utf-8') as f:
+        jsoned_traffic = json.dumps(result_dict, indent=4)
+        f.write(jsoned_traffic)
+        f.close()
+
+    with open(tree_file, 'w', encoding='utf-8') as f:
+        f.write(tree_image)
+        f.close()
+
 
 if __name__ == "__main__":
     start()

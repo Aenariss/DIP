@@ -18,6 +18,7 @@
 
 # Default modules
 import json
+import os
 
 # Custom modules
 from source.constants import HOSTS_FILE, GENERAL_ERROR, TRAFFIC_FOLDER
@@ -32,6 +33,8 @@ class DNSRepeater:
         # If the host file was defined, use it
         self.hosts_file = hosts_file
 
+        self.hosts_file_copy_path = "./hosts"
+
         self.original_hosts_file_content = None
 
         # If not, use the default windows path
@@ -43,6 +46,9 @@ class DNSRepeater:
     def get_hosts_file(self) -> str:
         """Method to return path to the hosts file"""
         return self.hosts_file
+
+    def get_hosts_file_copy_path(self) -> str:
+        return self.hosts_file_copy_path
 
     def get_original_hosts_file_content(self) -> str:
         """Method to return original content of the hsots file"""
@@ -58,7 +64,7 @@ class DNSRepeater:
         """Method to return the filekey representing the file with HTTP traffic"""
         return self.filekey
 
-    def __appent_to_hosts(self) -> str:
+    def __append_to_hosts(self) -> str:
         """Method to append custom addresses to the content of the hostfile
            Returns string with the new content to be put into the file"""
 
@@ -113,7 +119,12 @@ class DNSRepeater:
         """Method to populate the hosts file with the logged DNS responses"""
         try:
             with open(self.get_hosts_file(), 'w', encoding='utf-8') as f:
-                f.write(self.__appent_to_hosts())
+                f.write(self.__append_to_hosts())
+
+            # Save a copy of the hosts file into the folder
+            with open(self.get_hosts_file_copy_path(), 'w', encoding='utf-8') as f:
+                f.write(self.get_original_hosts_file_content())
+
         except Exception as e:
             self.__show_exception_and_quit(e)
 
@@ -122,6 +133,11 @@ class DNSRepeater:
         try:
             with open(self.get_hosts_file(), 'w', encoding='utf-8') as f:
                 f.write(self.get_original_hosts_file_content())
+
+            # Delete a copy of the hosts file in the folder if it exists
+            if os.path.isfile(self.get_hosts_file_copy_path()):
+                os.remove(self.get_hosts_file_copy_path())
+
         except Exception as e:
             self.__show_exception_and_quit(e)
 

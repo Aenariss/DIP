@@ -18,6 +18,7 @@ Requirements to run:
 How to start in case of manual launch:
 - Launch all files mentioned from inside the root folder only -> you should be in ./DIP/content-blocking
 - Before launching anything, make sure all requirements are satisfied.
+- If launching on Linux, change path to ``hosts`` file accordingly in  ``./source/constants.py``.
 - Launch python as admin:
     - You can allow "sudo" command in Windows settings => System > For Developers > Enable sudo
     - Afterwards, run all mentioned commands as ``sudo command``
@@ -28,7 +29,15 @@ How to start in case of manual launch:
     - ``Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 192.168.1.242`` 
     - ``Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ResetServerAddresses`` to fix
 
-- There are two options how to launch the evaluation:
+#### IMPORTANT
+When launching the file with any load options -- that is ``--load`` or ``--load-only``, **ALL RESULTS IN ./traffic/ FOLDER ARE DELETED**.
+
+When saving the results, if a result with a given name already exists, it will be overwritten.
+
+In case of an error, a copy of your hosts file is preserved in this folder. If no error happened, it is removed automatically.
+
+- There are three options how to launch the evaluation:
+    - use ``python ./start.py --load-only`` loads traffic on all pages specified in ``page_list.txt`` and nothing else.
     - use ``python ./start.py --load`` loads traffic on all pages specified in ``page_list.txt`` and afterwards uses it as a basis for evaluation.
     - use ``python ./start.py`` loads already logged traffic which is saved in ./traffic/ folder.
 

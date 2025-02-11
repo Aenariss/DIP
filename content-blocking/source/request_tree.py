@@ -25,13 +25,16 @@ from source.constants import TRAFFIC_FOLDER
 
 class RequestNode:
     """Class representing each node in the request tree"""
-    def __init__(self, ip_addr: str, time: str, resource: str,\
+    def __init__(self, time: str, resource: str,\
                  children: list["RequestNode"]=None) -> None:
         """Init method for setting up each instance"""
         self.resource = resource
         self.children = children
-        self.ip_addr = ip_addr
         self.time = time
+
+        # To be used later when calculating impact of blocking a resource
+        # Represents whether this resource would have been blocked or not
+        self.blocked = False
 
         # In case children were specified, correctly set-up the parent-child relation
         if children:
@@ -41,6 +44,12 @@ class RequestNode:
         # New node has initially no parent
         self.parent = None
 
+    def is_blocked(self) -> bool:
+        return self.blocked
+
+    def block(self) -> None:
+        self.blocked = True
+
     def get_resource(self) -> str:
         """Method to return the URL of the resource stored in the node"""
         return self.resource
@@ -49,9 +58,13 @@ class RequestNode:
         """Method to return the timestamp of the resource stored in the node"""
         return self.time
 
-    def get_ip(self) -> str:
-        """Method to return the ip address of the resource stored in the node"""
-        return self.ip_addr   
+    def get_parent(self) -> "RequestNode":
+        """Method to return the parent of the node"""
+        return self.parent
+
+    def get_children(self) -> list["RequestNode"]:
+        """Method to return all direct children of the node"""
+        return self.children
 
     def __child_already_present(self, child_node: "RequestNode") -> bool:
         """Internal method to to avoid child duplicates"""
@@ -87,13 +100,10 @@ class RequestNode:
                 return
             self.parent = parent_node
 
-    def get_children(self) -> list["RequestNode"]:
-        """Method to return all children of the node"""
-        return self.children
-
-    def get_all_children(self) -> list["RequestNode"]:
-        """Method to return all children of the node -- even transitively
-           Returns the children ordered by time they were logged
+    def get_all_children(self) -> list[str]:
+        """Method to return all children resources of the node -> even transitively.
+           Also contains the node resource itself.
+           Returns the children resources ordered by time they were logged.
         """
         children = self.recursion_get_all_children()
 
@@ -103,6 +113,11 @@ class RequestNode:
         # Leave only the URLs
         children = list(map(lambda node: node.get_resource(), children))
         return children
+
+    def get_all_children_nodes(self) -> list["RequestNode"]:
+        """Method to return all children nodes of the current node -> even transitive
+           Also contains the node itself"""
+        return self.recursion_get_all_children()
 
     def recursion_get_all_children(self) -> list["RequestNode"]:
         """Internal method to return all children of the node -- even transitively"""
@@ -119,10 +134,6 @@ class RequestNode:
 
         return children
 
-    def get_parent(self) -> "RequestNode":
-        """Method to return the parent of the node"""
-        return self.parent
-
 class RequestTree:
     """Class representing the whole tree-like request chain"""
     def __init__(self, root_node: RequestNode) -> None:
@@ -132,9 +143,51 @@ class RequestTree:
         """Method to retunr the root of the tree (initial page URL)"""
         return self.root_node
 
+    def number_of_blocked(self, start: RequestNode=None) -> int:
+        """Method to compute the total number of blocked resources in a tree"""
+        if start is None:
+            start = self.get_root()
+
+        blocked = 0
+
+        # Check if the initial node is blocked
+        if start.is_blocked():
+            blocked += 1
+
+        # For each child calculate how many of its children are blocked
+        for child in start.get_children():
+            blocked = blocked + self.number_of_blocked(start=child)
+
+        return blocked
+
+    def calculate_blocked(self, blocked_resources: list[str]) -> tuple[int, int]:
+        """Method to calculate how many resources in total would have been blocked, had the
+        resoureces present in blocked_resources would have been blocked.
+        Returns the number of requests that would have been blocked and number of 
+        fp attempts blocked by association"""
+
+        # Go through each blocked resource and check if its present in the tree
+        for resource in blocked_resources:
+            nodes_with_resource = self.find_nodes(resource)
+            for parent_node in nodes_with_resource:
+
+                # Mark initial node as blocked
+                parent_node.block()
+
+                # Also mark all children as blocked
+                child_nodes = parent_node.get_all_children_nodes()
+                for node in child_nodes:
+                    node.block()
+
+        # Go through the whole tree and calculate numer of blocked
+        blocked_resources = self.number_of_blocked()
+
+        return blocked_resources, 0
+
+
     def get_all_requests(self, start_node: RequestNode=None) -> list[RequestNode]:
         """Method to recursively get all resources requested on a page"""
-        
+
         resource_list = []
         if not start_node:
             start_node = self.get_root()
@@ -166,21 +219,39 @@ class RequestTree:
         """Method to check if a resource is present in the tree and return nodes that contain it"""
         return self.__recursive_node_check(self.get_root(), searched_resource)
 
-    def print_tree(self, level: int=1, current_node: RequestNode=None) -> None:
-        """Function to CLI-visualize the requests in a given tree"""
+    def print_tree(self, level: int=1, current_node: RequestNode=None, printing: bool=False) -> str:
+        """Method to CLI-visualize the requests in a given tree or return the tree as a string"""
 
         # Print the initial request - tree root
+        result = ""
         if not current_node:
-            print('--' * level, self.get_root().get_resource())
+            block_result = "-- Blocked" if self.get_root().is_blocked() else "-- Loaded"
+            if printing:
+                print('--' * level, self.get_root().get_resource(), block_result)
+
+            # Add current level to result
+            result += '\n' + '--' * level + ' ' + self.get_root().get_resource()\
+                + ' ' + block_result
+
+            # Recursively print for children
             for child in self.get_root().get_children():
-                self.print_tree(level=level+1, current_node=child)
+                result += self.print_tree(level=level+1, current_node=child, printing=printing)
 
         # Other requests - child nodes
         else:
-            print('|' + '--' * 2 * level, current_node.get_resource()[:100])\
-                   #"<-", ' '.join(x.get_resource()[:100] for x in current_node.get_parent()))
+            block_result = "-- Blocked" if current_node.is_blocked() else "-- Loaded"
+            if printing:
+                print('|' + '--' * 2 * level + ' ' + current_node.get_resource()[:100]\
+                     + ' ' + block_result)
+                    #"<-", ' '.join(x.get_resource()[:100] for x in current_node.get_parent()))
+            # Add current level to result
+            result += '\n|' + '--' * 2 * level + ' ' + current_node.get_resource()[:100] + ' '\
+                    + block_result
+
+            # Recursively print for children
             for child in current_node.get_children():
-                self.print_tree(level=level+1, current_node=child)
+                result += self.print_tree(level=level+1, current_node=child, printing=printing)
+        return result
 
 def fix_missing_parent(observed_traffic: dict, resource: dict, tree: RequestTree,\
                        previous_main_node: RequestNode, node: RequestNode) -> None:
@@ -190,7 +261,7 @@ def fix_missing_parent(observed_traffic: dict, resource: dict, tree: RequestTree
     direct_parents = look_for_specific_initiator(observed_traffic,\
                                                 resource["initiator"]["url"])
     time = resource["time"]
-    new_parent_node = RequestNode(TMP_IP_ADDR, time, resource["initiator"]["url"], children=[node])
+    new_parent_node = RequestNode(time, resource["initiator"]["url"], children=[node])
 
     # If direct parent wasnt found, set current root as the parent
     # (maybe look recursively deeper instead?)
@@ -234,8 +305,6 @@ def construct_tree(tree: RequestTree, resource_counter: int, node: RequestNode,\
     global_level = node
     return tree, global_level
 
-TMP_IP_ADDR = "127.0.0.1"
-
 def reconstruct_tree(observed_traffic: dict) -> RequestTree:
     tree = None
     requests_count = len(observed_traffic)
@@ -245,7 +314,7 @@ def reconstruct_tree(observed_traffic: dict) -> RequestTree:
         resource = observed_traffic[resource_number]
         current_resource = resource["requested_resource"]
         time = resource["time"]
-        node = RequestNode(TMP_IP_ADDR, time, current_resource, children=[])
+        node = RequestNode(time, current_resource, children=[])
 
         # If requested_by matches requested_resource and initiator type is "other"
         # it's a redirect and go globally a level deeper
@@ -315,7 +384,6 @@ def reconstruct_tree(observed_traffic: dict) -> RequestTree:
                 else:
                     global_level.add_child(node)
 
-    tree.print_tree()
     return tree
 
 def look_for_specific_initiator(traffic: dict, find: str) -> dict:

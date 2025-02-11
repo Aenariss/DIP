@@ -35,12 +35,14 @@ list_of_resources = []
 def index():
     if not list_of_resources:
         print("Could not load any resources! Is traffic folder empty?")
-    return render_template("index.html", resources=list_of_resources)
+    return render_template("index.html", resources=list_of_resources, n_of_resources=len(list_of_resources))
 
 def run_test_server(request_tree: list):
     global list_of_resources
     list_of_resources = request_tree
-    app.run(use_reloader=False)
+
+    # http://localhost:5000
+    app.run(port=5000, use_reloader=False)
 
 def start_testing_server(request_tree: list):
     """Function to start the http testing server to observe content blocking behavior"""
