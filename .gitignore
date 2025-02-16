@@ -1,5 +1,6 @@
 diplomka_implementace-main/pulseaudio/
 content-blocking/source/__pycache__/*
+content-blocking/custom_dns_server/__pycache__/*
 content-blocking/traffic/*.json
 content-blocking/results/*.json
 jsrestrictor-main/

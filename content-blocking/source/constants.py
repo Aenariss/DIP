@@ -23,6 +23,7 @@ FILE_ERROR = 51
 # Paths - folders
 TRAFFIC_FOLDER = "./traffic/"
 RESULTS_FOLDER = "./results/"
+DNS_CONFIGURATION_FOLDER = "./custom_dns_server/server_configuration/"
 
 # Paths - files
 PAGES_FILE = "page_list.txt"
@@ -33,3 +34,7 @@ HOSTS_FILE = "C:/Windows/System32/drivers/etc/hosts"
 
 # User option strings from options.json
 PAGE_WAIT_TIME = "page_wait_time"
+
+# DNS server docker container name
+DNS_CONTAINER_NAME = "bind9"
+DNS_CONTAINER_IMAGE = "internetsystemsconsortium/bind9:9.20"

@@ -28,7 +28,7 @@ from selenium.webdriver.chrome.options import Options
 # Custom modules
 from source.constants import PAGE_WAIT_TIME
 
-def get_page_traffic(page: str, options: dict) -> dict:
+def get_page_traffic(page: str, options: dict, compact: bool) -> dict:
     """Function to load page network traffic"""
 
     print("Visiting page", page)
@@ -45,6 +45,9 @@ def get_page_traffic(page: str, options: dict) -> dict:
     service = Service()
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
+    # Wait at most this time (seconds) for a page to load
+    driver.set_page_load_timeout(20)
+
     # Visit the specified page
     driver.get(page)
 
@@ -58,11 +61,11 @@ def get_page_traffic(page: str, options: dict) -> dict:
     driver.quit()
 
     # Parse the logs
-    network_logs = get_network_requests(network_logs)
+    network_logs = get_network_requests(network_logs, compact)
 
     return network_logs
 
-def get_network_requests(logs: dict) -> list[dict]:
+def get_network_requests(logs: dict, compact: bool) -> list[dict]:
     """Function to extract only the initiator chain from the observed data"""
     parsed_logs = []
     # Go through all the recorded logs
@@ -72,7 +75,8 @@ def get_network_requests(logs: dict) -> list[dict]:
         # Filter in only the logs with required data
         if log["method"] == "Network.requestWillBeSent":
             # Skip internal devtools requests
-            if "devtools://" in log["params"]["request"]["url"]:
+            if "devtools://" in log["params"]["request"]["url"] or\
+               "devtools://" in log["params"]["documentURL"]:
                 continue
             tmp_log = {}
 
@@ -89,7 +93,39 @@ def get_network_requests(logs: dict) -> list[dict]:
             # Initiator chain
             # tbd: If something was called dynamically (in browser shows as VM:xxx)
             # it shows as blank url, improve?
-            tmp_log["initiator"] = log["params"]["initiator"]
+            # If compact is set, only save till the first valid initiator
+            if compact:
+                tmp_initiator = log["params"]["initiator"]
+
+                # Only compact-ize if stack is present
+                if tmp_initiator.get("stack"):
+
+                    # Recursively go until you find the first non-empty parent and save only them
+                    tmp_log["initiator"] = first_valid_parent(tmp_initiator["stack"])
+                    tmp_log["initiator"]["type"] = tmp_initiator["type"]
+                else:
+                    tmp_log["initiator"] = log["params"]["initiator"]
+            else:
+                tmp_log["initiator"] = log["params"]["initiator"]
             parsed_logs.append(tmp_log)
 
     return parsed_logs
+
+def first_valid_parent(stack: dict) -> dict:
+    """Function to be recursively called to find first non-empty parent url in callstack"""
+    call_frames = stack.get("callFrames", [])
+    for call in call_frames:
+        if call["url"] != "":
+
+            # Keep the original structure
+            return {"stack": {"callFrames": [call]}}
+
+    # Check parent stack exists before delving deeper
+    if stack.get("parent"):
+
+        # No valid find (or callFrame empty), go deeper
+        return first_valid_parent(stack["parent"])
+
+    # No parent, didn't find anything, return blank parent
+    empty_stack = {"stack": {"callFrames": []}}
+    return empty_stack

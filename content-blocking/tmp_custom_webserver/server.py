@@ -48,6 +48,11 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         };
     </script>
 """)
+        elif self.path == "/redirect":
+            # Redirect to another page
+            self.send_response(302)  # HTTP 302 Found (temporary redirect)
+            self.send_header("Location", "https://zpravy.idnes.cz")  # Target URL
+            self.end_headers()
 
         else:
             # Fall back to serving static files

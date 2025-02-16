@@ -19,7 +19,7 @@
 # Local modules
 from source.request_tree import RequestTree
 
-def calculate_blocked(request_tree: RequestTree, console_output: list[dict]) -> tuple[int, int]:
+def calculate_blocked(request_tree: RequestTree, console_output: list[dict]) -> tuple[int, int, int]:
     """Function to calculate how many requests in a tree would be blocked 
     if given resources were blocked"""
 
@@ -29,11 +29,11 @@ def calculate_blocked(request_tree: RequestTree, console_output: list[dict]) -> 
     client_blocked_pages = parse_console_logs(console_output)
 
     # Calculate number of blocked requests and blocked fp attempts
-    blocked_pages, blocked_fp_attempts = request_tree.calculate_blocked(client_blocked_pages)
+    blocked_pages_transitively, blocked_pages, blocked_fp_attempts = request_tree.calculate_blocked(client_blocked_pages)
 
     print("Finished calculation!")
 
-    return blocked_pages, blocked_fp_attempts
+    return blocked_pages_transitively, blocked_pages, blocked_fp_attempts
 
 def parse_console_logs(console_output: list[dict]) -> list[str]:
 

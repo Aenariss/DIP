@@ -18,6 +18,7 @@
 
 # Built-in modules
 import os
+import sys
 
 # Custom modules
 from source.file_loading import load_json
@@ -166,6 +167,18 @@ class RequestTree:
         Returns the number of requests that would have been blocked and number of 
         fp attempts blocked by association"""
 
+        # First, block only parent nodes to obtain how many would be observed without request chain
+        for resource in blocked_resources:
+            nodes_with_resource = self.find_nodes(resource)
+            for node in nodes_with_resource:
+
+                # Mark initial node as blocked
+                node.block()
+        
+        # Obtain number of blocked requests in the tree with no recursive blocking
+        blocked_not_transitive = self.number_of_blocked()
+
+        # Second, block all child nodes transitively if parent is blocked
         # Go through each blocked resource and check if its present in the tree
         for resource in blocked_resources:
             nodes_with_resource = self.find_nodes(resource)
@@ -182,7 +195,7 @@ class RequestTree:
         # Go through the whole tree and calculate numer of blocked
         blocked_resources = self.number_of_blocked()
 
-        return blocked_resources, 0
+        return blocked_resources, blocked_not_transitive, 0
 
 
     def get_all_requests(self, start_node: RequestNode=None) -> list[RequestNode]:
@@ -260,7 +273,7 @@ def fix_missing_parent(observed_traffic: dict, resource: dict, tree: RequestTree
     # Find every parent resource that requested the resource
     direct_parents = look_for_specific_initiator(observed_traffic,\
                                                 resource["initiator"]["url"])
-    time = resource["time"]
+    time = resource.get("time", sys.maxsize)
     new_parent_node = RequestNode(time, resource["initiator"]["url"], children=[node])
 
     # If direct parent wasnt found, set current root as the parent
@@ -300,8 +313,18 @@ def construct_tree(tree: RequestTree, resource_counter: int, node: RequestNode,\
     """Function to update global level and create a tree if it's the very first primary request"""
     if resource_counter == 0:
         tree = RequestTree(node)
+
     else:
+        # Check if the request is not to a page already in the tree ->
+        # It is unnecessary for the analysis and makes results weird.
+        # Just add it as a regular child of the previous global level
+        if tree.find_nodes(node.get_resource()):
+
+            global_level.add_child(node)
+            return tree, global_level
+        
         global_level.add_child(node)
+
     global_level = node
     return tree, global_level
 
@@ -313,7 +336,8 @@ def reconstruct_tree(observed_traffic: dict) -> RequestTree:
     for resource_number in range(requests_count):
         resource = observed_traffic[resource_number]
         current_resource = resource["requested_resource"]
-        time = resource["time"]
+        # If time is unavailable, use maximum
+        time = resource.get("time", sys.maxsize)
         node = RequestNode(time, current_resource, children=[])
 
         # If requested_by matches requested_resource and initiator type is "other"
@@ -331,7 +355,12 @@ def reconstruct_tree(observed_traffic: dict) -> RequestTree:
                 parent_nodes = tree.find_nodes(resource["initiator"]["url"])
 
                 # Parent not known should not happen often (child resource loaded before parent)
+                # May happen with some preflights -- I'll skip those since they will be already loaded anyway
                 if not parent_nodes:
+                    if resource["initiator"]["type"] == "preflight":
+                        continue
+
+                    # If it was not preflight, it's strange, but try to fix it
                     fix_missing_parent(observed_traffic, resource, tree, global_level, node)
 
                 # Parent present, add it as their child
@@ -354,7 +383,8 @@ def reconstruct_tree(observed_traffic: dict) -> RequestTree:
                     # Situation like A -> B -> A -> C may occur
                     # Fix it by removing duplicates and leaving just A -> B -> C
                     # transitive logic remains intact
-                    calls = list(dict.fromkeys(calls))
+                    # Chrome DevTools (F12 Initiators) does not do this
+                    #calls = list(dict.fromkeys(calls))
 
                     # Remove dynamic content with no known initiator
                     # "" -> B -> C = just B -> C

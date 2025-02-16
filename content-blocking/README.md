@@ -1,5 +1,9 @@
 ## Content Blocking
 
+This program works only on **Microsoft Windows** because of some internal Windows stuff it uses.
+
+Please, read the **IMPORTANT** section in this file before launching anything.
+
 The files in this folder are used to measure the effectivity of given content-blocking tools.  
 
 - ``./config.json`` -- user options for the evaluation, includes browsers/extensions to test
@@ -18,15 +22,13 @@ Requirements to run:
 How to start in case of manual launch:
 - Launch all files mentioned from inside the root folder only -> you should be in ./DIP/content-blocking
 - Before launching anything, make sure all requirements are satisfied.
-- If launching on Linux, change path to ``hosts`` file accordingly in  ``./source/constants.py``.
 - Launch python as admin:
     - You can allow "sudo" command in Windows settings => System > For Developers > Enable sudo
     - Afterwards, run all mentioned commands as ``sudo command``
-- ~~In case you are launching for the first time, you need to setup docker (for custom DNS server): -> ~~
-    - ``cd custom_dns_server``
-    - ``docker build -t dns_server . ``
-    - ``docker run -it --dns=127.0.0.1  -p 53:53/udp dns_server``
-    - ``Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 192.168.1.242`` 
+- In case you are launching for the first time, you need to setup docker (for custom DNS server): -> 
+    - ``docker pull internetsystemsconsortium/bind9:9.20``
+
+    - ``Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 127.0.0.1`` 
     - ``Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ResetServerAddresses`` to fix
 
 #### IMPORTANT
@@ -36,9 +38,16 @@ When saving the results, if a result with a given name already exists, it will b
 
 In case of an error, a copy of your hosts file is preserved in this folder. If no error happened, it is removed automatically.
 
+Sometimes, Selenium may take some time to load, be patient for a few seconds please.
+
+Windows may not work with custom DNS server, it prefers ipv6 dns resolution -> disable ipv6 in adapter options.
+
+After stopping the custom DNS server, DNS settings are reset -> it is set to automatic DHCP assignment. This means you lose your own settings.
+
 - There are three options how to launch the evaluation:
     - use ``python ./start.py --load-only`` loads traffic on all pages specified in ``page_list.txt`` and nothing else.
     - use ``python ./start.py --load`` loads traffic on all pages specified in ``page_list.txt`` and afterwards uses it as a basis for evaluation.
+    - use ``python ./start.py --load --compact`` (can also be used with --load-only) to lessen the space the traffic logs take.
     - use ``python ./start.py`` loads already logged traffic which is saved in ./traffic/ folder.
 
 

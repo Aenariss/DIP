@@ -26,7 +26,7 @@ from source.page_http_traffic import get_page_traffic
 from source.constants import TRAFFIC_FOLDER, FILE_ERROR
 from source.dns_observer import DNSSniffer
 
-def load_traffic(options: dict) -> None:
+def load_traffic(options: dict, compact: bool) -> None:
     """Function to observe traffic on given list of pages"""
     pages = load_pages()
 
@@ -40,7 +40,12 @@ def load_traffic(options: dict) -> None:
         sniffer.start_sniffer()
 
         # Get the HTTP(S) traffic associated with a page
-        traffic = get_page_traffic(page, options)
+        try:
+            traffic = get_page_traffic(page, options, compact)
+        except Exception:
+            # Page may not load correctly - skip it and continue
+            sniffer.stop_sniffer()
+            continue
 
         sniffer.stop_sniffer()
         dns_traffic = sniffer.get_traffic()
