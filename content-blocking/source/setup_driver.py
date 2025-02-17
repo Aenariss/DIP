@@ -23,7 +23,7 @@ from selenium.webdriver.chrome.options import Options
 def setup_driver(config: dict) -> webdriver:
 
     extension_path = "./addons/ad_block_plus_4_12_0.crx"
-    
+
     # Set up Chrome options and enable DevTools Protocol
     chrome_options = Options()
     chrome_options.add_argument("--remote-debugging-port=9222")

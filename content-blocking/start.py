@@ -159,7 +159,6 @@ def start() -> None:
     dns_repeater.start()
     dns_repeater.stop()
     input("Press any key to stop...")
-    return
 
     # Start the testing server as another process for each logged page traffic
     server = start_testing_server(resource_list)

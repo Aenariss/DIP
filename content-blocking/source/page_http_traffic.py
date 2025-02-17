@@ -18,6 +18,7 @@
 
 # Built-in modules
 import json
+import os
 import time
 
 # 3rd-party modules
@@ -25,21 +26,38 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
+import pyautogui
+
 # Custom modules
 from source.constants import PAGE_WAIT_TIME
 
-def get_page_traffic(page: str, options: dict, compact: bool) -> dict:
-    """Function to load page network traffic"""
+def get_page_traffic(page: str, options: dict, compact: bool) -> tuple[list, dict]:
+    """Function to load page network traffic. Return observed network traffic and saves FPD report into
+       traffic folder"""
 
     print("Visiting page", page)
+
+    # Set-up JShelter FPD -- custom version, all shields are off, fpd is set on by default
+    jshelter_fpd_path = "./addons/jshelter_0_19_custom_fpd.crx"
+
+    download_path = os.path.abspath("./traffic")
 
     # Set up Chrome options and enable DevTools Protocol
     chrome_options = Options()
     chrome_options.add_argument("--remote-debugging-port=9222")
     chrome_options.add_argument("auto-open-devtools-for-tabs")
     chrome_options.add_argument("--enable-javascript")
+    chrome_options.add_argument('--enable-extensions')
+    chrome_options.add_experimental_option('prefs', {
+        'download.default_directory': download_path,
+        'download.prompt_for_download': False,
+        'download.directory_upgrade': True
+    })
 
-    # Allow logging
+
+    chrome_options.add_extension(jshelter_fpd_path)
+
+    # Allow logging of network traffic
     chrome_options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
 
     service = Service()
@@ -47,6 +65,16 @@ def get_page_traffic(page: str, options: dict, compact: bool) -> dict:
 
     # Wait at most this time (seconds) for a page to load
     driver.set_page_load_timeout(20)
+
+    driver.get("chrome://extensions")
+
+    time.sleep(0.5)
+
+    pyautogui.click(680, 225)
+
+    time.sleep(0.5)
+
+    pyautogui.click(370, 275)
 
     # Visit the specified page
     driver.get(page)
@@ -78,6 +106,11 @@ def get_network_requests(logs: dict, compact: bool) -> list[dict]:
             if "devtools://" in log["params"]["request"]["url"] or\
                "devtools://" in log["params"]["documentURL"]:
                 continue
+            
+            # Skip chrome internal pages
+            if "chrome://" in log["params"]["request"]["url"] or\
+               "chrome://" in log["params"]["documentURL"]:
+                continue
             tmp_log = {}
 
             # Unimportant for evaluation? used only for checks
@@ -100,7 +133,7 @@ def get_network_requests(logs: dict, compact: bool) -> list[dict]:
                 # Only compact-ize if stack is present
                 if tmp_initiator.get("stack"):
 
-                    # Recursively go until you find the first non-empty parent and save only them
+                    # Recursively go until you find the first non-empty non-JShelter parent and save only them
                     tmp_log["initiator"] = first_valid_parent(tmp_initiator["stack"])
                     tmp_log["initiator"]["type"] = tmp_initiator["type"]
                 else:
@@ -115,7 +148,9 @@ def first_valid_parent(stack: dict) -> dict:
     """Function to be recursively called to find first non-empty parent url in callstack"""
     call_frames = stack.get("callFrames", [])
     for call in call_frames:
-        if call["url"] != "":
+
+        # Skip empty strings JShelter overrides
+        if call["url"] != "" and not call["url"].startswith("chrome"):
 
             # Keep the original structure
             return {"stack": {"callFrames": [call]}}

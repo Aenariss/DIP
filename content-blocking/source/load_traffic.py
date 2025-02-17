@@ -19,11 +19,13 @@
 
 # Built-in modules
 import json
+import os
+import re
 
 # Custom modules
 from source.file_loading import load_pages
 from source.page_http_traffic import get_page_traffic
-from source.constants import TRAFFIC_FOLDER, FILE_ERROR
+from source.constants import TRAFFIC_FOLDER, FILE_ERROR, GENERAL_ERROR
 from source.dns_observer import DNSSniffer
 
 def load_traffic(options: dict, compact: bool) -> None:
@@ -52,6 +54,7 @@ def load_traffic(options: dict, compact: bool) -> None:
 
         save_traffic(dns_traffic, page, str(filename_counter), "dns")
         save_traffic(traffic, page, str(filename_counter), "http")
+        match_jshelter_fpd(filename_counter)
         filename_counter += 1
 
 def save_traffic(traffic: dict, pagename: str, filename: str, traffic_type: str) -> None:
@@ -60,7 +63,7 @@ def save_traffic(traffic: dict, pagename: str, filename: str, traffic_type: str)
         f = None
         if traffic_type == "dns":
             f = open(TRAFFIC_FOLDER + filename + '_dns' + '.json', 'w', encoding='utf-8')
-        else:
+        else: # http
             f = open(TRAFFIC_FOLDER + filename + '.json', 'w', encoding='utf-8')
         # Format the dictionary as json
         jsoned_traffic = json.dumps(traffic, indent=4)
@@ -71,3 +74,27 @@ def save_traffic(traffic: dict, pagename: str, filename: str, traffic_type: str)
         print("Could not save traffic to a file! Problem with page:", pagename)
         print(error)
         exit(FILE_ERROR)
+
+def match_jshelter_fpd(filename: int) -> None:
+    """Function to match the downloaded JSHelter FPD report to its results"""
+
+    # Since JShelter exports name of the page, it will be the only file in traffic folder
+    # with different name compared to the others. 
+
+    # Load the only different file and rename it to match the others
+    files = [f for f in os.listdir(TRAFFIC_FOLDER) if not re.match(r'^[0-9]', f)]
+
+    # There should be 2 non-matching files -> .empty and fpd file, find the fpd file
+    found_file = ""
+    for file in files:
+        if file != ".empty":
+            found_file = file
+
+    if found_file == "":
+        print("Can't match FP file to its corresponding traffic files!")
+        print("Did you put something in ./traffic/ folder? Or visited bad page...")
+        exit(GENERAL_ERROR)
+
+    original_filepath = TRAFFIC_FOLDER + found_file
+    new_filename = TRAFFIC_FOLDER + str(filename) + "_fp.json"
+    os.rename(original_filepath, new_filename)
