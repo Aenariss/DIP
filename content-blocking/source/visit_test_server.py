@@ -31,7 +31,7 @@ TEST_SERVER_IP = "http://localhost:5000"
 # tbd: client configuration where will be specified: browser type (chrome/firefox),
 # browser path in case of tor/asb/brave, list of extensions to be loaded into the browser
 
-def visit_test_server(original_page: str, client_config: dict, requests: list) -> list[dict]:
+def visit_test_server(client_config: dict, requests: list) -> list[dict]:
     """Function to simulate client visit to the test page with defined configuration"""
 
     # total number of all resources to check if selenium can leave the page
@@ -47,7 +47,7 @@ def visit_test_server(original_page: str, client_config: dict, requests: list) -
 
         return driver.execute_script(script_load_resources_status, total_requests)
 
-    print("Testing blocked resources for", original_page)
+    print("Testing blocked resources for all visited pages...")
 
     # Correctly setup the driver according to given config
     driver = setup_driver(client_config)
@@ -58,9 +58,9 @@ def visit_test_server(original_page: str, client_config: dict, requests: list) -
     # Visit the test server
     driver.get(TEST_SERVER_IP)
 
-    # Wait until all resources load (total_requests). Timeout in 60 sec if still waiting
+    # Wait until all resources load (total_requests). Timeout in 2 mins if still waiting
     # Resources still waiting for will be considered fetched
-    WebDriverWait(driver, 30).until(check_all_resources_loaded)
+    WebDriverWait(driver, 120).until(check_all_resources_loaded)
 
     # Get the console output
     logs = driver.get_log("browser")

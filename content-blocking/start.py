@@ -155,9 +155,9 @@ def start() -> None:
     resource_list = squash_tree_resources(request_trees)
 
     # Start the DNS server and set it as prefered to repeat responses
-    #dns_repeater = DNSRepeater(dns_records)
-    #dns_repeater.start()
-    #dns_repeater.stop()
+    dns_repeater = DNSRepeater(dns_records)
+    dns_repeater.start()
+    dns_repeater.stop()
     input("Press any key to stop...")
     return
 
@@ -165,7 +165,7 @@ def start() -> None:
     server = start_testing_server(resource_list)
 
     # Visit the server and log the console outputs
-    console_output = visit_test_server(key, {}, resource_list)
+    console_output = visit_test_server({}, resource_list)
 
     # Calculate how many requests in the chain would have been blocked
     blocked_total, blocked_not_transitive, blocked_fp_attempts = calculate_blocked(request_trees[key], console_output)

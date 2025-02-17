@@ -94,7 +94,7 @@ zone "{domain}" {{
         os.system(cp_command)
 
 
-    def generate_zonefile(self, domain: str, record: dict) -> None:
+    def generate_zonefile(self, domain: str, all_subdomains: dict) -> str:
         """Method to generate zonfile for given domain"""
 
         # zonefile header
@@ -109,26 +109,27 @@ $TTL    604800
                      604800 )       ; Negative Cache TTL
 ;
 @       IN      NS      ns.{domain}.
+ns      IN      A       127.0.0.1
 """     
-        
-        # If there is some CNAME-type record, only take the first and point it towards it
-        # However, you cant define CNAME as root so this will nott work. Maybe idea for later?
-        #if record.get("CNAME", []) != []:
-        #    first_cname = record["CNAME"][0]
-        #    zone_file += f"@       IN      CNAME    {first_cname}.\n"
-        #    return zone_file
+        # Iterate over all subdomains and edit zonefile accordingly
+        for (subdomain, record) in all_subdomains.items():
 
-        # Else just write the first A record
-        for dns_type, values in record.items():
-            for value in values:
-                skip = False
-                if dns_type == "A":
-                    # Only put the first IP there
-                    if skip:
-                        break
-                    zone_file += f"ns      IN      A       {value}\n"
-                    zone_file += f"@       IN      A       {value}\n"
-                    skip = True
+            # If there is some CNAME-type record, only take the first and add record
+            if record.get("CNAME", []) != []:
+                first_cname = record["CNAME"][0]
+                zone_file += f"{subdomain}       IN      CNAME    {first_cname}.\n"
+
+                # If I added CNAME, continue (cant have same A and CNAME)
+                continue
+
+            # For A records, just write the first one
+            first_a = record.get("A", [])
+            if first_a:
+                first_a = first_a[0]
+                if domain == subdomain:
+                    zone_file += f"@       IN      A       {first_a}\n"
+                else:
+                    zone_file += f"{subdomain}       IN      A       {first_a}\n"
 
         return zone_file
 
