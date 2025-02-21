@@ -21,7 +21,7 @@ from source.request_tree import RequestTree
 
 def calculate_blocked(request_tree: RequestTree, console_output: list[dict]) -> tuple[int, int, int]:
     """Function to calculate how many requests in a tree would be blocked 
-    if given resources were blocked"""
+    if given resources were blocked and how many fp attempts that would prevent"""
 
     print("Calculating number of blocked requests and fingerprinting attempts...")
 

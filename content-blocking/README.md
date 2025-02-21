@@ -34,6 +34,9 @@ How to start in case of manual launch:
 #### IMPORTANT
 When launching the file with any load options -- that is ``--load`` or ``--load-only``, **ALL RESULTS IN ./traffic/ FOLDER ARE DELETED**.
 
+Sometimes when launching selenium (usually when launching for the first time in PC session), it may take too long to load and thus
+skip enabling devtools. In such cases, please restart the program and it should work as intended. 
+
 When saving the results, if a result with a given name already exists, it will be overwritten.
 
 In case of an error, a copy of your hosts file is preserved in this folder. If no error happened, it is removed automatically.

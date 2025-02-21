@@ -24,6 +24,7 @@ import json
 # Custom modules
 from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, OPTIONS_FILE, RESULTS_FOLDER
 from source.load_traffic import load_traffic
+from source.fp_attempts import parse_fp
 from source.request_tree import create_trees
 from source.test_page_server import start_testing_server, stop_testing_server
 from source.visit_test_server import visit_test_server
@@ -135,10 +136,7 @@ def start() -> None:
 
     # If load or load-only was specified, go through the specified pages and observe traffic
     if args.load or args.load_only:
-
-        print("Loading the traffic...")
         load_traffic(options, args.compact)
-        print("Traffic loading finished!")
 
         # if load-only was specified, don't do anything else and quit
         if args.load_only:
@@ -147,8 +145,17 @@ def start() -> None:
     # Check traffic folder is present and not empty
     check_traffic_folder()
 
+    # Assign total FP attempts for each domain from FP logs
+    fp_attempts = parse_fp()
+
     # Create initiator tree-like chains from data in the ./traffic/ folder
-    request_trees = create_trees()
+    request_trees = create_trees(fp_attempts)
+
+    # Now each resource has associated number of FP attempts,
+    # add method to calculate number of blocks if a certain resource was blocked
+    # needs to go recursively to allow transitivity
+
+    return
 
     # Squash DNS records and contacted pages from all observations together
     dns_records = squash_dns_records()
@@ -157,8 +164,6 @@ def start() -> None:
     # Start the DNS server and set it as prefered to repeat responses
     dns_repeater = DNSRepeater(dns_records)
     dns_repeater.start()
-    dns_repeater.stop()
-    input("Press any key to stop...")
 
     # Start the testing server as another process for each logged page traffic
     server = start_testing_server(resource_list)
@@ -167,15 +172,13 @@ def start() -> None:
     console_output = visit_test_server({}, resource_list)
 
     # Calculate how many requests in the chain would have been blocked
-    blocked_total, blocked_not_transitive, blocked_fp_attempts = calculate_blocked(request_trees[key], console_output)
+    for (key, _) in request_trees.items():
+        blocked_total, blocked_not_transitive, blocked_fp_attempts = calculate_blocked(request_trees[key], console_output)
+        save_results(request_trees[key], key, request_trees[key].get_root().get_resource(),\
+                     blocked_total, blocked_not_transitive, blocked_fp_attempts)
 
     stop_testing_server(server)
     dns_repeater.stop()
-
-    save_results(request_trees[key], key, request_trees[key].get_root().get_resource(),\
-                     blocked_total, blocked_not_transitive, blocked_fp_attempts)
-    
-    # Start the evaluation...
 
     _ = input("Press a key to exit...\n")
 

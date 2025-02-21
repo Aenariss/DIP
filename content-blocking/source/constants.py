@@ -24,13 +24,16 @@ FILE_ERROR = 51
 TRAFFIC_FOLDER = "./traffic/"
 RESULTS_FOLDER = "./results/"
 DNS_CONFIGURATION_FOLDER = "./custom_dns_server/server_configuration/"
+ADDON_FOLDER = "./addons/"
 
 # Paths - files
 PAGES_FILE = "page_list.txt"
 OPTIONS_FILE = "config.json"
+JSHELTER_FPD_PATH = ADDON_FOLDER + "jshelter_0_19_custom_fpd.crx"
 
 # Paths - system
 HOSTS_FILE = "C:/Windows/System32/drivers/etc/hosts"
+
 
 # User option strings from options.json
 PAGE_WAIT_TIME = "page_wait_time"

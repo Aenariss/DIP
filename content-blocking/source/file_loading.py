@@ -18,9 +18,11 @@
 
 # Built-in modules
 import json
+import os
+import re
 
 # Custom modules
-from source.constants import FILE_ERROR
+from source.constants import FILE_ERROR, TRAFFIC_FOLDER, GENERAL_ERROR
 
 def load_pages() -> list[str]:
     """Function to load the page_list.txt file and return its content"""
@@ -41,3 +43,30 @@ def load_json(path) -> dict:
     except OSError:
         print("Error reading the content of " + path + "! Is the file present?")
         exit(FILE_ERROR)
+
+def get_traffic_files(traffic_type: str) -> list:
+    """Function to obtain filenames for given type of file from the ./traffic/ folder
+    
+    Option needed, represents desired type of traffic files. Options are: 'dns', 'fp', 'network'.
+    """
+
+    # Types of traffic files to ignore
+    regex = [r"fp", r"dns", r"network"]
+    
+    if traffic_type in regex:
+        # Remove given type of files from the regex to obtain them
+        regex.remove(traffic_type)
+    else:
+        print("Invalid traffic file type!")
+        exit(GENERAL_ERROR)
+
+    # Append .empty file to not count it
+    regex.append(r"\.empty")
+
+    # Create the regex by adding '|' between the options
+    regex = '|'.join(regex)
+
+    # Load the only the type of file we want from the traffic folder
+    files = [TRAFFIC_FOLDER + f for f in os.listdir(TRAFFIC_FOLDER) if not re.search(regex, f)]
+
+    return files

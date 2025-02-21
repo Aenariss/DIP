@@ -25,22 +25,20 @@ import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-
 import pyautogui
 
 # Custom modules
-from source.constants import PAGE_WAIT_TIME
+from source.constants import PAGE_WAIT_TIME, TRAFFIC_FOLDER, JSHELTER_FPD_PATH
 
-def get_page_traffic(page: str, options: dict, compact: bool) -> tuple[list, dict]:
-    """Function to load page network traffic. Return observed network traffic and saves FPD report into
-       traffic folder"""
+def get_page_traffic(page: str, options: dict, compact: bool) -> list:
+    """Function to load page network traffic. Returns observed network traffic and 
+       saves FPD report into traffic folder"""
 
     print("Visiting page", page)
 
     # Set-up JShelter FPD -- custom version, all shields are off, fpd is set on by default
-    jshelter_fpd_path = "./addons/jshelter_0_19_custom_fpd.crx"
 
-    download_path = os.path.abspath("./traffic")
+    download_path = os.path.abspath(TRAFFIC_FOLDER)
 
     # Set up Chrome options and enable DevTools Protocol
     chrome_options = Options()
@@ -55,7 +53,7 @@ def get_page_traffic(page: str, options: dict, compact: bool) -> tuple[list, dic
     })
 
 
-    chrome_options.add_extension(jshelter_fpd_path)
+    chrome_options.add_extension(JSHELTER_FPD_PATH)
 
     # Allow logging of network traffic
     chrome_options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
@@ -106,7 +104,7 @@ def get_network_requests(logs: dict, compact: bool) -> list[dict]:
             if "devtools://" in log["params"]["request"]["url"] or\
                "devtools://" in log["params"]["documentURL"]:
                 continue
-            
+
             # Skip chrome internal pages
             if "chrome://" in log["params"]["request"]["url"] or\
                "chrome://" in log["params"]["documentURL"]:
@@ -133,7 +131,8 @@ def get_network_requests(logs: dict, compact: bool) -> list[dict]:
                 # Only compact-ize if stack is present
                 if tmp_initiator.get("stack"):
 
-                    # Recursively go until you find the first non-empty non-JShelter parent and save only them
+                    # Recursively go until you find the first non-empty non-JShelter
+                    # parent and save only them
                     tmp_log["initiator"] = first_valid_parent(tmp_initiator["stack"])
                     tmp_log["initiator"]["type"] = tmp_initiator["type"]
                 else:

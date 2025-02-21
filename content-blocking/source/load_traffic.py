@@ -30,6 +30,8 @@ from source.dns_observer import DNSSniffer
 
 def load_traffic(options: dict, compact: bool) -> None:
     """Function to observe traffic on given list of pages"""
+    print("Loading the traffic...")
+
     pages = load_pages()
 
     # Counter to name files like 1.json, 2.json... to prevent issues
@@ -56,6 +58,8 @@ def load_traffic(options: dict, compact: bool) -> None:
         save_traffic(traffic, page, str(filename_counter), "http")
         match_jshelter_fpd(filename_counter)
         filename_counter += 1
+    
+    print("Traffic loading finished!")
 
 def save_traffic(traffic: dict, pagename: str, filename: str, traffic_type: str) -> None:
     """Function to append observed traffic to the traffic file"""
@@ -64,7 +68,7 @@ def save_traffic(traffic: dict, pagename: str, filename: str, traffic_type: str)
         if traffic_type == "dns":
             f = open(TRAFFIC_FOLDER + filename + '_dns' + '.json', 'w', encoding='utf-8')
         else: # http
-            f = open(TRAFFIC_FOLDER + filename + '.json', 'w', encoding='utf-8')
+            f = open(TRAFFIC_FOLDER + filename + '_network.json', 'w', encoding='utf-8')
         # Format the dictionary as json
         jsoned_traffic = json.dumps(traffic, indent=4)
         f.write(jsoned_traffic)
@@ -76,7 +80,7 @@ def save_traffic(traffic: dict, pagename: str, filename: str, traffic_type: str)
         exit(FILE_ERROR)
 
 def match_jshelter_fpd(filename: int) -> None:
-    """Function to match the downloaded JSHelter FPD report to its results"""
+    """Function to match the downloaded JSHelter FPD report file to its results"""
 
     # Since JShelter exports name of the page, it will be the only file in traffic folder
     # with different name compared to the others. 

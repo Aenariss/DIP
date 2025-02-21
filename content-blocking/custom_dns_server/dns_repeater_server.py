@@ -110,7 +110,7 @@ $TTL    604800
 ;
 @       IN      NS      ns.{domain}.
 ns      IN      A       127.0.0.1
-"""     
+"""
         # Iterate over all subdomains and edit zonefile accordingly
         for (subdomain, record) in all_subdomains.items():
 
