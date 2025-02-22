@@ -37,13 +37,15 @@ When launching the file with any load options -- that is ``--load`` or ``--load-
 Sometimes when launching selenium (usually when launching for the first time in PC session), it may take too long to load and thus
 skip enabling devtools. In such cases, please restart the program and it should work as intended. 
 
+JShelter FPD sometimes has a race condition which causes fingerprinting to not work on some pages. 
+
 When saving the results, if a result with a given name already exists, it will be overwritten.
 
 In case of an error, a copy of your hosts file is preserved in this folder. If no error happened, it is removed automatically.
 
-Sometimes, Selenium may take some time to load, be patient for a few seconds please.
-
 Windows may not work with custom DNS server, it prefers ipv6 dns resolution -> disable ipv6 in adapter options.
+
+To get a list of pages to populate the page_list.txt, try Tranco (not ideal, contains CDNs, DNS servers...) or https://dataforseo.com/free-seo-stats/top-1000-websites
 
 After stopping the custom DNS server, DNS settings are reset -> it is set to automatic DHCP assignment. This means you lose your own settings.
 
@@ -61,3 +63,9 @@ The workflow is as follows:
 3. For each observed resource, a new request will be simulated for which observed DNS replies will be repeated.
 4. The page with the simulated resource requests will be visited for each extension/browser specified in ``config.json``.
 5. The results (containing the blocked requests) will be saved in ``results/log.txt``.
+
+Problems:
+Loading is absolutely terrible -> Selenium crashes absolutely unpredictably, gets stuck on a page, after launch works perfectly... please be patient and prepare for multiple relaunches (dont forget to save your traffic each time cuz folder is deleted!) and
+then setting all the traffic fragments together
+
+Have fun setting up the position to click to enable developer mode, because Selenium will not help you, if oyu try to manipulate chrome://extensions, it just shuts down. Have fun!

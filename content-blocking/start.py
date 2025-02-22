@@ -155,6 +155,9 @@ def start() -> None:
     # add method to calculate number of blocks if a certain resource was blocked
     # needs to go recursively to allow transitivity
 
+    # Error parsing facebook, selenium doesnt quit and FPD logs are empty
+    # Doesnt always load FPD
+
     return
 
     # Squash DNS records and contacted pages from all observations together

@@ -46,6 +46,10 @@ def load_traffic(options: dict, compact: bool) -> None:
         # Get the HTTP(S) traffic associated with a page
         try:
             traffic = get_page_traffic(page, options, compact)
+            if traffic == {}:
+                sniffer.stop_sniffer()
+                filename_counter += 1
+                continue
         except Exception:
             # Page may not load correctly - skip it and continue
             sniffer.stop_sniffer()
@@ -58,7 +62,7 @@ def load_traffic(options: dict, compact: bool) -> None:
         save_traffic(traffic, page, str(filename_counter), "http")
         match_jshelter_fpd(filename_counter)
         filename_counter += 1
-    
+
     print("Traffic loading finished!")
 
 def save_traffic(traffic: dict, pagename: str, filename: str, traffic_type: str) -> None:
@@ -89,16 +93,24 @@ def match_jshelter_fpd(filename: int) -> None:
     files = [f for f in os.listdir(TRAFFIC_FOLDER) if not re.match(r'^[0-9]', f)]
 
     # There should be 2 non-matching files -> .empty and fpd file, find the fpd file
-    found_file = ""
+    # However, sometimes, the download may trigger twice -> delete other non-matching
+    found_files = []
     for file in files:
         if file != ".empty":
-            found_file = file
+            found_files.append(file)
 
-    if found_file == "":
+    if not found_files:
         print("Can't match FP file to its corresponding traffic files!")
         print("Did you put something in ./traffic/ folder? Or visited bad page...")
         exit(GENERAL_ERROR)
 
-    original_filepath = TRAFFIC_FOLDER + found_file
+    original_filepath = TRAFFIC_FOLDER + found_files[0]
     new_filename = TRAFFIC_FOLDER + str(filename) + "_fp.json"
     os.rename(original_filepath, new_filename)
+
+    # Remove original renamed file so that it is not deleted
+    found_files.remove(found_files[0])
+
+    # Delete other found files
+    for file in found_files:
+        os.remove(TRAFFIC_FOLDER + file)
