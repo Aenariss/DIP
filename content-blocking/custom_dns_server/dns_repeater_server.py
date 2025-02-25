@@ -18,6 +18,8 @@
 
 # Default modules
 import os
+import tarfile
+import time
 
 # 3rd-party modules
 import docker
@@ -40,6 +42,8 @@ class DNSRepeater:
             exit(GENERAL_ERROR)
 
         # Initialize the container
+        self.tar_file = "zones.tar"
+        self.tar_path = DNS_CONFIGURATION_FOLDER + self.tar_file
         self.container = self.__setup_container()
         self.original_config = None
 
@@ -51,6 +55,15 @@ class DNSRepeater:
         self.prepare_config(dns_records)
 
         print("Custom DNS server initialized...")
+
+    def untar_file(self) -> None:
+        """Method to untar the tmp tarfile in the docker"""
+
+        print("Extracting zone files inside the container...")
+
+        untar_command = "docker exec {container} tar -xf /etc/bind/{tar_file} -C /etc/bind"\
+            .format(tar_file=self.tar_file, container=DNS_CONTAINER_NAME)
+        os.system(untar_command)
 
     def prepare_config(self, dns_records: dict) -> None:
         """Method to create zone files in the configuration folder
@@ -67,6 +80,9 @@ zone "{domain}" {{
 }};
 """
 
+        tar = tarfile.open(self.tar_path, mode='w')
+        already_present = {}
+
         # Prepare new zone for each record
         for (key, value) in dns_records.items():
             zone_file = self.generate_zonefile(key, value)
@@ -79,14 +95,23 @@ zone "{domain}" {{
 
             # Include it in named.conf
             with open(named_conf_file, 'a', encoding='utf-8', newline="") as f:
-                zone_config = zone_config_template.format(domain=key)
-                f.write(zone_config)
-                f.write("\n")
 
-            # Copy the file into the docker
-            cp_command = "docker cp {zone_file} {container}:/etc/bind/{file}"\
-                .format(zone_file=zone_file_path, file=key, container=DNS_CONTAINER_NAME)
-            os.system(cp_command)
+                if not already_present.get(key):
+                    already_present[key] = True
+                    zone_config = zone_config_template.format(domain=key)
+                    f.write(zone_config)
+                    f.write("\n")
+
+            # Add the zone to tmp tarfile
+            tar.add(zone_file_path, arcname=os.path.basename(zone_file_path))
+
+        tar.close()
+
+        # Copy the file into the docker
+        cp_command = "docker cp {tar_file} {container}:/etc/bind/{file}"\
+            .format(tar_file=self.tar_path, file=self.tar_file, container=DNS_CONTAINER_NAME)
+        os.system(cp_command)
+
 
         # Copy the named.conf into the docker
         cp_command = "docker cp {named_conf_file} {container}:/etc/bind/{file}"\
@@ -109,7 +134,7 @@ $TTL    604800
                      604800 )       ; Negative Cache TTL
 ;
 @       IN      NS      ns.{domain}.
-ns      IN      A       127.0.0.1
+ns       IN      A      127.0.0.1
 """
         # Iterate over all subdomains and edit zonefile accordingly
         for (subdomain, record) in all_subdomains.items():
@@ -126,6 +151,7 @@ ns      IN      A       127.0.0.1
             first_a = record.get("A", [])
             if first_a:
                 first_a = first_a[0]
+                #zone_file += f"ns       IN      A       {first_a}\n"
                 if domain == subdomain:
                     zone_file += f"@       IN      A       {first_a}\n"
                 else:
@@ -160,24 +186,15 @@ ns      IN      A       127.0.0.1
         if not container:
 
         # If not, create it
-        # docker run -it --name=bind9 --restart=always --publish 53:53/udp --publish 53:53/tcp\
-        #  --publish 127.0.0.1:953:953/tcp --volume /etc/bind --volume /var/cache/bind\
-        #  --volume /var/lib/bind --volume /var/log internetsystemsconsortium/bind9:9.20
+        # docker run --name=bind9 --publish 53:53/udp --publish 53:53/tcp\
+        # internetsystemsconsortium/bind9:9.20
 
             client.containers.run(image=DNS_CONTAINER_IMAGE,
                                 name=DNS_CONTAINER_NAME,
                                 detach=True,
-                                restart_policy={"Name": "always"},
                                 ports={
                                     "53/udp": 53,
                                     "53/tcp": 53,
-                                    "953/tcp": "127.0.0.1:953"
-                                },
-                                volumes={
-                                    "/etc/bind": {"bind": "/etc/bind", "mode": "rw"},
-                                    "/var/cache/bind": {"bind": "/var/cache/bind", "mode": "rw"},
-                                    "/var/lib/bind": {"bind": "/var/lib/bind", "mode": "rw"},
-                                    "/var/log": {"bind": "/var/log", "mode": "rw"}
                                 }
             )
 
@@ -201,6 +218,10 @@ ns      IN      A       127.0.0.1
         container = self.get_container()
         container.start()
 
+        self.untar_file()
+
+        self.restart()
+
     def stop(self) -> None:
         """Method to stop repeating DNS responses -> Stop the docker and restore DNS settings"""
         print("Stopping the custom DNS server...")
@@ -210,19 +231,19 @@ ns      IN      A       127.0.0.1
         c += 'Set-DnsClientServerAddress -InterfaceAlias \"Ethernet\" -ResetServerAddresses"'
         os.system(c)
 
-        # Remove all zone files from folder and docker
+        # Remove all zone files and tar from folder and docker
         print("Removing existing zone files...")
         for file in os.listdir(DNS_CONFIGURATION_FOLDER):
             filename = DNS_CONFIGURATION_FOLDER + file
 
-            # Remove file form docker
-            cp_command = "docker exec {container} rm -rf /etc/bind/{file}"\
-                .format(file=file, container=DNS_CONTAINER_NAME)
-            os.system(cp_command)
-
             # Remove existing file except for the placeholder file
             if os.path.isfile(filename) and file != ".empty" and file != "named.conf":
                 os.remove(filename)
+
+        # Remove all settings form docker
+        rm_command = "docker exec {container} rm -rf /etc/bind/*"\
+            .format(container=DNS_CONTAINER_NAME)
+        os.system(rm_command)
 
         # Restore original named.conf
         named_conf_file = DNS_CONFIGURATION_FOLDER + "named.conf"
@@ -242,4 +263,5 @@ ns      IN      A       127.0.0.1
         """Method to restart the container"""
         container = self.get_container()
         container.stop()
+        time.sleep(0.5)
         container.start()

@@ -21,7 +21,7 @@ import os
 
 # Custom modules
 from source.constants import GENERAL_ERROR
-from source.file_loading import load_json, get_traffic_files
+from source.file_manipulation import load_json, get_traffic_files
 
 ANONYMOUS_CALLER = "<anonymous>"
 

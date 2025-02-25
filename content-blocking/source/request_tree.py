@@ -21,7 +21,8 @@ import os
 import sys
 
 # Custom modules
-from source.file_loading import load_json, get_traffic_files
+from source.file_manipulation import load_json, get_traffic_files
+from source.utils import print_progress
 
 ANONYMOUS_CALLERS = "<anonymous>"
 
@@ -113,12 +114,12 @@ class RequestNode:
                 return
             self.parent = parent_node
 
-    def get_all_children(self) -> list[str]:
+    def get_all_children_resources(self) -> list[str]:
         """Method to return all children resources of the node -> even transitively.
            Also contains the node resource itself.
            Returns the children resources ordered by time they were logged.
         """
-        children = self.recursion_get_all_children()
+        children = self.get_all_children_nodes()
 
         # Sort the children by time, only do it once here
         children.sort(key=lambda child: int(child.get_time()))
@@ -130,10 +131,6 @@ class RequestNode:
     def get_all_children_nodes(self) -> list["RequestNode"]:
         """Method to return all children nodes of the current node -> even transitive
            Also contains the node itself"""
-        return self.recursion_get_all_children()
-
-    def recursion_get_all_children(self) -> list["RequestNode"]:
-        """Internal method to return all children of the node -- even transitively"""
         children = []
 
         # Add the current node resource
@@ -142,7 +139,7 @@ class RequestNode:
         for child in self.get_children():
 
             # Add the transitive children (children of children...)
-            transitive_children = child.recursion_get_all_children()
+            transitive_children = child.get_all_children_nodes()
             children.extend(transitive_children)
 
         return children
@@ -156,7 +153,96 @@ class RequestTree:
         """Method to retunr the root of the tree (initial page URL)"""
         return self.root_node
 
-    def number_of_blocked(self, start: RequestNode=None) -> int:
+    def total_fpd_attempts(self, start: RequestNode=None) -> int:
+        """Method to calculate total number of FPD attempts observed in a tree"""
+        if start is None:
+            start = self.get_root()
+
+        fpd_attempts = 0
+
+        # Get fpd attempts of starting node
+        fpd_attempts += start.get_fp_attempts()
+
+        # Repeat for all children
+        for child in start.get_children():
+            fpd_attempts += self.total_fpd_attempts(start=child)
+
+        return fpd_attempts
+
+    def first_blocked_fpd_attempts(self, start: RequestNode=None) -> int:
+        """Method to calculate number of FPD attempts blocked at first blocked parent"""
+        if start is None:
+            start = self.get_root()
+
+        blocked_attempts = 0
+
+        # If starting node is blocked, return it as an array
+        if start.is_blocked():
+            blocked_attempts = start.get_fp_attempts()
+            return blocked_attempts
+
+        # If start was not blocked, repeat for all children
+        for child in start.get_children():
+            blocked_attempts += self.first_blocked_fpd_attempts(start=child)
+
+        return blocked_attempts
+
+    def total_blocked_fpd_attempts(self, start: RequestNode=None) -> int:
+        """Method to calculate total number of FPD attempts blockedd in a tree"""
+        if start is None:
+            start = self.get_root()
+
+        blocked_attempts = 0
+
+        # If starting node is blocked, return it as an array
+        if start.is_blocked():
+            blocked_attempts += start.get_fp_attempts()
+
+        # If start was not blocked, repeat for all children
+        for child in start.get_children():
+            blocked_attempts += self.total_blocked_fpd_attempts(start=child)
+
+        return blocked_attempts
+
+    def blocked_at_levels(self, start: RequestNode=None, level: int=1) -> list[int]:
+        """Method to return levels at which first block in chain was observed"""
+        if start is None:
+            start = self.get_root()
+
+        blocked = []
+
+        # If starting node is blocked, return it as an array
+        if start.is_blocked():
+            blocked.append(level)
+            return blocked
+
+        # If start was not blocked, repeat for all children
+        for child in start.get_children():
+            blocked_at_level = self.blocked_at_levels(start=child, level=level+1)
+            blocked.extend(blocked_at_level)
+
+        return blocked
+
+    def firstly_blocked(self, start: RequestNode=None) -> list[RequestNode]:
+        """Method to compute how many of resources would have been blocked in 
+        reality by counting only the first in a tree blocked. Returns list of such
+        resources"""
+        if start is None:
+            start = self.get_root()
+
+        blocked = []
+
+        # If starting node is blocked, return it as an array
+        if start.is_blocked():
+            blocked.append(start)
+            return blocked
+
+        # If start was not blocked, repeat for all children
+        for child in start.get_children():
+            blocked.extend(self.firstly_blocked(start=child))
+        return blocked
+
+    def total_blocked(self, start: RequestNode=None) -> int:
         """Method to compute the total number of blocked resources in a tree"""
         if start is None:
             start = self.get_root()
@@ -169,55 +255,18 @@ class RequestTree:
 
         # For each child calculate how many of its children are blocked
         for child in start.get_children():
-            blocked = blocked + self.number_of_blocked(start=child)
+            blocked = blocked + self.total_blocked(start=child)
 
         return blocked
 
-    def calculate_blocked(self, blocked_resources: list[str]) -> tuple[int, int]:
-        """Method to calculate how many resources in total would have been blocked, had the
-        resoureces present in blocked_resources would have been blocked.
-        Returns the number of requests that would have been blocked and number of 
-        fp attempts blocked by association"""
-
-        # First, block only parent nodes to obtain how many would be observed without request chain
-        for resource in blocked_resources:
-            nodes_with_resource = self.find_nodes(resource)
-            for node in nodes_with_resource:
-
-                # Mark initial node as blocked
-                node.block()
-        
-        # Obtain number of blocked requests in the tree with no recursive blocking
-        blocked_not_transitive = self.number_of_blocked()
-
-        # Second, block all child nodes transitively if parent is blocked
-        # Go through each blocked resource and check if its present in the tree
-        for resource in blocked_resources:
-            nodes_with_resource = self.find_nodes(resource)
-            for parent_node in nodes_with_resource:
-
-                # Mark initial node as blocked
-                parent_node.block()
-
-                # Also mark all children as blocked
-                child_nodes = parent_node.get_all_children_nodes()
-                for node in child_nodes:
-                    node.block()
-
-        # Go through the whole tree and calculate numer of blocked
-        blocked_resources = self.number_of_blocked()
-
-        return blocked_resources, blocked_not_transitive, 0
-
-
-    def get_all_requests(self, start_node: RequestNode=None) -> list[RequestNode]:
+    def get_all_requests(self, start_node: RequestNode=None) -> list[str]:
         """Method to recursively get all resources requested on a page"""
 
         resource_list = []
         if not start_node:
             start_node = self.get_root()
 
-        children = start_node.get_all_children()
+        children = start_node.get_all_children_resources()
         resource_list.extend(children)
 
         return resource_list
@@ -282,7 +331,7 @@ class RequestTree:
         return result
 
 def fix_missing_parent(observed_traffic: dict, resource: dict, tree: RequestTree,\
-                       previous_main_node: RequestNode, node: RequestNode, fp_attempts: int) -> None:
+                    previous_main_node: RequestNode, node: RequestNode, fp_attempts: int) -> None:
     """Fix initiator when child resource was loaded before the parent, should rarely happen"""
 
     # Find every parent resource that requested the resource
@@ -335,9 +384,9 @@ def construct_tree(tree: RequestTree, resource_counter: int, node: RequestNode,\
         root_fp_attempts = node.get_fp_attempts()
 
         # Get number of anonymous attempts
-        anonymous_attempts = fp_attempts.get(ANONYMOUS_CALLERS)
+        anonymous_attempts = fp_attempts.get(ANONYMOUS_CALLERS, 0)
         node.set_fp_attempts(root_fp_attempts + anonymous_attempts)
-        
+
     else:
         # Check if the request is not to a page already in the tree ->
         # It is unnecessary for the analysis and makes results weird.
@@ -346,14 +395,15 @@ def construct_tree(tree: RequestTree, resource_counter: int, node: RequestNode,\
 
             global_level.add_child(node)
             return tree, global_level
-        
+
         global_level.add_child(node)
 
     global_level = node
     return tree, global_level
 
 def reconstruct_tree(observed_traffic: dict, fp_attempts: dict) -> RequestTree:
-    """Function to reconstruct initiator chains from observed traffic and assign FP attempts to each page"""
+    """Function to reconstruct initiator chains from observed traffic and assign FP
+    attempts to each page"""
     tree = None
     requests_count = len(observed_traffic)
     global_level = None
@@ -363,7 +413,7 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict) -> RequestTree:
         current_resource = resource["requested_resource"]
         # If time is unavailable, use maximum
         time = resource.get("time", sys.maxsize)
-        
+
         # Either get number of observed FP attempts or 0 if none observed
         resource_fp_attempts = fp_attempts.get(current_resource, 0)
 
@@ -375,7 +425,8 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict) -> RequestTree:
         if resource["requested_by"] == current_resource and\
             resource["initiator"]["type"] == "other":
 
-            tree, global_level = construct_tree(tree, resource_number, node, global_level, fp_attempts)
+            tree, global_level = construct_tree(tree, resource_number,\
+                                        node, global_level, fp_attempts)
 
         else:
             # Direct initiator
@@ -385,13 +436,15 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict) -> RequestTree:
                 parent_nodes = tree.find_nodes(resource["initiator"]["url"])
 
                 # Parent not known should not happen often (child resource loaded before parent)
-                # May happen with some preflights -- I'll skip those since they will be already loaded anyway
+                # May happen with some preflights -- I'll skip those since
+                # they will be already loaded anyway
                 if not parent_nodes:
                     if resource["initiator"]["type"] == "preflight":
                         continue
 
                     # If it was not preflight, it's strange, but try to fix it
-                    fix_missing_parent(observed_traffic, resource, tree, global_level, node, resource_fp_attempts)
+                    fix_missing_parent(observed_traffic, resource, tree,\
+                                       global_level, node, resource_fp_attempts)
 
                 # Parent present, add it as their child
                 else:
@@ -445,7 +498,6 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict) -> RequestTree:
                 else:
                     global_level.add_child(node)
 
-    tree.print_tree(printing=True)
     return tree
 
 def look_for_specific_initiator(traffic: dict, find: str) -> dict:
@@ -469,7 +521,11 @@ def create_trees(fp_attempts: dict) -> dict:
     # Load all HTTP(S) traffic files from `./traffic/` folder
     network_files = get_traffic_files("network")
 
+    total = len(network_files)
+    progress_printer = print_progress(total, "Creating request trees...")
+
     for file in network_files:
+        progress_printer()
         traffic = load_json(file)
 
         # obtain pure filename to be used as key for both FP files and resource tree
@@ -478,9 +534,6 @@ def create_trees(fp_attempts: dict) -> dict:
         # obtain corresponding FP attempts, in case of an error (should never happen)
         # return an empty dict with no FP attempts observed
         corresponding_fp_attempts = fp_attempts.get(pure_filename, {})
-
-        if not corresponding_fp_attempts:
-            print("Could not find corresponding FP log for file! How did this happen?", file)
 
         trees[pure_filename] = reconstruct_tree(traffic, corresponding_fp_attempts)
 

@@ -27,8 +27,10 @@ from source.load_traffic import load_traffic
 from source.fp_attempts import parse_fp
 from source.request_tree import create_trees
 from source.test_page_server import start_testing_server, stop_testing_server
+from source.file_manipulation import save_json, get_traffic_files, load_json
 from source.visit_test_server import visit_test_server
-from source.calculate_blocked import calculate_blocked
+from source.analysis import analyse, get_unresolved
+from source.utils import print_progress
 from custom_dns_server.dns_repeater_server import DNSRepeater
 
 # Argument parsing
@@ -36,11 +38,13 @@ parser = argparse.ArgumentParser(prog="Content-blocking evaluation",
                                  description="Evaluates given content-blocking\
                                       tools on given pages")
 parser.add_argument('-l', '--load', action="store_true",
-                    help="Whether to observe network traffic anew using page_list.txt")
+        help="Whether to observe network traffic anew using page_list.txt")
 parser.add_argument('-c', '--compact', action="store_true",
-            help="Whether to store only required data during load (does not change functionality)")
+        help="Whether to store only required data during load (does not change functionality)")
 parser.add_argument('-lo', '--load-only', action="store_true",
-            help="Whether to only observe network traffic anew using page_list.txt and stop")
+        help="Whether to only observe network traffic anew using page_list.txt and stop")
+parser.add_argument('-ao', '--analysis-only', action="store_true",
+        help="Whether to use skip using local server to calculate blocked requests and use logs")
 args = parser.parse_args()
 
 def initialize_folders() -> dict:
@@ -95,19 +99,23 @@ def squash_dns_records() -> dict:
     """Function to squash all observed DNS records into one list"""
 
     # Get all DNS files in the ./traffic/ folder
-    dns_files = [file for file in os.listdir(TRAFFIC_FOLDER) if "_dns" in file]
+    dns_files = get_traffic_files('dns')
 
     squashed_records = {}
 
     # Get records from each file and squash them together
     for file in dns_files:
-        file = TRAFFIC_FOLDER + file
         with open(file, 'r', encoding='utf-8') as f:
             dns_json = json.load(f)
-            for (key, value) in dns_json.items():
+            for (domain, value) in dns_json.items():
 
-                # Should a key be observed multiple times, overwrite it (should be cached)
-                squashed_records[key] = value
+                # Should a key be observed multiple times, append it overwrite it (should be cached)
+                if not squashed_records.get(domain):
+                    squashed_records[domain] = value
+                else:
+                    for (subdomain, records) in dns_json[domain].items():
+                        squashed_records[domain][subdomain] = records
+
     return squashed_records
 
 def squash_tree_resources(request_trees: dict) -> list:
@@ -151,39 +159,73 @@ def start() -> None:
     # Create initiator tree-like chains from data in the ./traffic/ folder
     request_trees = create_trees(fp_attempts)
 
-    # Now each resource has associated number of FP attempts,
-    # add method to calculate number of blocks if a certain resource was blocked
-    # needs to go recursively to allow transitivity
+    console_output = None
 
-    # Error parsing facebook, selenium doesnt quit and FPD logs are empty
-    # Doesnt always load FPD
+    if not args.analysis_only:
 
-    return
+        # Squash DNS records and contacted pages from all observations together
+        dns_records = squash_dns_records()
+        resource_list = squash_tree_resources(request_trees)
 
-    # Squash DNS records and contacted pages from all observations together
-    dns_records = squash_dns_records()
-    resource_list = squash_tree_resources(request_trees)
+        # Start the DNS server and set it as prefered to repeat responses
+        dns_repeater = DNSRepeater(dns_records)
 
-    # Start the DNS server and set it as prefered to repeat responses
-    dns_repeater = DNSRepeater(dns_records)
-    dns_repeater.start()
+        dns_repeater.start()
 
-    # Start the testing server as another process for each logged page traffic
-    server = start_testing_server(resource_list)
+        # Start the testing server as another process for each logged page traffic
+        server = start_testing_server(resource_list)
 
-    # Visit the server and log the console outputs
-    console_output = visit_test_server({}, resource_list)
+        try:
+            # Visit the server and log the console outputs
+            console_output = visit_test_server({}, resource_list)
 
-    # Calculate how many requests in the chain would have been blocked
-    for (key, _) in request_trees.items():
-        blocked_total, blocked_not_transitive, blocked_fp_attempts = calculate_blocked(request_trees[key], console_output)
-        save_results(request_trees[key], key, request_trees[key].get_root().get_resource(),\
-                     blocked_total, blocked_not_transitive, blocked_fp_attempts)
+            save_console_log(console_output)
+        finally:
+            stop_testing_server(server)
+            dns_repeater.stop()
 
-    stop_testing_server(server)
-    dns_repeater.stop()
+    # Always check no SOCKET_ERRORS happened
+    if not console_output:
+        console_output = load_json(RESULTS_FOLDER + "console_log.json")
+
+    # Filter out trees with incomplete DNS records
+    unresolved_requests = get_unresolved(console_output)
+    progress_printer = print_progress(len(request_trees), "Removing unresolved DNSes...")
+    request_trees = filter_out_unresolved(request_trees, unresolved_requests, progress_printer)
+
+
+    # Analyse each tree
+    progress_printer = print_progress(len(request_trees), "Analysing blocked pages...")
+    all_results = []
+    for (_, tree) in request_trees.items():
+        progress_printer()
+        analysis_results = analyse(tree, console_output)
+        all_results.append(analysis_results)
 
     _ = input("Press a key to exit...\n")
+    return
+
+    # Calculate overall average numbers of blocks because of antitracking tool compard to none
+    # - Skip 0  attempts cuz that scuffs the results
+
+def filter_out_unresolved(request_trees: dict, unresolved_requests: list, printer: callable)\
+    -> dict:
+    okay_trees = {}
+    for (key, tree) in request_trees.items():
+        printer()
+        nodes_with_resource = tree.get_all_requests()
+        okay_trees[key] = tree
+        for unresolved in unresolved_requests:
+            if unresolved in nodes_with_resource:
+                del okay_trees[key]
+                break
+    return okay_trees
+
+def save_console_log(console_output) -> None:
+    if not os.path.exists(RESULTS_FOLDER):
+        print("Creating the results folder...")
+        os.makedirs(RESULTS_FOLDER)
+    save_json(console_output, RESULTS_FOLDER + "console_log.json")
 
 def save_results(tree: dict, filename: str, pagename: str, blocked_total: int, \
                  blocked_not_transitive: int, blocked_fp_attempts: int) -> None:

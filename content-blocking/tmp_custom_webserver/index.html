@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chained Script Loading</title>
     <script type="module" src="script1.js"></script>
+    <script>
+        async function fetching() {
+            await fetch("http://ghfghdfdsfdf45645fgddfg.cz/", { mode: 'no-cors' }).then((response) => console.log("fetched!"));
+        }
+        fetching();
+    </script>
 </head>
 <body>
     <img src="http://www.stud.fit.vutbr.cz/~xfiala61/itw/resources/Gandalf-Fan-art-ian-mckellen-2759203-1422-976.jpg" alt="aa" width="500" height="600">

@@ -69,3 +69,6 @@ Loading is absolutely terrible -> Selenium crashes absolutely unpredictably, get
 then setting all the traffic fragments together
 
 Have fun setting up the position to click to enable developer mode, because Selenium will not help you, if oyu try to manipulate chrome://extensions, it just shuts down. Have fun!
+
+
+JShelter FPD sometimes has a race condition which causes fingerprinting to not work on some pages. 

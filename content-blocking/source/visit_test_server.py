@@ -60,7 +60,7 @@ def visit_test_server(client_config: dict, requests: list) -> list[dict]:
 
     # Wait until all resources load (total_requests). Timeout in 2 mins if still waiting
     # Resources still waiting for will be considered fetched
-    WebDriverWait(driver, 120).until(check_all_resources_loaded)
+    WebDriverWait(driver, 3600).until(check_all_resources_loaded)
 
     # Get the console output
     logs = driver.get_log("browser")

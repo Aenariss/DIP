@@ -1,4 +1,4 @@
-# file_loading.py
+# file_manipulation.py
 # Provides function for data loading such as from page_list.txt
 # Copyright (C) 2025 Vojtěch Fiala
 #
@@ -44,6 +44,15 @@ def load_json(path) -> dict:
         print("Error reading the content of " + path + "! Is the file present?")
         exit(FILE_ERROR)
 
+def save_json(json_file, path) -> None:
+    """Function to save a given JSON file"""
+    try:
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(json_file, f, ensure_ascii=False, indent=4)
+    except OSError:
+        print("Error saving json into " + path + "!")
+        exit(FILE_ERROR)
+
 def get_traffic_files(traffic_type: str) -> list:
     """Function to obtain filenames for given type of file from the ./traffic/ folder
     
@@ -52,7 +61,7 @@ def get_traffic_files(traffic_type: str) -> list:
 
     # Types of traffic files to ignore
     regex = [r"fp", r"dns", r"network"]
-    
+
     if traffic_type in regex:
         # Remove given type of files from the regex to obtain them
         regex.remove(traffic_type)

@@ -23,7 +23,7 @@ import os
 import re
 
 # Custom modules
-from source.file_loading import load_pages
+from source.file_manipulation import load_pages
 from source.page_http_traffic import get_page_traffic
 from source.constants import TRAFFIC_FOLDER, FILE_ERROR, GENERAL_ERROR
 from source.dns_observer import DNSSniffer

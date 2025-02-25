@@ -8,39 +8,83 @@
         total_resources = parseInt(total_resources);
         let loaded = 0;
         let blocked = 0;
+        const BATCH_SIZE = 50;  // Limit how many are handled at once
+        const TIMEOUT = 2500;  // Timeout in milliseconds (2.5 seconds)
 
-        async function testResourceLoading() {
-            for (let url of resources) {
-                var success;
+        // Function to check if an error is related to a socket reset or similar network issues
+        function isSocketError(error) {
+            // Add additional checks here for socket-specific error messages or types if needed
+            return error.message.includes('ERR_SOCKET_NOT_CONNECTED');
+        }
+
+        async function fetchResource(url) {
+            // need to repeat multiple times because Selenium keeps crashing and is overall absolutely terrible
+            const maxRetries = 1000;
+            let attempt = 0;
+            let success = false;
+
+
+            while (attempt <= maxRetries && !success) {
+                let timeoutId = 0
                 try {
-                    let response = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+                    attempt++;
+
+                    // Create an AbortController and signal for timeout
+                    const controller = new AbortController();
+                    const signal = controller.signal;
+
+                    // Set timeout to abort the fetch request
+                    timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
+
+                    // Perform the fetch request with the timeout signal
+                    let response = await fetch(url, { mode: 'no-cors', signal });
+
+                    // Clear the timeout if fetch is successful
+                    clearTimeout(timeoutId);
+
                     if (response.ok || response.type === 'opaque') {
                         loaded++;
+                        updateResults();  // Update results for successful load
                         success = true;
-                        total_resources--;
+                    } else {
+                        throw new Error();
+                    }
+
+                } catch (error) {
+                    clearTimeout(timeoutId); // Clear the timeout in case of an error
+
+                    if (isSocketError(error) && attempt <= maxRetries) {
+                        continue;
+                    } else if (error.name === 'AbortError') {
+                        console.error(error)
+                        updateResults();
+                        break;
                     } else {
                         blocked++;
-                        success = false;
-                        total_resources--;
+                        updateResults();  // Update results for blocked/failed request
+                        break;  // Stop retrying if it's not a socket error or timeout
                     }
-                } catch (error) {
-                    blocked++;
-                    success = false;
-                    total_resources--;
                 }
-                updateResults(success, url);
             }
         }
 
-        function updateResults(response, url) {
+        // Async generator that yields batches of URLs
+        async function* batchGenerator(array, batchSize) {
+            for (let i = 0; i < array.length; i += batchSize) {
+                yield array.slice(i, i + batchSize);
+            }
+        }
+
+        async function testResourceLoading() {
+            for await (const batch of batchGenerator(resources, BATCH_SIZE)) {
+                await Promise.all(batch.map(url => fetchResource(url)));  // Fetch in parallel (limited)
+            }
+        }
+
+        function updateResults() {
             document.getElementById('loaded-count').innerText = loaded;
             document.getElementById('blocked-count').innerText = blocked;
-            document.getElementById('waiting-count').innerText = total_resources;
-            
-            let status = response ?  "Loaded" : "Not loaded";
-
-            let status_update =  url + "... " + status + '<br>'
-            document.getElementById('current_resource').innerHTML += status_update;
+            document.getElementById('waiting-count').innerText = total_resources - (loaded + blocked);;
         }
 
         function overrideFetch() {
@@ -84,7 +128,5 @@
     <p>Fetches waiting for:<span id="waiting-count">0</span></p>
     <p>Loaded resources: <span id="loaded-count">0</span></p>
     <p>Blocked resources: <span id="blocked-count">0</span></p>
-
-    <p>Resource status: <p id="current_resource"></p></p>
 </body>
 </html>
