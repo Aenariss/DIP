@@ -7,7 +7,16 @@
     <script type="module" src="script1.js"></script>
     <script>
         async function fetching() {
-            await fetch("http://ghfghdfdsfdf45645fgddfg.cz/", { mode: 'no-cors' }).then((response) => console.log("fetched!"));
+            const TIMEOUT = 3000
+            const controller = new AbortController();
+            const signal = controller.signal;
+
+            // Set timeout to abort the fetch request
+            timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
+
+            // Perform the fetch request with the timeout signal
+            let response = await fetch("http://dbctv.cz", { mode: 'no-cors', signal });
+
         }
         fetching();
     </script>

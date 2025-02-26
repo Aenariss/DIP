@@ -18,6 +18,7 @@
 
 # custom modules
 from source.request_tree import RequestTree, RequestNode
+from source.utils import print_progress
 
 def calculate_directly_blocked(request_tree: RequestTree, blocked_resources: list[str])\
      -> tuple[RequestTree, int]:
@@ -89,10 +90,9 @@ def calculate_blocked_who_brings_children(really_blocked_nodes: list[RequestNode
 
 
 def simulate_blocking(request_tree: RequestTree, blocked_resources: list[str]) -> dict:
-    """Method to calculate how many resources in total would have been blocked, had the
-    resoureces present in blocked_resources would have been blocked.
-    Returns the number of requests that would have been blocked and number of 
-    fp attempts blocked by association"""
+    """Defines and computes various data about each page with simulated content-blocking
+    tool present.
+    """
 
     # Get number of total resources
     total_requested = len(request_tree.get_all_requests())
@@ -133,18 +133,6 @@ def simulate_blocking(request_tree: RequestTree, blocked_resources: list[str]) -
         "average_block_level": average_block_level # Average level at which resource was blocked
     }
 
-def analyse(request_tree: RequestTree, console_output: list[dict]) -> dict:
-    """Function to calculate how many requests in a tree would be blocked 
-    if given resources were blocked and how many fp attempts that would prevent"""
-
-    # Obtain URLs of resources that were blocked by client
-    client_blocked_pages = parse_console_logs(console_output)
-
-    # Calculate what would have happened hat the content blocking tool been present
-    results = simulate_blocking(request_tree, client_blocked_pages)
-
-    return results
-
 def get_unresolved(console_output: list[dict]) -> list[str]:
     unresolved_error = "ERR_NAME_NOT_RESOLVED"
     sock_error = "ERR_SOCKET_NOT_CONNECTED"
@@ -176,8 +164,22 @@ def get_unresolved(console_output: list[dict]) -> list[str]:
 
     return unresolved_pages
 
-def parse_console_logs(console_output: list[dict]) -> list[str]:
+def filter_out_unresolved(request_trees: dict, unresolved_requests: list, printer: callable)\
+    -> dict:
+    """Function to filter out trees containing unresolved results"""
+    okay_trees = {}
+    for (key, tree) in request_trees.items():
+        printer()
+        nodes_with_resource = tree.get_all_requests()
+        okay_trees[key] = tree
+        for unresolved in unresolved_requests:
+            if unresolved in nodes_with_resource:
+                del okay_trees[key]
+                break
+    return okay_trees
 
+def parse_console_logs(console_output: list[dict]) -> list[str]:
+    """Function to parse obtained console logs"""
     # Works for chrome - check it works for firefox!
     blocked_by_client_error = "ERR_BLOCKED_BY_CLIENT"
     error_length = len(blocked_by_client_error)
@@ -206,3 +208,88 @@ def parse_console_logs(console_output: list[dict]) -> list[str]:
                 continue
 
     return blocked_pages
+
+def parse_partial_results(results: list[dict]) -> dict:
+    """Calculates finished results from a collection of partial results by
+    computing the sum and/or average of each value
+    
+    "total_fpd_attempts": Total FPD attempts observed across all pages (SUM, AVG)
+    "direct_fpd_blocked": Number of FPD attempts blocked directly (SUM, AVG)
+    "total_fpd_blocked": Total number of FPD attempts blocked across all pages (SUM, AVG)
+    "transitive_fpd_blocked": Number of FPD attempts blocked transitively (SUM, AVG)
+    "directly_blocked": Number of resources blocked directly (SUM, AVG)
+    "total_requested": Number of all rsources requested (SUM, AVG)
+    "total_blocked": Number of all resources blocked (even transtiviely) (SUM, AVG)
+    "blocked_transitively": Number of resources blocked transitively (SUM, AVG)
+    "blocked_with_children": N of blocked resources which brought kids (SUM, AVG)
+    "average_block_level": Average level at which resource was blocked (AVG)
+    """
+
+    sub_result = {
+        "n_of_results": 0,
+        "sum": 0,
+        "average": 0
+    }
+
+    # Initialize completed results, needs to use same keys as in simulate_blocking() function
+    total_results = {
+        "total_fpd_attempts": dict(sub_result),
+        "direct_fpd_blocked": dict(sub_result),
+        "total_fpd_blocked": dict(sub_result),
+        "transitive_fpd_blocked": dict(sub_result),
+        "directly_blocked": dict(sub_result),
+        "total_requested": dict(sub_result),
+        "total_blocked": dict(sub_result),
+        "blocked_transitively": dict(sub_result),
+        "blocked_with_children": dict(sub_result),
+        "average_block_level": dict(sub_result) 
+    }
+
+    # Go through all partial results
+    for result in results:
+
+        # For each result, go through each sub-result
+        for (sub_result, total_result) in total_results.items():
+
+            # Update total_results accordingly
+            total_result["n_of_results"] += 1
+            total_result["sum"] += result[sub_result]
+
+    # Now each result has sum value stored in together with nubmer of results - calculate averages
+    for (_, total_result) in total_results.items():
+        total_result["average"] = total_result["sum"] / total_result["n_of_results"]
+
+    return total_results
+
+def analyse_tree(request_tree: RequestTree, console_output: list[dict]) -> dict:
+    """Function to calculate how many requests in a tree would be blocked 
+    if given resources were blocked and how many fp attempts that would prevent"""
+
+    # Obtain URLs of resources that were blocked by client
+    client_blocked_pages = parse_console_logs(console_output)
+
+    # Calculate what would have happened hat the content blocking tool been present
+    results = simulate_blocking(request_tree, client_blocked_pages)
+
+    return results
+
+def analyse_trees(request_trees: dict, console_output: list[dict]) -> list:
+    """Function to launch analysis on each tree and calculate average values 
+    of each observed property"""
+
+    # Filter out trees with incomplete DNS records Selenium might have screwed up
+    unresolved_requests = get_unresolved(console_output)
+    progress_printer = print_progress(len(request_trees), "Removing trees with unresolved DNS...")
+    request_trees = filter_out_unresolved(request_trees, unresolved_requests, progress_printer)
+
+    # Analyse each tree
+    progress_printer = print_progress(len(request_trees), "Analysing blocked pages...")
+    all_results = []
+    for (_, tree) in request_trees.items():
+        progress_printer()
+        analysis_results = analyse_tree(tree, console_output)
+        all_results.append(analysis_results)
+
+    all_results = parse_partial_results(all_results)
+
+    return all_results

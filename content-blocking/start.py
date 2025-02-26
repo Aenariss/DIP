@@ -22,15 +22,17 @@ import os
 import json
 
 # Custom modules
-from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, OPTIONS_FILE, RESULTS_FOLDER
+from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, RESULTS_FOLDER, USER_CONFIG_FILE
+from source.constants import PAGE_WAIT_TIME, BROWSER_TYPE, USING_CUSTOM_BROWSER, TESTED_ADDONS
+from source.constants import BROWSER_VERSION, EXPERIMENT_NAME, LOGGING_BROWSER_VERSION
+from source.constants import CUSTOM_BROWSER_BINARY
 from source.load_traffic import load_traffic
 from source.fp_attempts import parse_fp
 from source.request_tree import create_trees
 from source.test_page_server import start_testing_server, stop_testing_server
 from source.file_manipulation import save_json, get_traffic_files, load_json
 from source.visit_test_server import visit_test_server
-from source.analysis import analyse, get_unresolved
-from source.utils import print_progress
+from source.analysis import analyse_trees
 from custom_dns_server.dns_repeater_server import DNSRepeater
 
 # Argument parsing
@@ -47,15 +49,59 @@ parser.add_argument('-ao', '--analysis-only', action="store_true",
         help="Whether to use skip using local server to calculate blocked requests and use logs")
 args = parser.parse_args()
 
+def valid_options(options: dict) -> bool:
+    """Function to check if given user configuration is valid"""
+    browser_type = options.get(BROWSER_TYPE)
+    page_wait_time = options.get(PAGE_WAIT_TIME)
+    custom_browser = options.get(USING_CUSTOM_BROWSER)
+    tested_tool = options.get(TESTED_ADDONS)
+    browser_version = options.get(BROWSER_VERSION)
+    experiment_name = options.get(EXPERIMENT_NAME)
+    logging_browser_version = options.get(LOGGING_BROWSER_VERSION)
+    custom_browser_binary = options.get(CUSTOM_BROWSER_BINARY, "")
+
+    result = [True]
+
+    # The fields need to be present
+    if not browser_version or not experiment_name or not logging_browser_version\
+        or custom_browser is None:
+        result.append(False)
+
+    # Browser type supported is only chrome and firefox
+    if browser_type not in ["chrome", "firefox"]:
+        result.append(False)
+
+    # Page wait time must be a valid number
+    if not str(page_wait_time).isnumeric():
+        result.append(False)
+
+    # Custom browser specifies whether something else chromium or firefox-based is used
+    # Can only be 1 or 0
+    if custom_browser not in [0,1]:
+        result.append(False)
+
+    # If custom browser is being used, check binary is not empty
+    if custom_browser == 1:
+        if custom_browser_binary == "":
+            result.append(False)
+
+    # At least 1 test tool must be specified, must be in an array
+    if not tested_tool:
+        result.append(False)
+
+    # If at least one setting was false, return False
+    return all(result)
+
 def initialize_folders() -> dict:
     """Function to prepare folderes to be used during evaluation. Returns user options."""
 
     # Load options for the evaluation
-    if not os.path.exists(OPTIONS_FILE):
-        print("Could not load ``options.json`` file!")
+    options = load_json(USER_CONFIG_FILE)
 
-    with open(OPTIONS_FILE, encoding="utf-8") as f:
-        options = json.load(f)
+    if not valid_options(options):
+        print("Invalid config.json content!")
+        print("Consult README.md for proper configuration setting")
+        exit(GENERAL_ERROR)
 
     # If load or load-only was specified, prepare folders accordingly
     if args.load or args.load_only:
@@ -130,17 +176,13 @@ def squash_tree_resources(request_trees: dict) -> list:
     resources = list(dict.fromkeys(resources))
     return resources
 
-def start() -> None:
-    """Main driver function"""
-
+def obtain_data(options: dict) -> bool:
+    """Function to load traffic and save it in traffic folder"""
     # Check user arguments were correct
     if args.load:
         if args.load_only:
             print("You can only use one argument! Either '--load' or '--load-only'!")
             exit(GENERAL_ERROR)
-
-    # Load user options
-    options = initialize_folders()
 
     # If load or load-only was specified, go through the specified pages and observe traffic
     if args.load or args.load_only:
@@ -148,8 +190,11 @@ def start() -> None:
 
         # if load-only was specified, don't do anything else and quit
         if args.load_only:
-            return
+            return True
+    return False
 
+def parse_traffic() -> dict:
+    """Function to parse the traffic logs and return request trees"""
     # Check traffic folder is present and not empty
     check_traffic_folder()
 
@@ -159,8 +204,27 @@ def start() -> None:
     # Create initiator tree-like chains from data in the ./traffic/ folder
     request_trees = create_trees(fp_attempts)
 
+    return request_trees
+
+def obtain_simulation_results(request_trees: dict, options: dict) -> list[dict]:
+    """Function to simulate what would happen had the tool been present during the visits.
+
+    Creates a test server with all the logged resources and visits it to measure how many
+    will a tool block. 
+    
+    Saves the result into results/experiment_name. In case results for this experiment are already
+    present (running an analysis on previously obtained results), loads it. Returns the result."""
+
+    def save_console_log(console_output, experiment_name) -> None:
+        """Function to save the console logs into results/ folder"""
+        if not os.path.exists(RESULTS_FOLDER):
+            print("Creating the results folder...")
+            os.makedirs(RESULTS_FOLDER)
+        save_json(console_output, RESULTS_FOLDER + experiment_name + ".json")
+
     console_output = None
 
+    # Only do this if --analysis-only was not specified.
     if not args.analysis_only:
 
         # Squash DNS records and contacted pages from all observations together
@@ -177,82 +241,56 @@ def start() -> None:
 
         try:
             # Visit the server and log the console outputs
-            console_output = visit_test_server({}, resource_list)
+            console_output = visit_test_server(options, resource_list)
 
-            save_console_log(console_output)
+            save_console_log(console_output, options.get(EXPERIMENT_NAME) + "_log")
+        except Exception as e:
+            print(e)
+            print("Error while simulating data!")
+            exit(GENERAL_ERROR)
         finally:
             stop_testing_server(server)
             dns_repeater.stop()
 
-    # Always check no SOCKET_ERRORS happened
+    # In case --analysis-only was specified, load the saved output.
     if not console_output:
-        console_output = load_json(RESULTS_FOLDER + "console_log.json")
+        console_output = load_json(RESULTS_FOLDER + options.get(EXPERIMENT_NAME) + "_log.json")
 
-    # Filter out trees with incomplete DNS records
-    unresolved_requests = get_unresolved(console_output)
-    progress_printer = print_progress(len(request_trees), "Removing unresolved DNSes...")
-    request_trees = filter_out_unresolved(request_trees, unresolved_requests, progress_printer)
+    return console_output
 
+def analyze_results(request_trees: dict, console_output: list[dict], options: dict) -> None:
+    """Function to analyze logged request trees based on obtained console output, logging
+    the results into a file in ./results/ folder."""
 
-    # Analyse each tree
-    progress_printer = print_progress(len(request_trees), "Analysing blocked pages...")
-    all_results = []
-    for (_, tree) in request_trees.items():
-        progress_printer()
-        analysis_results = analyse(tree, console_output)
-        all_results.append(analysis_results)
+    results = analyse_trees(request_trees, console_output)
+    save_json(results, RESULTS_FOLDER + options.get(EXPERIMENT_NAME) + "_results.json")
 
-    _ = input("Press a key to exit...\n")
-    return
+def start() -> None:
+    """Main driver function"""
 
-    # Calculate overall average numbers of blocks because of antitracking tool compard to none
-    # - Skip 0  attempts cuz that scuffs the results
+    # Load user options
+    options = initialize_folders()
 
-def filter_out_unresolved(request_trees: dict, unresolved_requests: list, printer: callable)\
-    -> dict:
-    okay_trees = {}
-    for (key, tree) in request_trees.items():
-        printer()
-        nodes_with_resource = tree.get_all_requests()
-        okay_trees[key] = tree
-        for unresolved in unresolved_requests:
-            if unresolved in nodes_with_resource:
-                del okay_trees[key]
-                break
-    return okay_trees
+    # Generate traffic
+    obtain_only = obtain_data(options)
+    if obtain_only:
+        return
 
-def save_console_log(console_output) -> None:
-    if not os.path.exists(RESULTS_FOLDER):
-        print("Creating the results folder...")
-        os.makedirs(RESULTS_FOLDER)
-    save_json(console_output, RESULTS_FOLDER + "console_log.json")
+    # Generate request trees from traffic data
+    request_trees = parse_traffic()
 
-def save_results(tree: dict, filename: str, pagename: str, blocked_total: int, \
-                 blocked_not_transitive: int, blocked_fp_attempts: int) -> None:
-    """Function to save results for a given page to a file"""
+    print(f"Starting experiment {options.get(EXPERIMENT_NAME)}...")
 
-    # Try creating results folder if it doesnt exist
-    if not os.path.exists(RESULTS_FOLDER):
-        print("Creating the results folder...")
-        os.makedirs(RESULTS_FOLDER)
+    # Obtain console output of experiment
+    console_output = obtain_simulation_results(request_trees, options)
 
-    tree_image = tree.print_tree()
+    print("Experiment data succesfully loaded...")
 
-    result_dict = {"page":pagename, "blocked_resources_total": blocked_total,\
-                    "blocked_resources_without_transitivity": blocked_not_transitive,\
-                    "blocked_fp_attempts":blocked_fp_attempts}
-    result_file_path = RESULTS_FOLDER + filename
-    tree_file = RESULTS_FOLDER + filename.split('.')[0] + "_tree" + ".json"
+    # Analyze what would have happened to the request tree had a content-blocking tool been present
+    analyze_results(request_trees, console_output, options)
 
-    with open(result_file_path, 'w', encoding='utf-8') as f:
-        jsoned_traffic = json.dumps(result_dict, indent=4)
-        f.write(jsoned_traffic)
-        f.close()
-
-    with open(tree_file, 'w', encoding='utf-8') as f:
-        f.write(tree_image)
-        f.close()
-
+    print(f"Finished experiment {options.get(EXPERIMENT_NAME)}...")
+    input("Press a key to exit...\n")
 
 if __name__ == "__main__":
     start()

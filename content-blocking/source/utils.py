@@ -19,9 +19,9 @@
 def print_progress(total: int, message: str, limiter=10) -> None:
     """Function utilizing closure mechanism to print progress during for loops
     Total serves as the maximum progress
-    Limiter defines when the progress is printed -> 10 means 0%, 10%, 20%... so on"""
+    Limiter defines when the progress is printed by modulo -> 10 means 0%, 10%, 20%... so on"""
     progress_counter = 0
-    previous_progress = 0
+    previous_progress = -1
 
     def show_progress():
         """Function to return as the closure"""

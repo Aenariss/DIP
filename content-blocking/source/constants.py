@@ -1,5 +1,5 @@
 # constants.py
-# Specifies constants
+# Specifies constants and user-defined options
 # Copyright (C) 2025 Vojtěch Fiala
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,18 +25,27 @@ TRAFFIC_FOLDER = "./traffic/"
 RESULTS_FOLDER = "./results/"
 DNS_CONFIGURATION_FOLDER = "./custom_dns_server/server_configuration/"
 ADDON_FOLDER = "./addons/"
+CHROME_ADDONS_FOLDER = ADDON_FOLDER + "chrome/"
+FIREFOX_ADDONS_FOLDER = ADDON_FOLDER + "firefox/"
 
 # Paths - files
 PAGES_FILE = "page_list.txt"
-OPTIONS_FILE = "config.json"
-JSHELTER_FPD_PATH = ADDON_FOLDER + "jshelter_0_19_custom_fpd.crx"
+USER_CONFIG_FILE = "./config.json"
+
+JSHELTER_FPD_PATH = CHROME_ADDONS_FOLDER + "jshelter_0_19_custom_fpd.crx"
 
 # Paths - system
 HOSTS_FILE = "C:/Windows/System32/drivers/etc/hosts"
 
-
-# User option strings from options.json
+# User option strings from config.json
 PAGE_WAIT_TIME = "page_wait_time"
+BROWSER_TYPE = "browser_type"
+BROWSER_VERSION = "browser_version"
+USING_CUSTOM_BROWSER = "using_custom_browser"
+CUSTOM_BROWSER_BINARY = "custom_browser_binary"
+TESTED_ADDONS = "tested_addons"
+EXPERIMENT_NAME = "experiment_name"
+LOGGING_BROWSER_VERSION = "logging_browser_version"
 
 # DNS server docker container name
 DNS_CONTAINER_NAME = "bind9"

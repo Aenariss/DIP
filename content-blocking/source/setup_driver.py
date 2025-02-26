@@ -20,20 +20,53 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
-def setup_driver(config: dict) -> webdriver:
+from source.constants import BROWSER_TYPE, BROWSER_VERSION, USING_CUSTOM_BROWSER, TESTED_ADDONS
+from source.constants import CHROME_ADDONS_FOLDER, FIREFOX_ADDONS_FOLDER, GENERAL_ERROR
 
-    extension_path = "./addons/ad_block_plus_4_12_0.crx"
+def setup_driver(options: dict) -> webdriver.Chrome | webdriver.Firefox:
+    """Function to setup the driver depeneding on the specified browser"""
+    browser_type = options.get(BROWSER_TYPE)
+    # Setting up for Chrome
+    if browser_type == "chrome":
+        return setup_chrome(options)
 
-    # Set up Chrome options and enable DevTools Protocol
-    chrome_options = Options()
-    chrome_options.add_argument("--remote-debugging-port=9222")
-    chrome_options.add_argument("auto-open-devtools-for-tabs")
-    chrome_options.add_argument("--enable-javascript")
+    if browser_type == "firefox":
+        return setup_firefox(options)
 
-    chrome_options.add_extension(extension_path)
+def setup_chrome(options: dict) -> webdriver.Chrome:
+    """Function to setup driver for chrome-based browser"""
 
-    chrome_options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
+    # Check if we're using custom browser
+    if options.get(USING_CUSTOM_BROWSER):
+        # tbd
+        return None
+    else:
+        chrome_options = Options()
+        chrome_options.add_argument("--remote-debugging-port=9222")
+        chrome_options.add_argument("--enable-javascript")
+        chrome_options.browser_version = options.get(BROWSER_VERSION)
 
-    service = Service()
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-    return driver
+        # Go through all specified extensions and add them
+        try:
+            for extension in options.get(TESTED_ADDONS):
+                chrome_options.add_extension(CHROME_ADDONS_FOLDER + extension)
+        except Exception:
+            print(f"Error loading extension {extension}. Is it present in {CHROME_ADDONS_FOLDER}?")
+            exit(GENERAL_ERROR)
+
+        # Set logging capabilities
+        chrome_options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
+
+        service = Service()
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        return driver
+
+def setup_firefox(options: dict) -> webdriver.Firefox:
+    """Function to setup driver for firefox-based browser"""
+
+    # Check if we're using custom browser
+    if options.get(USING_CUSTOM_BROWSER):
+        # tbd
+        return None
+    else:
+        return None

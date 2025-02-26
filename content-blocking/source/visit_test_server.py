@@ -37,7 +37,7 @@ def visit_test_server(client_config: dict, requests: list) -> list[dict]:
     # total number of all resources to check if selenium can leave the page
     total_requests = len(requests)
 
-    def check_all_resources_loaded(driver: webdriver):
+    def check_all_resources_loaded(driver: webdriver.Chrome | webdriver.Firefox):
         """Function to be used as a callback to check if the page has fetched all resources"""
 
         # Get window object with the status and check if it loaded all
@@ -58,7 +58,7 @@ def visit_test_server(client_config: dict, requests: list) -> list[dict]:
     # Visit the test server
     driver.get(TEST_SERVER_IP)
 
-    # Wait until all resources load (total_requests). Timeout in 2 mins if still waiting
+    # Wait until all resources load (total_requests). Timeout in 1 hour if still waiting
     # Resources still waiting for will be considered fetched
     WebDriverWait(driver, 3600).until(check_all_resources_loaded)
 

@@ -29,14 +29,13 @@ import pyautogui
 
 # Custom modules
 from source.constants import PAGE_WAIT_TIME, TRAFFIC_FOLDER, JSHELTER_FPD_PATH
+from source.constants import LOGGING_BROWSER_VERSION
 
 def get_page_traffic(page: str, options: dict, compact: bool) -> list:
     """Function to load page network traffic. Returns observed network traffic and 
        saves FPD report into traffic folder"""
 
     print("Visiting page", page)
-
-    # Set-up JShelter FPD -- custom version, all shields are off, fpd is set on by default
 
     download_path = os.path.abspath(TRAFFIC_FOLDER)
 
@@ -45,14 +44,14 @@ def get_page_traffic(page: str, options: dict, compact: bool) -> list:
     chrome_options.add_argument("--remote-debugging-port=9222")
     chrome_options.add_argument("--enable-javascript")
     chrome_options.add_argument('--enable-extensions')
-    chrome_options.browser_version = "stable"
+    chrome_options.browser_version = options.get(LOGGING_BROWSER_VERSION)
     chrome_options.add_experimental_option('prefs', {
         'download.default_directory': download_path,
         'download.prompt_for_download': False,
         'download.directory_upgrade': True
     })
 
-
+    # Set-up JShelter FPD -- custom version, all shields are off, fpd is set on by default
     chrome_options.add_extension(JSHELTER_FPD_PATH)
 
     # Allow logging of network traffic
