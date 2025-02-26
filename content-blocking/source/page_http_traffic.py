@@ -24,8 +24,10 @@ import time
 # 3rd-party modules
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options
-import pyautogui
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
 # Custom modules
 from source.constants import PAGE_WAIT_TIME, TRAFFIC_FOLDER, JSHELTER_FPD_PATH
@@ -63,6 +65,9 @@ def get_page_traffic(page: str, options: dict, compact: bool) -> list:
     # Wait at most this time (seconds) for a page to load
     driver.set_page_load_timeout(10)
 
+    # Sleep to allow JShelter to load
+    time.sleep(2)
+
     # Enable developer mode so that FP can function
     enable_developer_mode(driver)
 
@@ -86,19 +91,36 @@ def get_page_traffic(page: str, options: dict, compact: bool) -> list:
 
     return network_logs
 
-def enable_developer_mode(driver) -> None:
+def enable_developer_mode(driver: webdriver.Chrome | webdriver.Firefox) -> None:
     """Function to enable developer mode inside Selenium"""
     driver.get("chrome://extensions")
 
-    time.sleep(0.5)
+    # Everything is inside <extensions-manager></>
+    WebDriverWait(driver, 20).until(EC.presence_of_element_located(
+        (By.TAG_NAME, "extensions-manager")
+    ))
 
-    pyautogui.click(1250, 225)
+    # Everything is inside shadow root inside <extensions-amanger>
+    shadow_root = driver.find_element(By.TAG_NAME, "extensions-manager").shadow_root
 
-    time.sleep(0.5)
+    # Get toolbar inside shadow root
+    toolbar = shadow_root.find_element(By.ID, "toolbar")
 
-    pyautogui.click(370, 275)
+    # The button is in <cr-toggle id="devMode"> inside toolbar shadowroot
+    toolbar_shadow = toolbar.shadow_root 
+    dev_mode_button = toolbar_shadow.find_element(By.ID, "devMode")
 
-    time.sleep(0.5)
+    # Click the button to enable devmode
+    dev_mode_button.click()
+
+    # Now click update to apply the devmode
+    # Update button is inside toolbar shadow as <cr-button id="updateNow">
+    update_button = toolbar_shadow.find_element(By.ID, "updateNow")
+
+    # Click using JavaScript since normal .click() doesnt work
+    driver.execute_script("arguments[0].click();", update_button)
+
+    time.sleep(1)
 
 def get_network_requests(logs: dict, compact: bool) -> list[dict]:
     """Function to extract only the initiator chain from the observed data"""
