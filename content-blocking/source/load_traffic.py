@@ -45,8 +45,8 @@ def load_traffic(options: dict, compact: bool) -> None:
 
         # Get the HTTP(S) traffic associated with a page
         try:
-            traffic = get_page_traffic(page, options, compact)
-            if traffic == {}:
+            network_traffic = get_page_traffic(page, options, compact)
+            if network_traffic == {}:
                 sniffer.stop_sniffer()
                 filename_counter += 1
                 continue
@@ -58,12 +58,52 @@ def load_traffic(options: dict, compact: bool) -> None:
         sniffer.stop_sniffer()
         dns_traffic = sniffer.get_traffic()
 
+        # Check all traffic has its DNS logged
+        if not is_dns_valid(dns_traffic, network_traffic):
+            # If not, do not save it
+            print(f"Could not correctly sniff DNS traffic for {page}! Skipping...")
+            continue
+
         save_traffic(dns_traffic, page, str(filename_counter), "dns")
-        save_traffic(traffic, page, str(filename_counter), "http")
+        save_traffic(network_traffic, page, str(filename_counter), "http")
         match_jshelter_fpd(filename_counter)
         filename_counter += 1
 
     print("Traffic loading finished!")
+
+def get_address(resource: str) -> str:
+    """Function to obtain only the page address from URL"""
+    matched = re.search(r"\/\/(.*?)\/", resource)
+    if matched:
+        return matched.group(1)
+
+    return ""
+
+def is_dns_valid(dns_traffic: dict, network_traffic: dict) -> bool:
+    """Function to ensure all observed network resources have also its DNS logged"""
+    for resource in network_traffic:
+        requested_resource = resource["requested_resource"]
+        address = get_address(requested_resource)
+
+        # If empty address was returned, nothing was matched meaning an error
+        if address == "":
+            print("CDP format has probably changed! Fix load_traffic.py")
+            return False
+
+        split = address.split('.')
+        last_two = split[-2:]
+        rest = split[:-2]
+
+        # In case the page was like google.com, meaning no subdomains, use it all to check
+        if not rest:
+            rest = last_two
+
+        top_level = dns_traffic.get('.'.join(last_two), None)
+        if not top_level:
+            return False
+
+        subdomain = top_level.get('.'.join(rest), None)
+        return subdomain
 
 def save_traffic(traffic: dict, pagename: str, filename: str, traffic_type: str) -> None:
     """Function to append observed traffic to the traffic file"""

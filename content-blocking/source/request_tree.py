@@ -29,7 +29,7 @@ ANONYMOUS_CALLERS = "<anonymous>"
 class RequestNode:
     """Class representing each node in the request tree"""
     def __init__(self, time: str, resource: str,\
-                 children: list["RequestNode"]=None, fp_attempts: int=0) -> None:
+                 children: list["RequestNode"]=None, fp_attempts: dict={}) -> None:
         """Init method for setting up each instance"""
         self.resource = resource
         self.children = children
@@ -153,28 +153,29 @@ class RequestTree:
         """Method to retunr the root of the tree (initial page URL)"""
         return self.root_node
 
-    def total_fpd_attempts(self, start: RequestNode=None) -> int:
+    def total_fpd_attempts(self, start: RequestNode=None) -> dict:
         """Method to calculate total number of FPD attempts observed in a tree"""
         if start is None:
             start = self.get_root()
 
-        fpd_attempts = 0
+        fpd_attempts = {}
 
         # Get fpd attempts of starting node
-        fpd_attempts += start.get_fp_attempts()
+        fpd_attempts = add_substract_fp_attempts(start.get_fp_attempts(), fpd_attempts)
 
         # Repeat for all children
         for child in start.get_children():
-            fpd_attempts += self.total_fpd_attempts(start=child)
+            fpd_attempts = add_substract_fp_attempts(
+                self.total_fpd_attempts(start=child), fpd_attempts)
 
         return fpd_attempts
 
-    def first_blocked_fpd_attempts(self, start: RequestNode=None) -> int:
+    def first_blocked_fpd_attempts(self, start: RequestNode=None) -> dict:
         """Method to calculate number of FPD attempts blocked at first blocked parent"""
         if start is None:
             start = self.get_root()
 
-        blocked_attempts = 0
+        blocked_attempts = {}
 
         # If starting node is blocked, return it as an array
         if start.is_blocked():
@@ -183,24 +184,26 @@ class RequestTree:
 
         # If start was not blocked, repeat for all children
         for child in start.get_children():
-            blocked_attempts += self.first_blocked_fpd_attempts(start=child)
+            blocked_attempts = add_substract_fp_attempts(
+                self.first_blocked_fpd_attempts(start=child), blocked_attempts)
 
         return blocked_attempts
 
-    def total_blocked_fpd_attempts(self, start: RequestNode=None) -> int:
+    def total_blocked_fpd_attempts(self, start: RequestNode=None) -> dict:
         """Method to calculate total number of FPD attempts blockedd in a tree"""
         if start is None:
             start = self.get_root()
 
-        blocked_attempts = 0
+        blocked_attempts = {}
 
         # If starting node is blocked, return it as an array
         if start.is_blocked():
-            blocked_attempts += start.get_fp_attempts()
+            blocked_attempts = add_substract_fp_attempts(start.get_fp_attempts(), blocked_attempts)
 
         # If start was not blocked, repeat for all children
         for child in start.get_children():
-            blocked_attempts += self.total_blocked_fpd_attempts(start=child)
+            blocked_attempts = add_substract_fp_attempts(
+                self.total_blocked_fpd_attempts(start=child), blocked_attempts)
 
         return blocked_attempts
 
@@ -373,6 +376,36 @@ def join_call_frames(stack: dict) -> list[str]:
 
     return frames
 
+def add_substract_fp_attempts(callers1: dict, callers2: dict, add: bool=True) -> dict:
+    """Function to add together 2 dicts with observed FP attempts"""
+    new_dict = {}
+
+    # compatibility fix across analysis
+    if isinstance(callers1, int):
+        callers1 = {}
+
+    if isinstance(callers2, int):
+        callers2 = {}
+
+    # Get the dict that is longer (one of them may be empty)
+    longer_callers = callers1 if len(callers1.items()) >= len(callers2.items()) else callers2
+
+    # If one of the dicts is empty, return the other
+    if callers1 == {} or callers2 == {}:
+        return longer_callers
+
+    other_caller = callers1 if longer_callers == callers2 else callers2
+
+    # Else add them together (I assume both have correctly assigned values)
+
+    for (group_name, group_fp_attempts) in longer_callers.items():
+        other_attempts_count = other_caller.get(group_name)
+        if add:
+            new_dict[group_name] = group_fp_attempts + other_attempts_count
+        else:
+            new_dict[group_name] = group_fp_attempts - other_attempts_count
+    return new_dict
+
 def construct_tree(tree: RequestTree, resource_counter: int, node: RequestNode,\
                 global_level: RequestNode, fp_attempts: dict) -> tuple[RequestTree, RequestNode]:
     """Function to update global level and create a tree if it's the very first primary request"""
@@ -384,8 +417,12 @@ def construct_tree(tree: RequestTree, resource_counter: int, node: RequestNode,\
         root_fp_attempts = node.get_fp_attempts()
 
         # Get number of anonymous attempts
-        anonymous_attempts = fp_attempts.get(ANONYMOUS_CALLERS, 0)
-        node.set_fp_attempts(root_fp_attempts + anonymous_attempts)
+        anonymous_attempts = fp_attempts.get(ANONYMOUS_CALLERS, {})
+
+        # Combine the root FP attempts with anonymous caller FP attempts
+
+        new_total = add_substract_fp_attempts(root_fp_attempts, anonymous_attempts)
+        node.set_fp_attempts(new_total)
 
     else:
         # Check if the request is not to a page already in the tree ->
@@ -415,7 +452,7 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict) -> RequestTree:
         time = resource.get("time", sys.maxsize)
 
         # Either get number of observed FP attempts or 0 if none observed
-        resource_fp_attempts = fp_attempts.get(current_resource, 0)
+        resource_fp_attempts = fp_attempts.get(current_resource, {})
 
         # Create new Node object representing the resource
         node = RequestNode(time, current_resource, children=[], fp_attempts=resource_fp_attempts)

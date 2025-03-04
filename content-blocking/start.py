@@ -33,6 +33,7 @@ from source.test_page_server import start_testing_server, stop_testing_server
 from source.file_manipulation import save_json, get_traffic_files, load_json
 from source.visit_test_server import visit_test_server
 from source.analysis import analyse_trees
+from source.firewall import firewall_block_traffic, firewall_unblock_traffic
 from custom_dns_server.dns_repeater_server import DNSRepeater
 
 # Argument parsing
@@ -173,6 +174,7 @@ def squash_tree_resources(request_trees: dict) -> list:
         resources.extend(request_trees[key].get_all_requests())
 
     # Remove duplicates
+    # TODO: what would happen if I removed this?
     resources = list(dict.fromkeys(resources))
     return resources
 
@@ -211,6 +213,8 @@ def obtain_simulation_results(request_trees: dict, options: dict) -> list[dict]:
 
     Creates a test server with all the logged resources and visits it to measure how many
     will a tool block. 
+
+    Loads up custom DNS server running in docker. Temporarily changes network settings.
     
     Saves the result into results/experiment_name. In case results for this experiment are already
     present (running an analysis on previously obtained results), loads it. Returns the result."""
@@ -235,6 +239,7 @@ def obtain_simulation_results(request_trees: dict, options: dict) -> list[dict]:
         dns_repeater = DNSRepeater(dns_records)
 
         dns_repeater.start()
+        firewall_block_traffic()
 
         # Start the testing server as another process for each logged page traffic
         server = start_testing_server(resource_list)
@@ -250,6 +255,7 @@ def obtain_simulation_results(request_trees: dict, options: dict) -> list[dict]:
             exit(GENERAL_ERROR)
         finally:
             stop_testing_server(server)
+            firewall_unblock_traffic()
             dns_repeater.stop()
 
     # In case --analysis-only was specified, load the saved output.

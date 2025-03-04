@@ -140,6 +140,12 @@ def get_network_requests(logs: dict, compact: bool) -> list[dict]:
             if "chrome://" in log["params"]["request"]["url"] or\
                "chrome://" in log["params"]["documentURL"]:
                 continue
+
+            # Skip JShelter loaded data
+            if "https://[ff00::]/chrome-extension://" in log["params"]["request"]["url"] or\
+               "https://[ff00::]/chrome-extension://" in log["params"]["documentURL"]:
+                continue
+
             tmp_log = {}
 
             # Unimportant for evaluation? used only for checks

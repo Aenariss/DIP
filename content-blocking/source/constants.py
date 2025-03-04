@@ -25,12 +25,15 @@ TRAFFIC_FOLDER = "./traffic/"
 RESULTS_FOLDER = "./results/"
 DNS_CONFIGURATION_FOLDER = "./custom_dns_server/server_configuration/"
 ADDON_FOLDER = "./addons/"
+FPD_GROUP_FOLDER = "./source/fp_files/"
 CHROME_ADDONS_FOLDER = ADDON_FOLDER + "chrome/"
 FIREFOX_ADDONS_FOLDER = ADDON_FOLDER + "firefox/"
 
 # Paths - files
 PAGES_FILE = "page_list.txt"
 USER_CONFIG_FILE = "./config.json"
+FPD_GROUPS_FILE = FPD_GROUP_FOLDER + "groups.json"
+FPD_WRAPPERS_FILE = FPD_GROUP_FOLDER + "wrappers.json"
 
 JSHELTER_FPD_PATH = CHROME_ADDONS_FOLDER + "jshelter_0_19_custom_fpd.crx"
 

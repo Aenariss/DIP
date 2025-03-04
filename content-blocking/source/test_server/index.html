@@ -82,9 +82,8 @@
         }
 
         function updateResults() {
-            document.getElementById('loaded-count').innerText = loaded;
-            document.getElementById('blocked-count').innerText = blocked;
-            document.getElementById('waiting-count').innerText = total_resources - (loaded + blocked);;
+            document.getElementById('loaded-count').innerText = loaded + blocked;
+            document.getElementById('waiting-count').innerText = total_resources - (loaded + blocked);
         }
 
         function overrideFetch() {
@@ -126,7 +125,6 @@
 <body>
     <h1>Content Blocking Test</h1>
     <p>Fetches waiting for:<span id="waiting-count">0</span></p>
-    <p>Loaded resources: <span id="loaded-count">0</span></p>
-    <p>Blocked resources: <span id="blocked-count">0</span></p>
+    <p>Finished resources:<span id="loaded-count">0</span></p>
 </body>
 </html>

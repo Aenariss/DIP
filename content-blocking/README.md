@@ -10,6 +10,7 @@ The files in this folder are used to measure the effectivity of given content-bl
 - ``./results`` -- results of the evaluation, automatically created after starting the program
 - ``./scripts`` -- Powershell scripts to control OS-specific functionalities
 - ``./source`` -- source codes
+    - ``./source/fp_files`` -- JShelter files used for FPD purposes
 - ``./traffic`` -- observed traffic data, automatically created after starting the program
 
 Requirements to run:
@@ -28,9 +29,6 @@ How to start in case of manual launch:
 - In case you are launching for the first time, you need to setup docker (for custom DNS server): -> 
     - ``docker pull internetsystemsconsortium/bind9:9.20``
 
-    - ``Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 127.0.0.1`` 
-    - ``Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ResetServerAddresses`` to fix
-
 #### IMPORTANT
 When launching the file with any load options -- that is ``--load`` or ``--load-only``, **ALL RESULTS IN ./traffic/ FOLDER ARE DELETED**.
 
@@ -43,7 +41,7 @@ When saving the results, if a result with a given name already exists, it will b
 
 In case of an error, a copy of your hosts file is preserved in this folder. If no error happened, it is removed automatically.
 
-Windows may not work with custom DNS server, it prefers ipv6 dns resolution -> disable ipv6 in adapter options.
+Windows may not work with custom DNS server, it prefers ipv6 dns resolution -> disable ipv6 in adapter options: control panel -> Network -> View network status -> Change adapter settings -> Properties -> ipv6
 
 To get a list of pages to populate the page_list.txt, try Tranco (not ideal, contains CDNs, DNS servers...) or https://dataforseo.com/free-seo-stats/top-1000-websites
 
@@ -54,6 +52,7 @@ After stopping the custom DNS server, DNS settings are reset -> it is set to aut
     - use ``python ./start.py --load`` loads traffic on all pages specified in ``page_list.txt`` and afterwards uses it as a basis for evaluation.
     - use ``python ./start.py --load --compact`` (can also be used with --load-only) to lessen the space the traffic logs take.
     - use ``python ./start.py`` loads already logged traffic which is saved in ./traffic/ folder.
+
 
 
 The workflow is as follows:
@@ -67,8 +66,5 @@ The workflow is as follows:
 Problems:
 Loading is absolutely terrible -> Selenium crashes absolutely unpredictably, gets stuck on a page, after launch works perfectly... please be patient and prepare for multiple relaunches (dont forget to save your traffic each time cuz folder is deleted!) and
 then setting all the traffic fragments together
-
-Have fun setting up the position to click to enable developer mode, because Selenium will not help you, if oyu try to manipulate chrome://extensions, it just shuts down. Have fun!
-
 
 JShelter FPD sometimes has a race condition which causes fingerprinting to not work on some pages. 

@@ -17,7 +17,7 @@
 #
 
 # custom modules
-from source.request_tree import RequestTree, RequestNode
+from source.request_tree import RequestTree, RequestNode, add_substract_fp_attempts
 from source.utils import print_progress
 
 def calculate_directly_blocked(request_tree: RequestTree, blocked_resources: list[str])\
@@ -91,7 +91,8 @@ def calculate_blocked_who_brings_children(really_blocked_nodes: list[RequestNode
 
 def simulate_blocking(request_tree: RequestTree, blocked_resources: list[str]) -> dict:
     """Defines and computes various data about each page with simulated content-blocking
-    tool present.
+    tool present. Assumes the requested resources would have been the same with the 
+    content-blockin tool present.
     """
 
     # Get number of total resources
@@ -112,7 +113,8 @@ def simulate_blocking(request_tree: RequestTree, blocked_resources: list[str]) -
 
     direct_fpd_blocked = directly_blocked_tree.first_blocked_fpd_attempts()
     total_fpd_blocked = transitively_blocked_tree.total_blocked_fpd_attempts()
-    transitive_fpd_blocked = total_fpd_blocked - direct_fpd_blocked
+    transitive_fpd_blocked = add_substract_fp_attempts(total_fpd_blocked, direct_fpd_blocked,\
+                                                        add=False)
 
     average_block_levels = directly_blocked_tree.blocked_at_levels()
     average_block_level = 0 # Default value if no blocked requests
@@ -231,12 +233,18 @@ def parse_partial_results(results: list[dict]) -> dict:
         "average": 0
     }
 
+    sub_result_fpd = {
+        "n_of_results": 0,
+        "sum": {},
+        "average": {}
+    }
+
     # Initialize completed results, needs to use same keys as in simulate_blocking() function
     total_results = {
-        "total_fpd_attempts": dict(sub_result),
-        "direct_fpd_blocked": dict(sub_result),
-        "total_fpd_blocked": dict(sub_result),
-        "transitive_fpd_blocked": dict(sub_result),
+        "total_fpd_attempts": dict(sub_result_fpd),
+        "direct_fpd_blocked": dict(sub_result_fpd),
+        "total_fpd_blocked": dict(sub_result_fpd),
+        "transitive_fpd_blocked": dict(sub_result_fpd),
         "directly_blocked": dict(sub_result),
         "total_requested": dict(sub_result),
         "total_blocked": dict(sub_result),
@@ -253,11 +261,26 @@ def parse_partial_results(results: list[dict]) -> dict:
 
             # Update total_results accordingly
             total_result["n_of_results"] += 1
-            total_result["sum"] += result[sub_result]
+
+            # Check if its not fpd - we need to be special for that
+            if "fpd" in sub_result:
+                total_result["sum"] = add_substract_fp_attempts(total_result["sum"],\
+                                                                result[sub_result])
+            else:
+                total_result["sum"] += result[sub_result]
 
     # Now each result has sum value stored in together with nubmer of results - calculate averages
-    for (_, total_result) in total_results.items():
-        total_result["average"] = total_result["sum"] / total_result["n_of_results"]
+    for (sub_result, total_result) in total_results.items():
+
+        # If its FPD stat, I need to approach it by calculating each FP sub-attribute
+        if "fpd" in sub_result:
+
+            # Create deep copy of sum to divide by n_of_results
+            total_result["average"] = dict(total_result["sum"])
+            for (group_name, count) in total_result["average"].items():
+                total_result["average"][group_name] = count / total_result["n_of_results"]
+        else:
+            total_result["average"] = total_result["sum"] / total_result["n_of_results"]
 
     return total_results
 
