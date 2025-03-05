@@ -22,6 +22,7 @@ import os
 # Custom modules
 from source.constants import GENERAL_ERROR, FPD_WRAPPERS_FILE, FPD_GROUPS_FILE
 from source.file_manipulation import load_json, get_traffic_files
+from source.utils import print_progress
 
 ANONYMOUS_CALLER = "<anonymous>"
 TOP_LEVEL_FP_GROUP = "TOP_LEVEL"
@@ -47,7 +48,10 @@ def parse_fp() -> dict:
 
     fp_attempts = {}
 
+    progress_printer = print_progress(len(fp_files), "Loading FP attempts...")
+
     for file in fp_files:
+        progress_printer()
         pure_filename = os.path.basename(file)
         corresponding_network_file = get_network_file(pure_filename)
 

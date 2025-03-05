@@ -22,6 +22,7 @@ from selenium.webdriver.chrome.options import Options
 
 from source.constants import BROWSER_TYPE, BROWSER_VERSION, USING_CUSTOM_BROWSER, TESTED_ADDONS
 from source.constants import CHROME_ADDONS_FOLDER, FIREFOX_ADDONS_FOLDER, GENERAL_ERROR
+from source.constants import TIME_UNTIL_TIMEOUT, LOGGING_BROWSER_VERSION, JSHELTER_FPD_PATH
 
 def setup_driver(options: dict) -> webdriver.Chrome | webdriver.Firefox:
     """Function to setup the driver depeneding on the specified browser"""
@@ -70,3 +71,31 @@ def setup_firefox(options: dict) -> webdriver.Firefox:
         return None
     else:
         return None
+
+def setup_jshelter_custom_fpd(options: dict, download_path: str) -> webdriver.Chrome:
+
+    # Set up Chrome options and enable DevTools Protocol
+    chrome_options = Options()
+    chrome_options.add_argument("--remote-debugging-port=9222")
+    chrome_options.add_argument("--enable-javascript")
+    chrome_options.add_argument('--enable-extensions')
+    chrome_options.browser_version = options.get(LOGGING_BROWSER_VERSION)
+    chrome_options.add_experimental_option('prefs', {
+        'download.default_directory': download_path,
+        'download.prompt_for_download': False,
+        'download.directory_upgrade': True
+    })
+
+    # Set-up JShelter FPD -- custom version, all shields are off, fpd is set on by default
+    chrome_options.add_extension(JSHELTER_FPD_PATH)
+
+    # Allow logging of network traffic
+    chrome_options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
+
+    service = Service()
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+
+    # Wait at most this time (seconds) for a page to load
+    driver.set_page_load_timeout(options.get(TIME_UNTIL_TIMEOUT))
+
+    return driver

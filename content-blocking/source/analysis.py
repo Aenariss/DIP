@@ -20,6 +20,129 @@
 from source.request_tree import RequestTree, RequestNode, add_substract_fp_attempts
 from source.utils import print_progress
 
+def get_first_level_with_multiple_children(request_tree: RequestTree) -> list[RequestNode] | str:
+    """Function to obtain the first resource in a tree that brings multiple children."""
+    current_level = request_tree.get_root()
+
+    # If one of the root-level nodes was blocked, mark whole tree as blocked
+    if current_level.is_blocked():
+        return "full_block"
+
+    current_level_children = current_level.get_children()
+
+    # Go down until you either reach a node with 2 or more children or reach a leaf
+    while current_level_children:
+
+        # CCheck if there was >= 2 children
+        if len(current_level_children) >= 2:
+            return current_level_children
+
+        # Else go deeper in the tree
+        current_level = current_level_children[0]
+
+        if current_level.is_blocked():
+            return "partial_block"
+
+        current_level_children = current_level.get_children()
+
+    # If no node with children was found, there was only one tree with no blocks
+    return "no_block"
+
+def subtree_blocked_status(starting_node: RequestNode) -> str:
+    """Function to check if given subtree with root being the starting node
+    has either been partially blocked or not blocked at all"""
+
+    children = starting_node.get_children()
+
+
+    for child in children:
+
+        # If one of the children was blocked, the tree is partially blocked
+        if child.is_blocked():
+            return "partial_block"
+
+        # Go recurisvely through the rest of the tree, if a block is found, its also partial block
+        result_for_child = subtree_blocked_status(child)
+        if result_for_child == "partial_block":
+            return "partial_block"
+
+    return "no_block"
+
+
+def analyse_subtrees_blocking(request_tree: RequestTree) -> dict:
+    """Function to analyse requested chains inside the request tree. 
+    Starting point is first resource with >= 2 children. For each child on this
+    level, its own request tree is analysed to calculate fully blocked/partially
+    blocked and not blocked at all.
+
+    In case the tree was blocked at the root and the blocked resource has no (or only 1)
+    children, the total number of trees is 1.
+    
+    :param request_tree: Tree with directly blocked resources"""
+
+    fully_blocked = 0
+    partially_blocked = 0
+    not_blocked = 0
+    total_trees = 0
+
+    starting_points = get_first_level_with_multiple_children(request_tree)
+
+    # Obtained actual starting point
+    if isinstance(starting_points, list):
+        total_trees = len(starting_points)
+
+        # Go through all of the subtrees and check if there was some block
+        for starting_point in starting_points:
+
+            # Subtree was blocked at the root -> full block and continue
+            if starting_point.is_blocked():
+                fully_blocked += 1
+                continue
+
+            blocked_status = subtree_blocked_status(starting_point)
+            if blocked_status == "partial_block":
+                partially_blocked += 1
+            else:
+                not_blocked += 1
+
+    # There was some kind of blocking (or none at all) in the root tree
+    # So only 1 tree in total was observed
+    else:
+        total_trees = 1
+        if starting_points == "full_block":
+            fully_blocked += 1
+        elif starting_points == "partial_block":
+            partially_blocked += 1
+        elif starting_points == "no_block":
+            not_blocked += 1
+
+    return {
+        "fully_blocked": fully_blocked, 
+        "partially_blocked": partially_blocked,
+        "not_blocked": not_blocked,
+        "total_trees": total_trees
+    }
+
+def add_subtrees(subtrees1: dict, subtrees2: dict) -> dict:
+    """Function to add together numbers in subtrees1 and subtrees2
+    Used for subtrees blocking analysis"""
+
+    if subtrees1 == subtrees2 == {}:
+        print("Error during subtree analysis! Should never happen!")
+
+    # If one of them is empty (first iteration, nothing saved yet), return the other
+    if subtrees1 == {}:
+        return subtrees2
+    if subtrees2 == {}:
+        return subtrees1
+
+    added_dict = {}
+    for (key, _) in subtrees1.items():
+        first_dict_value = subtrees1[key]
+        second_dict_value = subtrees2[key]
+        added_dict[key] = first_dict_value + second_dict_value
+    return added_dict
+
 def calculate_directly_blocked(request_tree: RequestTree, blocked_resources: list[str])\
      -> tuple[RequestTree, int]:
     """Function to calculate number of requests blocked directly"""
@@ -63,9 +186,9 @@ def calculate_really_blocked(request_tree: RequestTree) -> list[RequestNode]:
     Calculates the first block nodes in a tree with direct requests alrdy marked as blocked
     Example case:
     A 
-    - > B
-        - > C
-            - > D)
+    -> B
+        -> C
+            -> D
     but if B and C would both have been blocked, blocked_directly returns 2, but in reality, only 1
     would have been blocked because C and D would not happen"""
 
@@ -101,7 +224,7 @@ def simulate_blocking(request_tree: RequestTree, blocked_resources: list[str]) -
 
     # First, calculate direct parent blocks
     directly_blocked_tree, _ = calculate_directly_blocked(request_tree,\
-                                                                         blocked_resources)
+                                                            blocked_resources)
 
     # Second, block all child nodes transitively if parent is blocked
     transitively_blocked_tree, total_blocked = calculate_transitively_blocked(\
@@ -110,6 +233,8 @@ def simulate_blocking(request_tree: RequestTree, blocked_resources: list[str]) -
     really_blocked_nodes = calculate_really_blocked(directly_blocked_tree)
     directly_blocked = len(really_blocked_nodes)
     blocked_transitively = total_blocked - directly_blocked
+
+    blocked_subtrees_data = analyse_subtrees_blocking(directly_blocked_tree)
 
     direct_fpd_blocked = directly_blocked_tree.first_blocked_fpd_attempts()
     total_fpd_blocked = transitively_blocked_tree.total_blocked_fpd_attempts()
@@ -132,7 +257,8 @@ def simulate_blocking(request_tree: RequestTree, blocked_resources: list[str]) -
         "total_blocked": total_blocked, # Number of all resources blocked (even transtiviely)
         "blocked_transitively": blocked_transitively, # Number of resources blocked transitively
         "blocked_with_children": blocked_with_children, # N of blocked resources which brought kids
-        "average_block_level": average_block_level # Average level at which resource was blocked
+        "average_block_level": average_block_level, # Average level at which resource was blocked
+        "blocked_subtrees_data": blocked_subtrees_data # N of fully/partially/not blocked subtrees
     }
 
 def get_unresolved(console_output: list[dict]) -> list[str]:
@@ -233,7 +359,7 @@ def parse_partial_results(results: list[dict]) -> dict:
         "average": 0
     }
 
-    sub_result_fpd = {
+    sub_result_dicts = {
         "n_of_results": 0,
         "sum": {},
         "average": {}
@@ -241,16 +367,17 @@ def parse_partial_results(results: list[dict]) -> dict:
 
     # Initialize completed results, needs to use same keys as in simulate_blocking() function
     total_results = {
-        "total_fpd_attempts": dict(sub_result_fpd),
-        "direct_fpd_blocked": dict(sub_result_fpd),
-        "total_fpd_blocked": dict(sub_result_fpd),
-        "transitive_fpd_blocked": dict(sub_result_fpd),
+        "total_fpd_attempts": dict(sub_result_dicts),
+        "direct_fpd_blocked": dict(sub_result_dicts),
+        "total_fpd_blocked": dict(sub_result_dicts),
+        "transitive_fpd_blocked": dict(sub_result_dicts),
         "directly_blocked": dict(sub_result),
         "total_requested": dict(sub_result),
         "total_blocked": dict(sub_result),
         "blocked_transitively": dict(sub_result),
         "blocked_with_children": dict(sub_result),
-        "average_block_level": dict(sub_result) 
+        "average_block_level": dict(sub_result),
+        "blocked_subtrees_data": dict(sub_result_dicts)
     }
 
     # Go through all partial results
@@ -266,6 +393,9 @@ def parse_partial_results(results: list[dict]) -> dict:
             if "fpd" in sub_result:
                 total_result["sum"] = add_substract_fp_attempts(total_result["sum"],\
                                                                 result[sub_result])
+            # Subtrees are special case since they use dicts but are not FPD
+            elif sub_result == "blocked_subtrees_data":
+                total_result["sum"] = add_subtrees(total_result["sum"], result[sub_result])
             else:
                 total_result["sum"] += result[sub_result]
 
@@ -273,12 +403,13 @@ def parse_partial_results(results: list[dict]) -> dict:
     for (sub_result, total_result) in total_results.items():
 
         # If its FPD stat, I need to approach it by calculating each FP sub-attribute
-        if "fpd" in sub_result:
+        if "fpd" in sub_result or sub_result == "blocked_subtrees_data":
 
             # Create deep copy of sum to divide by n_of_results
             total_result["average"] = dict(total_result["sum"])
             for (group_name, count) in total_result["average"].items():
                 total_result["average"][group_name] = count / total_result["n_of_results"]
+
         else:
             total_result["average"] = total_result["sum"] / total_result["n_of_results"]
 
@@ -308,6 +439,7 @@ def analyse_trees(request_trees: dict, console_output: list[dict]) -> list:
     # Analyse each tree
     progress_printer = print_progress(len(request_trees), "Analysing blocked pages...")
     all_results = []
+
     for (_, tree) in request_trees.items():
         progress_printer()
         analysis_results = analyse_tree(tree, console_output)

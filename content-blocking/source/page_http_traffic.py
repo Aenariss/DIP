@@ -32,6 +32,7 @@ from selenium.webdriver.common.by import By
 # Custom modules
 from source.constants import PAGE_WAIT_TIME, TRAFFIC_FOLDER, JSHELTER_FPD_PATH
 from source.constants import LOGGING_BROWSER_VERSION
+from source.setup_driver import setup_jshelter_custom_fpd
 
 def get_page_traffic(page: str, options: dict, compact: bool) -> list:
     """Function to load page network traffic. Returns observed network traffic and 
@@ -41,29 +42,7 @@ def get_page_traffic(page: str, options: dict, compact: bool) -> list:
 
     download_path = os.path.abspath(TRAFFIC_FOLDER)
 
-    # Set up Chrome options and enable DevTools Protocol
-    chrome_options = Options()
-    chrome_options.add_argument("--remote-debugging-port=9222")
-    chrome_options.add_argument("--enable-javascript")
-    chrome_options.add_argument('--enable-extensions')
-    chrome_options.browser_version = options.get(LOGGING_BROWSER_VERSION)
-    chrome_options.add_experimental_option('prefs', {
-        'download.default_directory': download_path,
-        'download.prompt_for_download': False,
-        'download.directory_upgrade': True
-    })
-
-    # Set-up JShelter FPD -- custom version, all shields are off, fpd is set on by default
-    chrome_options.add_extension(JSHELTER_FPD_PATH)
-
-    # Allow logging of network traffic
-    chrome_options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
-
-    service = Service()
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-
-    # Wait at most this time (seconds) for a page to load
-    driver.set_page_load_timeout(10)
+    driver = setup_jshelter_custom_fpd(options, download_path)
 
     # Sleep to allow JShelter to load
     time.sleep(2)
@@ -107,7 +86,7 @@ def enable_developer_mode(driver: webdriver.Chrome | webdriver.Firefox) -> None:
     toolbar = shadow_root.find_element(By.ID, "toolbar")
 
     # The button is in <cr-toggle id="devMode"> inside toolbar shadowroot
-    toolbar_shadow = toolbar.shadow_root 
+    toolbar_shadow = toolbar.shadow_root
     dev_mode_button = toolbar_shadow.find_element(By.ID, "devMode")
 
     # Click the button to enable devmode
