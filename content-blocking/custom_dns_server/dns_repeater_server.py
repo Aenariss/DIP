@@ -249,7 +249,6 @@ ns       IN      A      127.0.0.1
         named_conf_file = DNS_CONFIGURATION_FOLDER + "named.conf"
         with open(named_conf_file, 'w', encoding='utf-8', newline="") as f:
             f.write(self.original_config)
-            f.write("\n")
 
         # Upload named.conf to docker
         cp_command = "docker cp {named_conf_file} {container}:/etc/bind/{file}"\

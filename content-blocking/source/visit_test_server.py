@@ -24,14 +24,17 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium import webdriver
 
 # Custom modules
-from source.setup_driver import setup_driver
+from source.setup_driver import setup_driver, get_firefox_console_logs
+from source.constants import BROWSER_TYPE
+from source.firewall import firewall_block_traffic
+from custom_dns_server.dns_repeater_server import DNSRepeater
 
 TEST_SERVER_IP = "http://localhost:5000"
 
 # tbd: client configuration where will be specified: browser type (chrome/firefox),
 # browser path in case of tor/asb/brave, list of extensions to be loaded into the browser
 
-def visit_test_server(client_config: dict, requests: list) -> list[dict]:
+def visit_test_server(options: dict, requests: list, dns_repeater: DNSRepeater) -> list[dict]:
     """Function to simulate client visit to the test page with defined configuration"""
 
     # total number of all resources to check if selenium can leave the page
@@ -50,10 +53,18 @@ def visit_test_server(client_config: dict, requests: list) -> list[dict]:
     print("Testing blocked resources for all visited pages...")
 
     # Correctly setup the driver according to given config
-    driver = setup_driver(client_config)
+    driver = setup_driver(options)
+
+    # Get the console output depending on chosen browser
+    browser_type = options.get(BROWSER_TYPE)
 
     # Wait for the extensions to load
     time.sleep(10)
+
+    # Start DNS repeating and firewall only here, to give the browser (or extensions)
+    # time to load their stuff
+    dns_repeater.start()
+    firewall_block_traffic()
 
     # Visit the test server
     driver.get(TEST_SERVER_IP)
@@ -62,8 +73,13 @@ def visit_test_server(client_config: dict, requests: list) -> list[dict]:
     # Resources still waiting for will be considered fetched
     WebDriverWait(driver, 3600).until(check_all_resources_loaded)
 
-    # Get the console output
-    logs = driver.get_log("browser")
+    logs = None
+
+    # Setting up for Chrome
+    if browser_type == "chrome":
+        logs = driver.get_log("browser")
+    else:
+        logs = get_firefox_console_logs(driver)
 
     driver.quit()
 

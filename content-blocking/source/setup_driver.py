@@ -16,13 +16,21 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
+# Built-in modules
+import json
 
+# 3rd-party modules
+from selenium import webdriver
+import selenium.webdriver.chrome.service as ChromeService
+import selenium.webdriver.chrome.options as ChromeOptions
+import selenium.webdriver.firefox.options as FirefoxOptions
+import selenium.webdriver.firefox.service as FirefoxService
+
+# Custom modules
 from source.constants import BROWSER_TYPE, BROWSER_VERSION, USING_CUSTOM_BROWSER, TESTED_ADDONS
 from source.constants import CHROME_ADDONS_FOLDER, FIREFOX_ADDONS_FOLDER, GENERAL_ERROR
 from source.constants import TIME_UNTIL_TIMEOUT, LOGGING_BROWSER_VERSION, JSHELTER_FPD_PATH
+from source.constants import CUSTOM_BROWSER_BINARY
 
 def setup_driver(options: dict) -> webdriver.Chrome | webdriver.Firefox:
     """Function to setup the driver depeneding on the specified browser"""
@@ -31,18 +39,41 @@ def setup_driver(options: dict) -> webdriver.Chrome | webdriver.Firefox:
     if browser_type == "chrome":
         return setup_chrome(options)
 
-    if browser_type == "firefox":
-        return setup_firefox(options)
+    # If chrome wasnt selected, lets suppose it was firefox
+    return setup_firefox(options)
 
 def setup_chrome(options: dict) -> webdriver.Chrome:
     """Function to setup driver for chrome-based browser"""
 
     # Check if we're using custom browser
     if options.get(USING_CUSTOM_BROWSER):
-        # tbd
-        return None
+
+        custom_browser_path = options.get(CUSTOM_BROWSER_BINARY)
+
+        chrome_options = ChromeOptions.Options()
+        chrome_options.add_argument("--remote-debugging-port=9222")
+        chrome_options.add_argument("--enable-javascript")
+
+        # use custom binary
+        chrome_options.binary_location = custom_browser_path
+
+        # Go through all specified extensions and add them
+        # Will not be used in the thesis, but allows more potential flexibility
+        try:
+            for extension in options.get(TESTED_ADDONS):
+                chrome_options.add_extension(CHROME_ADDONS_FOLDER + extension)
+        except Exception:
+            print(f"Error loading extension {extension}. Is it present in {CHROME_ADDONS_FOLDER}?")
+            exit(GENERAL_ERROR)
+
+        chromedriver_path = "./chromedriver.exe"
+        service = ChromeService.Service(chromedriver_path)
+
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+
+        return driver
     else:
-        chrome_options = Options()
+        chrome_options = ChromeOptions.Options()
         chrome_options.add_argument("--remote-debugging-port=9222")
         chrome_options.add_argument("--enable-javascript")
         chrome_options.browser_version = options.get(BROWSER_VERSION)
@@ -58,9 +89,21 @@ def setup_chrome(options: dict) -> webdriver.Chrome:
         # Set logging capabilities
         chrome_options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
 
-        service = Service()
+        service = ChromeService.Service()
         driver = webdriver.Chrome(service=service, options=chrome_options)
         return driver
+
+def get_firefox_console_logs(driver):
+    """Function to get logs from Firefox console"""
+
+    # Get performance entries
+    performance_entries = driver.execute_script("""
+        var performance = window.performance || window.mozPerformance || window.msPerformance || window.webkitPerformance || {};
+        var network = performance.getEntriesByType('resource');
+        return JSON.stringify(network);
+    """)
+
+    return json.loads(performance_entries)
 
 def setup_firefox(options: dict) -> webdriver.Firefox:
     """Function to setup driver for firefox-based browser"""
@@ -70,15 +113,33 @@ def setup_firefox(options: dict) -> webdriver.Firefox:
         # tbd
         return None
     else:
-        return None
+        firefox_options = FirefoxOptions.Options()
+        firefox_options.log.level = "TRACE"
+        firefox_options.set_preference("devtools.netmonitor.enabled", True)
+        firefox_options.set_preference("devtools.toolbox.selectedTool", "netmonitor")
+
+        service = FirefoxService.Service(log_output="./log.txt")
+        driver = webdriver.Firefox(options=firefox_options, service=service)
+
+
+        # Go through all specified extensions and add them
+        try:
+            for extension in options.get(TESTED_ADDONS):
+                driver.install_addon(FIREFOX_ADDONS_FOLDER + extension, temporary=True)
+        except Exception:
+            print(f"Error loading extension {extension}. Is it present in {FIREFOX_ADDONS_FOLDER}?")
+            exit(GENERAL_ERROR)
+
+        return driver
 
 def setup_jshelter_custom_fpd(options: dict, download_path: str) -> webdriver.Chrome:
 
     # Set up Chrome options and enable DevTools Protocol
-    chrome_options = Options()
+    chrome_options = ChromeOptions.Options()
     chrome_options.add_argument("--remote-debugging-port=9222")
     chrome_options.add_argument("--enable-javascript")
     chrome_options.add_argument('--enable-extensions')
+    chrome_options.add_argument('--ignore-certificate-errors')
     chrome_options.browser_version = options.get(LOGGING_BROWSER_VERSION)
     chrome_options.add_experimental_option('prefs', {
         'download.default_directory': download_path,
@@ -92,7 +153,7 @@ def setup_jshelter_custom_fpd(options: dict, download_path: str) -> webdriver.Ch
     # Allow logging of network traffic
     chrome_options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
 
-    service = Service()
+    service = ChromeService.Service()
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     # Wait at most this time (seconds) for a page to load

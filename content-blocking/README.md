@@ -58,13 +58,13 @@ After stopping the custom DNS server, DNS settings are reset -> it is set to aut
 The workflow is as follows:
 
 1. Load all pages specified in ``pageList.txt``. Each line represents an URL to be visited.
-2. The specified URLs are visited to obtain the resources downloaded for each page. For each resource, the request chain is maintained.
+2. The specified URLs are visited to obtain the resources downloaded for each page. For each resource, the request chain is replicated. During visitation, DNS sniffer is active and logs DNS traffic.
 3. For each observed resource, a new request will be simulated for which observed DNS replies will be repeated.
 4. The page with the simulated resource requests will be visited for each extension/browser specified in ``config.json``.
-5. The results (containing the blocked requests) will be saved in ``results/log.txt``.
+5. The results of the simulation will be saved in ``results/`` folder.
 
 Problems:
-Loading is absolutely terrible -> Selenium crashes absolutely unpredictably, gets stuck on a page, after launch works perfectly... please be patient and prepare for multiple relaunches (dont forget to save your traffic each time cuz folder is deleted!) and
+Loading is absolutely terrible -> Selenium arbitrarily crashes, gets stuck on a page, after relaunch works perfectly... please be patient and prepare for multiple relaunches (dont forget to save your traffic each time cuz folder is deleted!) and
 then setting all the traffic fragments together
 
 JShelter FPD sometimes has a race condition which causes fingerprinting to not work on some pages. 

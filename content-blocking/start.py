@@ -48,6 +48,8 @@ parser.add_argument('-lo', '--load-only', action="store_true",
         help="Whether to only observe network traffic anew using page_list.txt and stop")
 parser.add_argument('-ao', '--analysis-only', action="store_true",
         help="Whether to use skip using local server to calculate blocked requests and use logs")
+parser.add_argument('-so', '--simulation-only', action="store_true",
+        help="Whether to use only perform simulation using local server")
 args = parser.parse_args()
 
 def valid_options(options: dict) -> bool:
@@ -55,7 +57,6 @@ def valid_options(options: dict) -> bool:
     browser_type = options.get(BROWSER_TYPE)
     page_wait_time = options.get(PAGE_WAIT_TIME)
     custom_browser = options.get(USING_CUSTOM_BROWSER)
-    tested_tool = options.get(TESTED_ADDONS)
     browser_version = options.get(BROWSER_VERSION)
     experiment_name = options.get(EXPERIMENT_NAME)
     logging_browser_version = options.get(LOGGING_BROWSER_VERSION)
@@ -85,10 +86,6 @@ def valid_options(options: dict) -> bool:
     if custom_browser == 1:
         if custom_browser_binary == "":
             result.append(False)
-
-    # At least 1 test tool must be specified, must be in an array
-    if not tested_tool:
-        result.append(False)
 
     # If at least one setting was false, return False
     return all(result)
@@ -238,15 +235,12 @@ def obtain_simulation_results(request_trees: dict, options: dict) -> list[dict]:
         # Start the DNS server and set it as prefered to repeat responses
         dns_repeater = DNSRepeater(dns_records)
 
-        dns_repeater.start()
-        firewall_block_traffic()
-
         # Start the testing server as another process for each logged page traffic
         server = start_testing_server(resource_list)
 
         try:
             # Visit the server and log the console outputs
-            console_output = visit_test_server(options, resource_list)
+            console_output = visit_test_server(options, resource_list, dns_repeater)
 
             save_console_log(console_output, options.get(EXPERIMENT_NAME) + "_log")
         except Exception as e:
@@ -257,6 +251,10 @@ def obtain_simulation_results(request_trees: dict, options: dict) -> list[dict]:
             stop_testing_server(server)
             firewall_unblock_traffic()
             dns_repeater.stop()
+
+    # In case --simulation-only was specified, stop here
+    if args.simulation_only:
+        return console_output
 
     # In case --analysis-only was specified, load the saved output.
     if not console_output:
@@ -291,6 +289,9 @@ def start() -> None:
     console_output = obtain_simulation_results(request_trees, options)
 
     print("Experiment data succesfully loaded...")
+
+    if args.simulation_only:
+        return
 
     # Analyze what would have happened to the request tree had a content-blocking tool been present
     analyze_results(request_trees, console_output, options)

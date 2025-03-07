@@ -23,15 +23,12 @@ import time
 
 # 3rd-party modules
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
 # Custom modules
-from source.constants import PAGE_WAIT_TIME, TRAFFIC_FOLDER, JSHELTER_FPD_PATH
-from source.constants import LOGGING_BROWSER_VERSION
+from source.constants import PAGE_WAIT_TIME, TRAFFIC_FOLDER
 from source.setup_driver import setup_jshelter_custom_fpd
 
 def get_page_traffic(page: str, options: dict, compact: bool) -> list:
@@ -99,7 +96,7 @@ def enable_developer_mode(driver: webdriver.Chrome | webdriver.Firefox) -> None:
     # Click using JavaScript since normal .click() doesnt work
     driver.execute_script("arguments[0].click();", update_button)
 
-    time.sleep(1)
+    time.sleep(0.5)
 
 def get_network_requests(logs: dict, compact: bool) -> list[dict]:
     """Function to extract only the initiator chain from the observed data"""

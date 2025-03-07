@@ -351,6 +351,7 @@ def parse_partial_results(results: list[dict]) -> dict:
     "blocked_transitively": Number of resources blocked transitively (SUM, AVG)
     "blocked_with_children": N of blocked resources which brought kids (SUM, AVG)
     "average_block_level": Average level at which resource was blocked (AVG)
+    "blocked_subtrees_data": N of subtrees fully/partially/not blocked (AVG, SUM)
     """
 
     sub_result = {
