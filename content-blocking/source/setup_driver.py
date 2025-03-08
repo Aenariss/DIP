@@ -30,7 +30,7 @@ import selenium.webdriver.firefox.service as FirefoxService
 from source.constants import BROWSER_TYPE, BROWSER_VERSION, USING_CUSTOM_BROWSER, TESTED_ADDONS
 from source.constants import CHROME_ADDONS_FOLDER, FIREFOX_ADDONS_FOLDER, GENERAL_ERROR
 from source.constants import TIME_UNTIL_TIMEOUT, LOGGING_BROWSER_VERSION, JSHELTER_FPD_PATH
-from source.constants import CUSTOM_BROWSER_BINARY
+from source.constants import CUSTOM_BROWSER_BINARY, FIREFOX_RESOURCE_LOGGER
 
 def setup_driver(options: dict) -> webdriver.Chrome | webdriver.Firefox:
     """Function to setup the driver depeneding on the specified browser"""
@@ -66,7 +66,7 @@ def setup_chrome(options: dict) -> webdriver.Chrome:
             print(f"Error loading extension {extension}. Is it present in {CHROME_ADDONS_FOLDER}?")
             exit(GENERAL_ERROR)
 
-        chromedriver_path = "./chromedriver.exe"
+        chromedriver_path = "./chromedriver_132.exe"
         service = ChromeService.Service(chromedriver_path)
 
         driver = webdriver.Chrome(service=service, options=chrome_options)
@@ -97,13 +97,12 @@ def get_firefox_console_logs(driver):
     """Function to get logs from Firefox console"""
 
     # Get performance entries
-    performance_entries = driver.execute_script("""
-        var performance = window.performance || window.mozPerformance || window.msPerformance || window.webkitPerformance || {};
-        var network = performance.getEntriesByType('resource');
-        return JSON.stringify(network);
+    resource_logs = driver.execute_script("""
+        var logs = observedResources;
+        return JSON.stringify(logs);
     """)
 
-    return json.loads(performance_entries)
+    return json.loads(resource_logs)
 
 def setup_firefox(options: dict) -> webdriver.Firefox:
     """Function to setup driver for firefox-based browser"""
@@ -114,13 +113,21 @@ def setup_firefox(options: dict) -> webdriver.Firefox:
         return None
     else:
         firefox_options = FirefoxOptions.Options()
-        firefox_options.log.level = "TRACE"
-        firefox_options.set_preference("devtools.netmonitor.enabled", True)
-        firefox_options.set_preference("devtools.toolbox.selectedTool", "netmonitor")
 
-        service = FirefoxService.Service(log_output="./log.txt")
+        # Turn off Firefox Extended Protection and DNS-over-HTTPS
+        firefox_options.set_preference("privacy.trackingprotection.custom.enabled", False)
+        firefox_options.set_preference("privacy.trackingprotection.enabled", False)
+        firefox_options.set_preference("privacy.trackingprotection.pbmode.enabled", False)
+        firefox_options.set_preference("privacy.trackingprotection.socialtracking.enabled", False)
+        firefox_options.set_preference("privacy.trackingprotection.cryptomining.enabled", False)
+        firefox_options.set_preference("privacy.trackingprotection.fingerprinting.enabled", False)
+        firefox_options.set_preference("network.trr.mode", 5)
+
+        service = FirefoxService.Service()
         driver = webdriver.Firefox(options=firefox_options, service=service)
 
+        # Install the logging extension
+        driver.install_addon(FIREFOX_RESOURCE_LOGGER, temporary=True)
 
         # Go through all specified extensions and add them
         try:
@@ -139,7 +146,8 @@ def setup_jshelter_custom_fpd(options: dict, download_path: str) -> webdriver.Ch
     chrome_options.add_argument("--remote-debugging-port=9222")
     chrome_options.add_argument("--enable-javascript")
     chrome_options.add_argument('--enable-extensions')
-    chrome_options.add_argument('--ignore-certificate-errors')
+    # I already collected traffic without this setting, maybe enable in the future?
+    #chrome_options.add_argument('--ignore-certificate-errors')
     chrome_options.browser_version = options.get(LOGGING_BROWSER_VERSION)
     chrome_options.add_experimental_option('prefs', {
         'download.default_directory': download_path,

@@ -19,7 +19,6 @@
 # Built-in modules
 import argparse
 import os
-import json
 
 # Custom modules
 from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, RESULTS_FOLDER, USER_CONFIG_FILE
@@ -30,10 +29,12 @@ from source.load_traffic import load_traffic
 from source.fp_attempts import parse_fp
 from source.request_tree import create_trees
 from source.test_page_server import start_testing_server, stop_testing_server
-from source.file_manipulation import save_json, get_traffic_files, load_json
+from source.file_manipulation import save_json, load_json
 from source.visit_test_server import visit_test_server
 from source.analysis import analyse_trees
-from source.firewall import firewall_block_traffic, firewall_unblock_traffic
+from source.firewall import firewall_unblock_traffic
+from source.utils import squash_dns_records, squash_tree_resources
+
 from custom_dns_server.dns_repeater_server import DNSRepeater
 
 # Argument parsing
@@ -50,6 +51,8 @@ parser.add_argument('-ao', '--analysis-only', action="store_true",
         help="Whether to use skip using local server to calculate blocked requests and use logs")
 parser.add_argument('-so', '--simulation-only', action="store_true",
         help="Whether to use only perform simulation using local server")
+parser.add_argument('-tso', '--testing-server-only', action="store_true",
+        help="Whether to only start a testing server and do nothing else")
 args = parser.parse_args()
 
 def valid_options(options: dict) -> bool:
@@ -58,6 +61,7 @@ def valid_options(options: dict) -> bool:
     page_wait_time = options.get(PAGE_WAIT_TIME)
     custom_browser = options.get(USING_CUSTOM_BROWSER)
     browser_version = options.get(BROWSER_VERSION)
+    tested_addons = options.get(TESTED_ADDONS)
     experiment_name = options.get(EXPERIMENT_NAME)
     logging_browser_version = options.get(LOGGING_BROWSER_VERSION)
     custom_browser_binary = options.get(CUSTOM_BROWSER_BINARY, "")
@@ -66,7 +70,7 @@ def valid_options(options: dict) -> bool:
 
     # The fields need to be present
     if not browser_version or not experiment_name or not logging_browser_version\
-        or custom_browser is None:
+        or custom_browser is None or tested_addons is None:
         result.append(False)
 
     # Browser type supported is only chrome and firefox
@@ -139,42 +143,6 @@ def check_traffic_folder() -> None:
                 "If so, run the program with '--load' argument first!")
             exit(GENERAL_ERROR)
 
-def squash_dns_records() -> dict:
-    """Function to squash all observed DNS records into one list"""
-
-    # Get all DNS files in the ./traffic/ folder
-    dns_files = get_traffic_files('dns')
-
-    squashed_records = {}
-
-    # Get records from each file and squash them together
-    for file in dns_files:
-        with open(file, 'r', encoding='utf-8') as f:
-            dns_json = json.load(f)
-            for (domain, value) in dns_json.items():
-
-                # Should a key be observed multiple times, append it overwrite it (should be cached)
-                if not squashed_records.get(domain):
-                    squashed_records[domain] = value
-                else:
-                    for (subdomain, records) in dns_json[domain].items():
-                        squashed_records[domain][subdomain] = records
-
-    return squashed_records
-
-def squash_tree_resources(request_trees: dict) -> list:
-    """Function to squash together resources from all observed request trees"""
-    resources = []
-
-    # For each tree, get all requests
-    for (key, _) in request_trees.items():
-        resources.extend(request_trees[key].get_all_requests())
-
-    # Remove duplicates
-    # TODO: what would happen if I removed this?
-    resources = list(dict.fromkeys(resources))
-    return resources
-
 def obtain_data(options: dict) -> bool:
     """Function to load traffic and save it in traffic folder"""
     # Check user arguments were correct
@@ -240,7 +208,7 @@ def obtain_simulation_results(request_trees: dict, options: dict) -> list[dict]:
 
         try:
             # Visit the server and log the console outputs
-            console_output = visit_test_server(options, resource_list, dns_repeater)
+            console_output = visit_test_server(options, resource_list, dns_repeater, args, server)
 
             save_console_log(console_output, options.get(EXPERIMENT_NAME) + "_log")
         except Exception as e:
@@ -266,7 +234,7 @@ def analyze_results(request_trees: dict, console_output: list[dict], options: di
     """Function to analyze logged request trees based on obtained console output, logging
     the results into a file in ./results/ folder."""
 
-    results = analyse_trees(request_trees, console_output)
+    results = analyse_trees(request_trees, console_output, options)
     save_json(results, RESULTS_FOLDER + options.get(EXPERIMENT_NAME) + "_results.json")
 
 def start() -> None:
@@ -297,7 +265,6 @@ def start() -> None:
     analyze_results(request_trees, console_output, options)
 
     print(f"Finished experiment {options.get(EXPERIMENT_NAME)}...")
-    input("Press a key to exit...\n")
 
 if __name__ == "__main__":
     start()

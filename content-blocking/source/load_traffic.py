@@ -21,6 +21,7 @@
 import json
 import os
 import re
+import time
 
 # Custom modules
 from source.file_manipulation import load_pages
@@ -42,6 +43,7 @@ def load_traffic(options: dict, compact: bool) -> None:
 
         sniffer = DNSSniffer()
         sniffer.start_sniffer()
+        time.sleep(1)
 
         # Get the HTTP(S) traffic associated with a page
         try:
@@ -55,6 +57,7 @@ def load_traffic(options: dict, compact: bool) -> None:
             sniffer.stop_sniffer()
             continue
 
+        time.sleep(1)
         sniffer.stop_sniffer()
         dns_traffic = sniffer.get_traffic()
 

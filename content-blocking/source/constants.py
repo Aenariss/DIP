@@ -36,6 +36,7 @@ FPD_GROUPS_FILE = FPD_GROUP_FOLDER + "groups.json"
 FPD_WRAPPERS_FILE = FPD_GROUP_FOLDER + "wrappers.json"
 
 JSHELTER_FPD_PATH = CHROME_ADDONS_FOLDER + "jshelter_0_19_custom_fpd.crx"
+FIREFOX_RESOURCE_LOGGER = FIREFOX_ADDONS_FOLDER + "firefox_resource_logger.xpi"
 
 # Paths - system
 HOSTS_FILE = "C:/Windows/System32/drivers/etc/hosts"

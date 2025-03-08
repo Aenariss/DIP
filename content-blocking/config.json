@@ -3,9 +3,9 @@
     "time_until_timeout": 10,
     "browser_type": "chrome",
     "logging_browser_version": "132",
-    "browser_version": "134",
+    "browser_version": "132",
     "using_custom_browser": 1,
-    "custom_browser_binary": "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe",
+    "custom_browser_binary": "C:/Program Files/Avast Software/Browser/Application/AvastBrowser.exe",
     "tested_addons": [],
-    "experiment_name": "brave"
+    "experiment_name": "avast"
 }

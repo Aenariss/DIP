@@ -18,42 +18,53 @@
 
 # custom modules
 from source.request_tree import RequestTree, RequestNode, add_substract_fp_attempts
-from source.utils import print_progress
+from source.utils import print_progress, squash_tree_resources
+from source.constants import BROWSER_TYPE
 
-def get_first_level_with_multiple_children(request_tree: RequestTree) -> list[RequestNode] | str:
+def get_first_level_with_multiple_children(request_tree: RequestTree)\
+      -> tuple[str, list[RequestNode], bool]:
     """Function to obtain the first resource in a tree that brings multiple children."""
     current_level = request_tree.get_root()
 
+    status = ""
+    children = []
+    root_block = False
+
     # If one of the root-level nodes was blocked, mark whole tree as blocked
     if current_level.is_blocked():
-        return "full_block"
+        status = "full_block"
+        root_block = True
 
     current_level_children = current_level.get_children()
 
     # Go down until you either reach a node with 2 or more children or reach a leaf
     while current_level_children:
 
-        # CCheck if there was >= 2 children
+        # Check if there was >= 2 children
         if len(current_level_children) >= 2:
-            return current_level_children
+            children = current_level_children
+            break
 
         # Else go deeper in the tree
         current_level = current_level_children[0]
 
         if current_level.is_blocked():
-            return "partial_block"
+            status = "full_block"
+            root_block = True
 
         current_level_children = current_level.get_children()
 
     # If no node with children was found, there was only one tree with no blocks
-    return "no_block"
+    if not status:
+        status = "no_block"
+
+    return status, children, root_block
 
 def subtree_blocked_status(starting_node: RequestNode) -> str:
     """Function to check if given subtree with root being the starting node
     has either been partially blocked or not blocked at all"""
 
     children = starting_node.get_children()
-
 
     for child in children:
 
@@ -84,12 +95,21 @@ def analyse_subtrees_blocking(request_tree: RequestTree) -> dict:
     partially_blocked = 0
     not_blocked = 0
     total_trees = 0
+    root_blocks = 0
 
-    starting_points = get_first_level_with_multiple_children(request_tree)
+    status, starting_points, root_block = get_first_level_with_multiple_children(request_tree)
 
-    # Obtained actual starting point
-    if isinstance(starting_points, list):
-        total_trees = len(starting_points)
+    total_trees = len(starting_points)
+
+    # full block at root level
+    if status == "full_block":
+
+        # If there was a root-level block, all subtrees are considered blocked too
+        fully_blocked += total_trees
+        root_blocks = 1 if root_block else 0
+
+    # no block
+    else:
 
         # Go through all of the subtrees and check if there was some block
         for starting_point in starting_points:
@@ -105,22 +125,12 @@ def analyse_subtrees_blocking(request_tree: RequestTree) -> dict:
             else:
                 not_blocked += 1
 
-    # There was some kind of blocking (or none at all) in the root tree
-    # So only 1 tree in total was observed
-    else:
-        total_trees = 1
-        if starting_points == "full_block":
-            fully_blocked += 1
-        elif starting_points == "partial_block":
-            partially_blocked += 1
-        elif starting_points == "no_block":
-            not_blocked += 1
-
     return {
         "fully_blocked": fully_blocked, 
         "partially_blocked": partially_blocked,
         "not_blocked": not_blocked,
-        "total_trees": total_trees
+        "total_trees": total_trees,
+        "root_blocks": root_blocks
     }
 
 def add_subtrees(subtrees1: dict, subtrees2: dict) -> dict:
@@ -261,56 +271,12 @@ def simulate_blocking(request_tree: RequestTree, blocked_resources: list[str]) -
         "blocked_subtrees_data": blocked_subtrees_data # N of fully/partially/not blocked subtrees
     }
 
-def get_unresolved(console_output: list[dict]) -> list[str]:
-    unresolved_error = "ERR_NAME_NOT_RESOLVED"
-    sock_error = "ERR_SOCKET_NOT_CONNECTED"
-    unresolved_length = len(unresolved_error)
-    sock_length = len(sock_error)
-    unresolved_pages = []
-
-    for report in console_output:
-        # Only do anything if it was an error
-        if report["level"] == "SEVERE":
-            message = report["message"]
-
-            # Obtain the last part of the string w/ the error
-            try:
-                last_part = message[-unresolved_length:]
-                last_part_2 = message[-sock_length:]
-
-                # It was blocked by client
-                if last_part == unresolved_error or last_part_2 == sock_error:
-
-                    # get the url of the resource - split by space and the first is url
-                    parts_of_message = message.split(' ')
-                    url = parts_of_message[0]
-                    unresolved_pages.append(url)
-
-            # If obtaining was impossible, it was not an error
-            except Exception:
-                continue
-
-    return unresolved_pages
-
-def filter_out_unresolved(request_trees: dict, unresolved_requests: list, printer: callable)\
-    -> dict:
-    """Function to filter out trees containing unresolved results"""
-    okay_trees = {}
-    for (key, tree) in request_trees.items():
-        printer()
-        nodes_with_resource = tree.get_all_requests()
-        okay_trees[key] = tree
-        for unresolved in unresolved_requests:
-            if unresolved in nodes_with_resource:
-                del okay_trees[key]
-                break
-    return okay_trees
-
-def parse_console_logs(console_output: list[dict]) -> list[str]:
-    """Function to parse obtained console logs"""
-    # Works for chrome - check it works for firefox!
+def parse_console_logs_chrome(console_output: list[dict]) -> list[str]:
+    """Function to parse obtained console logs from Chrome"""
     blocked_by_client_error = "ERR_BLOCKED_BY_CLIENT"
+    blocked_by_administrator_error = "ERR_BLOCKED_BY_ADMINISTRATOR"
     error_length = len(blocked_by_client_error)
+    error_length_2 = len(blocked_by_administrator_error)
 
     blocked_pages = []
 
@@ -322,9 +288,11 @@ def parse_console_logs(console_output: list[dict]) -> list[str]:
             # Obtain the last part of the string w/ the error
             try:
                 last_part = message[-error_length:]
+                last_part_2 = message[-error_length_2:]
 
                 # It was blocked by client
-                if last_part == blocked_by_client_error:
+                if last_part == blocked_by_client_error or\
+                   last_part_2 == blocked_by_administrator_error:
 
                     # get the url of the resource - split by space and the first is url
                     parts_of_message = message.split(' ')
@@ -416,26 +384,50 @@ def parse_partial_results(results: list[dict]) -> dict:
 
     return total_results
 
-def analyse_tree(request_tree: RequestTree, console_output: list[dict]) -> dict:
+def process_firefox_console_output(request_trees: dict, console_output: list) -> list:
+    """Function to substract logged resources from all observed resources
+    to fix different output types since FF logs all CORRECT resources"""
+    all_resources = squash_tree_resources(request_trees)
+    correct_resources = console_output
+
+    dict_correct_resources = {}
+
+    # Make correct resources into dict to provide efficiency for later substraction (hashtable ftw)
+    for resource in correct_resources:
+        dict_correct_resources[resource] = True
+
+    # If resource was NOT in correctly logged resources, it is BLOCKED
+    blocked_resources = [resource for resource in all_resources\
+                        if dict_correct_resources.get(resource, None) is None]
+
+    return blocked_resources
+
+def analyse_tree(request_tree: RequestTree, console_output: list, options: dict) -> dict:
     """Function to calculate how many requests in a tree would be blocked 
     if given resources were blocked and how many fp attempts that would prevent"""
 
-    # Obtain URLs of resources that were blocked by client
-    client_blocked_pages = parse_console_logs(console_output)
+    # Get list of blocked pages depending on whether they came from Chrome or FF
+
+    client_blocked_pages = None
+    if options.get(BROWSER_TYPE) == "chrome":
+        # Obtain URLs of resources that were blocked by client
+        client_blocked_pages = parse_console_logs_chrome(console_output)
+    else:
+        client_blocked_pages = console_output
 
     # Calculate what would have happened hat the content blocking tool been present
     results = simulate_blocking(request_tree, client_blocked_pages)
 
     return results
 
-def analyse_trees(request_trees: dict, console_output: list[dict]) -> list:
+def analyse_trees(request_trees: dict, console_output: list, options: dict) -> list:
     """Function to launch analysis on each tree and calculate average values 
     of each observed property"""
 
-    # Filter out trees with incomplete DNS records Selenium might have screwed up
-    unresolved_requests = get_unresolved(console_output)
-    progress_printer = print_progress(len(request_trees), "Removing trees with unresolved DNS...")
-    request_trees = filter_out_unresolved(request_trees, unresolved_requests, progress_printer)
+    # If current experiment was done on firefox, console output contains all passed resources
+    # So what we need to do is remove those logged from all logged => rest is blocked
+    if options.get(BROWSER_TYPE) == "firefox":
+        console_output = process_firefox_console_output(request_trees, console_output)
 
     # Analyse each tree
     progress_printer = print_progress(len(request_trees), "Analysing blocked pages...")
@@ -443,7 +435,7 @@ def analyse_trees(request_trees: dict, console_output: list[dict]) -> list:
 
     for (_, tree) in request_trees.items():
         progress_printer()
-        analysis_results = analyse_tree(tree, console_output)
+        analysis_results = analyse_tree(tree, console_output, options)
         all_results.append(analysis_results)
 
     all_results = parse_partial_results(all_results)

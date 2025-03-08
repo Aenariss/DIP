@@ -26,7 +26,8 @@ from selenium import webdriver
 # Custom modules
 from source.setup_driver import setup_driver, get_firefox_console_logs
 from source.constants import BROWSER_TYPE
-from source.firewall import firewall_block_traffic
+from source.firewall import firewall_block_traffic, firewall_unblock_traffic
+from source.test_page_server import stop_testing_server
 from custom_dns_server.dns_repeater_server import DNSRepeater
 
 TEST_SERVER_IP = "http://localhost:5000"
@@ -34,7 +35,8 @@ TEST_SERVER_IP = "http://localhost:5000"
 # tbd: client configuration where will be specified: browser type (chrome/firefox),
 # browser path in case of tor/asb/brave, list of extensions to be loaded into the browser
 
-def visit_test_server(options: dict, requests: list, dns_repeater: DNSRepeater) -> list[dict]:
+def visit_test_server(options: dict, requests: list, dns_repeater: DNSRepeater, args, server)\
+      -> list[dict]:
     """Function to simulate client visit to the test page with defined configuration"""
 
     # total number of all resources to check if selenium can leave the page
@@ -52,6 +54,18 @@ def visit_test_server(options: dict, requests: list, dns_repeater: DNSRepeater) 
 
     print("Testing blocked resources for all visited pages...")
 
+    # For debugging purposes (Avast Secure Browser doesnt work when connected through selenium)
+    if args.testing_server_only:
+        try:
+            dns_repeater.start()
+            firewall_block_traffic()
+            time.sleep(3600)
+        finally:
+            firewall_unblock_traffic()
+            dns_repeater.stop()
+            stop_testing_server(server)
+            exit(0)
+
     # Correctly setup the driver according to given config
     driver = setup_driver(options)
 
@@ -65,6 +79,7 @@ def visit_test_server(options: dict, requests: list, dns_repeater: DNSRepeater) 
     # time to load their stuff
     dns_repeater.start()
     firewall_block_traffic()
+    time.sleep(3)
 
     # Visit the test server
     driver.get(TEST_SERVER_IP)
