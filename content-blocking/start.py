@@ -19,6 +19,7 @@
 # Built-in modules
 import argparse
 import os
+import time
 
 # Custom modules
 from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, RESULTS_FOLDER, USER_CONFIG_FILE
@@ -32,7 +33,7 @@ from source.test_page_server import start_testing_server, stop_testing_server
 from source.file_manipulation import save_json, load_json
 from source.visit_test_server import visit_test_server
 from source.analysis import analyse_trees
-from source.firewall import firewall_unblock_traffic
+from source.firewall import firewall_unblock_traffic, firewall_block_traffic
 from source.utils import squash_dns_records, squash_tree_resources
 
 from custom_dns_server.dns_repeater_server import DNSRepeater
@@ -53,6 +54,8 @@ parser.add_argument('-so', '--simulation-only', action="store_true",
         help="Whether to use only perform simulation using local server")
 parser.add_argument('-tso', '--testing-server-only', action="store_true",
         help="Whether to only start a testing server and do nothing else")
+parser.add_argument('-eb', '--early-blocking', action="store_true",
+        help="Whether to setup firewall and DNS settings before driver setup")
 args = parser.parse_args()
 
 def valid_options(options: dict) -> bool:
@@ -200,9 +203,6 @@ def obtain_simulation_results(request_trees: dict, options: dict) -> list[dict]:
         dns_records = squash_dns_records()
         resource_list = squash_tree_resources(request_trees)
 
-
-        print(len(resource_list))
-
         # Start the DNS server and set it as prefered to repeat responses
         dns_repeater = DNSRepeater(dns_records)
 
@@ -210,6 +210,11 @@ def obtain_simulation_results(request_trees: dict, options: dict) -> list[dict]:
         server = start_testing_server(resource_list)
 
         try:
+            if args.early_blocking:
+                dns_repeater.start()
+                firewall_block_traffic()
+                time.sleep(3)
+
             # Visit the server and log the console outputs
             console_output = visit_test_server(options, resource_list, dns_repeater, args, server)
 

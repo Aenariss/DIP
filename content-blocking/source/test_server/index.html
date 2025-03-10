@@ -117,8 +117,8 @@
 
         overrideFetch();
         
-        // start fetching on page load
-        window.addEventListener('load', testResourceLoading);
+        // start fetching after 5 seconds
+        setTimeout(testResourceLoading, 5000)
 
     </script>
 </head>

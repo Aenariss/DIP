@@ -77,9 +77,10 @@ def visit_test_server(options: dict, requests: list, dns_repeater: DNSRepeater, 
 
     # Start DNS repeating and firewall only here, to give the browser (or extensions)
     # time to load their stuff
-    dns_repeater.start()
-    firewall_block_traffic()
-    time.sleep(3)
+    if not args.early_blocking:
+        dns_repeater.start()
+        firewall_block_traffic()
+        time.sleep(3)
 
     # Visit the test server
     driver.get(TEST_SERVER_IP)

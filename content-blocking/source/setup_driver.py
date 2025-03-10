@@ -66,7 +66,7 @@ def setup_chrome(options: dict) -> webdriver.Chrome:
             print(f"Error loading extension {extension}. Is it present in {CHROME_ADDONS_FOLDER}?")
             exit(GENERAL_ERROR)
 
-        chromedriver_path = "./chromedriver_132.exe"
+        chromedriver_path = "./chromedriver_134.exe"
         service = ChromeService.Service(chromedriver_path)
 
         driver = webdriver.Chrome(service=service, options=chrome_options)
@@ -114,13 +114,21 @@ def setup_firefox(options: dict) -> webdriver.Firefox:
     else:
         firefox_options = FirefoxOptions.Options()
 
-        # Turn off Firefox Extended Protection and DNS-over-HTTPS
-        firefox_options.set_preference("privacy.trackingprotection.custom.enabled", False)
-        firefox_options.set_preference("privacy.trackingprotection.enabled", False)
-        firefox_options.set_preference("privacy.trackingprotection.pbmode.enabled", False)
-        firefox_options.set_preference("privacy.trackingprotection.socialtracking.enabled", False)
-        firefox_options.set_preference("privacy.trackingprotection.cryptomining.enabled", False)
-        firefox_options.set_preference("privacy.trackingprotection.fingerprinting.enabled", False)
+        # If using Firefox and no extensions, test Firefox Capabilities
+        # Dont turn off extended protection
+        if options.get(TESTED_ADDONS) != []:
+
+            # Turn off Firefox Extended Protection and DNS-over-HTTPS
+            firefox_options.set_preference("privacy.trackingprotection.custom.enabled", False)
+            firefox_options.set_preference("privacy.trackingprotection.enabled", False)
+            firefox_options.set_preference("privacy.trackingprotection.pbmode.enabled", False)
+            firefox_options.set_preference("privacy.trackingprotection.socialtracking.enabled",\
+                                            False)
+            firefox_options.set_preference("privacy.trackingprotection.cryptomining.enabled",\
+                                            False)
+            firefox_options.set_preference("privacy.trackingprotection.fingerprinting.enabled",\
+                                            False)
+
         firefox_options.set_preference("network.trr.mode", 5)
 
         service = FirefoxService.Service()

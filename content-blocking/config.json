@@ -3,9 +3,9 @@
     "time_until_timeout": 10,
     "browser_type": "chrome",
     "logging_browser_version": "134",
-    "browser_version": "132",
+    "browser_version": "134",
     "using_custom_browser": 0,
-    "custom_browser_binary": "C:/Program Files/Avast Software/Browser/Application/AvastBrowser.exe",
-    "tested_addons": ["ad_block_plus_4_15_0.crx"],
-    "experiment_name": "avast_secure_browser"
+    "custom_browser_binary": "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe",
+    "tested_addons": ["ublock_origin_lite_2025_3_2_1298.crx"],
+    "experiment_name": "ublock_origin_lite_2025_3_2_1298"
 }

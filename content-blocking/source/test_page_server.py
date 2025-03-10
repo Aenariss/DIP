@@ -35,7 +35,8 @@ list_of_resources = []
 def index():
     if not list_of_resources:
         print("Could not load any resources! Is traffic folder empty?")
-    return render_template("index.html", resources=list_of_resources, n_of_resources=len(list_of_resources))
+    return render_template("index.html", resources=list_of_resources,\
+                            n_of_resources=len(list_of_resources))
 
 def run_test_server(resource_list: list):
     global list_of_resources

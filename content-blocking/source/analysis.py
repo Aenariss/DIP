@@ -16,6 +16,9 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
+# Built-in modules
+import re
+
 # custom modules
 from source.request_tree import RequestTree, RequestNode, add_substract_fp_attempts
 from source.utils import print_progress, squash_tree_resources
@@ -395,6 +398,30 @@ def process_firefox_console_output(request_trees: dict, console_output: list) ->
     # Make correct resources into dict to provide efficiency for later substraction (hashtable ftw)
     for resource in correct_resources:
         dict_correct_resources[resource] = True
+
+    # Automatically populate correct resources with blob: and data:. Blobs always
+    # return an error since I'm not loading them locally and data: are not network
+    # resources -> they can't be blocked.
+    # Also skip internal data such as those starting with about:, chrome-extension://...
+    for resource in all_resources:
+        add_to_correct = False
+        if resource.startswith("blob:"):
+            add_to_correct = True
+
+        elif resource.startswith("data:"):
+            add_to_correct = True
+
+        elif resource.startswith("about:"):
+            add_to_correct = True
+
+        elif resource.startswith("chrome:"):
+            add_to_correct = True
+
+        elif re.match(r"chrome-(.*)\/\/", resource):
+            add_to_correct = True
+
+        if add_to_correct:
+            dict_correct_resources[resource] = True
 
     # If resource was NOT in correctly logged resources, it is BLOCKED
     blocked_resources = [resource for resource in all_resources\

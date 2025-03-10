@@ -64,7 +64,7 @@ def squash_dns_records() -> dict:
 
     return squashed_records
 
-def squash_tree_resources(request_trees: dict) -> list:
+def squash_tree_resources(request_trees: dict) -> list[str]:
     """Function to squash together resources from all observed request trees"""
     resources = []
 
