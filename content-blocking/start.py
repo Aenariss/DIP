@@ -200,6 +200,9 @@ def obtain_simulation_results(request_trees: dict, options: dict) -> list[dict]:
         dns_records = squash_dns_records()
         resource_list = squash_tree_resources(request_trees)
 
+
+        print(len(resource_list))
+
         # Start the DNS server and set it as prefered to repeat responses
         dns_repeater = DNSRepeater(dns_records)
 
