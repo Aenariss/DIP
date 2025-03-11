@@ -57,6 +57,11 @@ def setup_chrome(options: dict) -> webdriver.Chrome:
         # use custom binary
         chrome_options.binary_location = custom_browser_path
 
+        # Special case for ASB
+        if options.get("experiment_name").startswith("avast"):
+            profile = options.get("profile")
+            chrome_options.add_argument(f'user-data-dir={profile}')
+
         # Go through all specified extensions and add them
         # Will not be used in the thesis, but allows more potential flexibility
         try:
@@ -66,7 +71,7 @@ def setup_chrome(options: dict) -> webdriver.Chrome:
             print(f"Error loading extension {extension}. Is it present in {CHROME_ADDONS_FOLDER}?")
             exit(GENERAL_ERROR)
 
-        chromedriver_path = "./chromedriver_134.exe"
+        chromedriver_path = options.get("chromedriver_path")
         service = ChromeService.Service(chromedriver_path)
 
         driver = webdriver.Chrome(service=service, options=chrome_options)

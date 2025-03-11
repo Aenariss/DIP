@@ -15,12 +15,12 @@
     "direct_fpd_blocked": {
         "n_of_results": 904,
         "sum": {
-            "BrowserProperties": 55618,
+            "BrowserProperties": 55617,
             "AlgorithmicMethods": 1298,
             "CrawlFpInspector": 1364
         },
         "average": {
-            "BrowserProperties": 61.52433628318584,
+            "BrowserProperties": 61.52323008849557,
             "AlgorithmicMethods": 1.4358407079646018,
             "CrawlFpInspector": 1.508849557522124
         }
@@ -28,12 +28,12 @@
     "total_fpd_blocked": {
         "n_of_results": 904,
         "sum": {
-            "BrowserProperties": 155735,
+            "BrowserProperties": 155734,
             "AlgorithmicMethods": 3964,
             "CrawlFpInspector": 2664
         },
         "average": {
-            "BrowserProperties": 172.27323008849558,
+            "BrowserProperties": 172.27212389380531,
             "AlgorithmicMethods": 4.384955752212389,
             "CrawlFpInspector": 2.9469026548672566
         }
@@ -53,8 +53,8 @@
     },
     "directly_blocked": {
         "n_of_results": 904,
-        "sum": 8397,
-        "average": 9.288716814159292
+        "sum": 8395,
+        "average": 9.28650442477876
     },
     "total_requested": {
         "n_of_results": 904,
@@ -63,8 +63,8 @@
     },
     "total_blocked": {
         "n_of_results": 904,
-        "sum": 19556,
-        "average": 21.63274336283186
+        "sum": 19554,
+        "average": 21.63053097345133
     },
     "blocked_transitively": {
         "n_of_results": 904,
@@ -78,22 +78,22 @@
     },
     "average_block_level": {
         "n_of_results": 904,
-        "sum": 2905.2525706421325,
-        "average": 3.2137749675244827
+        "sum": 2904.8525706421324,
+        "average": 3.2133324896483764
     },
     "blocked_subtrees_data": {
         "n_of_results": 904,
         "sum": {
             "fully_blocked": 5069,
-            "partially_blocked": 1014,
-            "not_blocked": 56031,
+            "partially_blocked": 1013,
+            "not_blocked": 56032,
             "total_trees": 62114,
             "root_blocks": 0
         },
         "average": {
             "fully_blocked": 5.607300884955753,
-            "partially_blocked": 1.1216814159292035,
-            "not_blocked": 61.98119469026549,
+            "partially_blocked": 1.1205752212389382,
+            "not_blocked": 61.982300884955755,
             "total_trees": 68.71017699115045,
             "root_blocks": 0.0
         }

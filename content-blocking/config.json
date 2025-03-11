@@ -4,8 +4,10 @@
     "browser_type": "chrome",
     "logging_browser_version": "134",
     "browser_version": "134",
-    "using_custom_browser": 0,
-    "custom_browser_binary": "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe",
-    "tested_addons": ["ublock_origin_lite_2025_3_2_1298.crx"],
-    "experiment_name": "ublock_origin_lite_2025_3_2_1298"
+    "using_custom_browser": 1,
+    "custom_browser_binary": "C:/Program Files/Avast Software/Browser/Application/AvastBrowser.exe",
+    "tested_addons": [],
+    "experiment_name": "avast_secure_browser",
+    "profile": "C:/Users/Noxx/AppData/Local/AVAST Software/Browser/User Data",
+    "chromedriver_path": "./chromedriver_134.exe"
 }
