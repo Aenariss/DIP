@@ -44,6 +44,7 @@ def print_progress(total: int, message: str, limiter=10) -> None:
 def squash_dns_records() -> dict:
     """Function to squash all observed DNS records into one list"""
 
+    print("Squashing DNS records...")
     # Get all DNS files in the ./traffic/ folder
     dns_files = get_traffic_files('dns')
 
@@ -66,6 +67,8 @@ def squash_dns_records() -> dict:
 
 def squash_tree_resources(request_trees: dict) -> list[str]:
     """Function to squash together resources from all observed request trees"""
+
+    print("Squashing all tree resources...")
     resources = []
 
     # For each tree, get all requests

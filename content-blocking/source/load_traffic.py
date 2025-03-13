@@ -38,33 +38,30 @@ def load_traffic(options: dict, compact: bool) -> None:
     # Counter to name files like 1.json, 2.json... to prevent issues
     filename_counter = 1
 
+    sniffer = DNSSniffer()
+
     # Go through each page and observe traffic
     for page in pages:
 
-        sniffer = DNSSniffer()
-        sniffer.start_sniffer()
-        time.sleep(1)
+        dns_traffic, network_traffic = get_page_logs(sniffer, page, options, compact)
 
-        # Get the HTTP(S) traffic associated with a page
-        try:
-            network_traffic = get_page_traffic(page, options, compact)
-            if network_traffic == {}:
-                sniffer.stop_sniffer()
-                filename_counter += 1
-                continue
-        except Exception:
-            # Page may not load correctly - skip it and continue
-            sniffer.stop_sniffer()
+        dns_validity = is_dns_valid(dns_traffic, network_traffic)
+
+        if not dns_traffic and not network_traffic:
+            print(f"Error loading {page}! Skipping...")
+            filename_counter += 1
             continue
 
-        time.sleep(1)
-        sniffer.stop_sniffer()
-        dns_traffic = sniffer.get_traffic()
-
         # Check all traffic has its DNS logged
-        if not is_dns_valid(dns_traffic, network_traffic):
-            # If not, do not save it
+        # If DNS error, try again, but only once
+        if not dns_validity:
+            print(f"Could not correctly sniff DNS traffic for {page}! Trying again...")
+            dns_traffic, network_traffic = get_page_logs(sniffer, page, options, compact)
+            dns_validity = is_dns_valid(dns_traffic, network_traffic)
+
+        if not dns_validity:
             print(f"Could not correctly sniff DNS traffic for {page}! Skipping...")
+            filename_counter += 1
             continue
 
         save_traffic(dns_traffic, page, str(filename_counter), "dns")
@@ -74,6 +71,39 @@ def load_traffic(options: dict, compact: bool) -> None:
 
     print("Traffic loading finished!")
 
+def get_page_logs(sniffer: DNSSniffer, page: str, options: dict, compact: bool)\
+      -> tuple[dict, list]:
+
+    sniffer.start_sniffer()
+    time.sleep(1)
+
+    # Get the HTTP(S) traffic associated with a page
+    visit_status, network_traffic = visit_page(page, options, compact)
+
+    # If error, skip the page
+    if not visit_status:
+        sniffer.stop_sniffer()
+        return {}, []
+
+    time.sleep(1)
+    sniffer.stop_sniffer()
+    dns_traffic = sniffer.get_traffic()
+
+    return dns_traffic, network_traffic
+
+
+def visit_page(page: str, options: dict, compact: bool) -> tuple[bool, list]:
+    # Get the HTTP(S) traffic associated with a page
+    network_traffic = []
+    try:
+        network_traffic = get_page_traffic(page, options, compact)
+        if not network_traffic:
+            return False, network_traffic
+        return True, network_traffic
+    except Exception:
+        # Page may not load correctly - skip it and continue
+        return False, network_traffic
+
 def get_address(resource: str) -> str:
     """Function to obtain only the page address from URL"""
     matched = re.search(r"\/\/(.*?)\/", resource)
@@ -82,7 +112,7 @@ def get_address(resource: str) -> str:
 
     return ""
 
-def is_dns_valid(dns_traffic: dict, network_traffic: dict) -> bool:
+def is_dns_valid(dns_traffic: dict, network_traffic: list) -> bool:
     """Function to ensure all observed network resources have also its DNS logged"""
     for resource in network_traffic:
         requested_resource = resource["requested_resource"]
@@ -106,7 +136,9 @@ def is_dns_valid(dns_traffic: dict, network_traffic: dict) -> bool:
             return False
 
         subdomain = top_level.get('.'.join(rest), None)
-        return subdomain
+        if not subdomain:
+            return False
+        return True
 
 def save_traffic(traffic: dict, pagename: str, filename: str, traffic_type: str) -> None:
     """Function to append observed traffic to the traffic file"""

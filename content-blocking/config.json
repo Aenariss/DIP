@@ -4,10 +4,10 @@
     "browser_type": "chrome",
     "logging_browser_version": "134",
     "browser_version": "134",
-    "using_custom_browser": 1,
+    "using_custom_browser": 0,
     "custom_browser_binary": "C:/Program Files/Avast Software/Browser/Application/AvastBrowser.exe",
     "tested_addons": [],
-    "experiment_name": "avast_secure_browser",
+    "experiment_name": "chrome_browser",
     "profile": "C:/Users/Noxx/AppData/Local/AVAST Software/Browser/User Data",
     "chromedriver_path": "./chromedriver_134.exe"
 }

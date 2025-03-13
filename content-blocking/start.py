@@ -19,6 +19,7 @@
 # Built-in modules
 import argparse
 import os
+import re
 import time
 
 # Custom modules
@@ -34,7 +35,7 @@ from source.file_manipulation import save_json, load_json
 from source.visit_test_server import visit_test_server
 from source.analysis import analyse_trees
 from source.firewall import firewall_unblock_traffic, firewall_block_traffic
-from source.utils import squash_dns_records, squash_tree_resources
+from source.utils import squash_dns_records, squash_tree_resources, print_progress
 
 from custom_dns_server.dns_repeater_server import DNSRepeater
 
@@ -51,7 +52,7 @@ parser.add_argument('-lo', '--load-only', action="store_true",
 parser.add_argument('-ao', '--analysis-only', action="store_true",
         help="Whether to use skip using local server to calculate blocked requests and use logs")
 parser.add_argument('-so', '--simulation-only', action="store_true",
-        help="Whether to use only perform simulation using local server")
+        help="Whether to only perform simulation using local server without analysis")
 parser.add_argument('-tso', '--testing-server-only', action="store_true",
         help="Whether to only start a testing server and do nothing else")
 parser.add_argument('-eb', '--early-blocking', action="store_true",
@@ -176,6 +177,78 @@ def parse_traffic() -> dict:
 
     return request_trees
 
+def delete_logs(network_log_name: str) -> None:
+    """Function to delete all corresponding log files to a given network logfile,
+    network logs included"""
+
+    basename = os.path.basename(network_log_name)
+    file_number = basename.split("_")[0]
+
+    os.remove(TRAFFIC_FOLDER + f"{file_number}_network.json")
+    os.remove(TRAFFIC_FOLDER + f"{file_number}_dns.json")
+    os.remove(TRAFFIC_FOLDER + f"{file_number}_fp.json")
+
+def filter_out_unresolved_dns(dns_records: dict, request_trees: dict)\
+    -> dict:
+    """For some reason, some DNS records may not have been logged correctly. I have no idea why. 
+    Just that it is probably caused by Scapy"""
+
+    print("Checking if DNS records were valid...")
+
+    def get_address(resource: str) -> str:
+        """Function to obtain only the page address from URL"""
+        matched = re.search(r"\/\/(.*?)\/", resource)
+        if matched:
+            return matched.group(1)
+
+        return ""
+
+    progress_printer = print_progress(len(request_trees.items()),\
+                                       "Checking DNS records validity...")
+
+    trees_to_remove = []
+    for (tree_name, tree) in request_trees.items():
+
+        progress_printer()
+        resources = tree.get_all_requests()
+
+        for resource in resources:
+
+            # skip all data:, blob: etc
+            if not resource.startswith("http"):
+                continue
+
+            address = get_address(resource)
+
+            # If empty address was returned, nothing was matched meaning an error
+            if address == "":
+                print("CDP format has probably changed! Fix load_traffic.py")
+
+            split = address.split('.')
+            last_two = split[-2:]
+            rest = split[:-2]
+
+            # In case the page was like google.com, meaning no subdomains, use it all to check
+            if not rest:
+                rest = last_two
+
+            top_level = dns_records.get('.'.join(last_two), None)
+            if not top_level:
+                print(f"Error, {resource} was not DNS-matched for file {tree_name}! Removing...")
+                delete_logs(tree_name)
+                trees_to_remove.append(tree_name)
+                break
+
+            subdomain = top_level.get('.'.join(rest), None)
+            if not subdomain:
+                print(f"Error, {resource} was not DNS-matched for file {tree_name}! Removing...")
+                delete_logs(tree_name)
+                trees_to_remove.append(tree_name)
+                break
+    for tree in trees_to_remove:
+        request_trees.pop(tree)
+    return request_trees
+
 def obtain_simulation_results(request_trees: dict, options: dict) -> list[dict]:
     """Function to simulate what would happen had the tool been present during the visits.
 
@@ -196,12 +269,14 @@ def obtain_simulation_results(request_trees: dict, options: dict) -> list[dict]:
 
     console_output = None
 
+    # Squash DNS records and contacted pages from all observations together
+    dns_records = squash_dns_records()
+    resource_list = squash_tree_resources(request_trees)
+
+    request_trees = filter_out_unresolved_dns(dns_records, request_trees)
+
     # Only do this if --analysis-only was not specified.
     if not args.analysis_only:
-
-        # Squash DNS records and contacted pages from all observations together
-        dns_records = squash_dns_records()
-        resource_list = squash_tree_resources(request_trees)
 
         # Start the DNS server and set it as prefered to repeat responses
         dns_repeater = DNSRepeater(dns_records)

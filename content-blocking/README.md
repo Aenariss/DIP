@@ -68,3 +68,8 @@ Loading is absolutely terrible -> Selenium arbitrarily crashes, gets stuck on a 
 then setting all the traffic fragments together
 
 JShelter FPD sometimes has a race condition which causes fingerprinting to not work on some pages. 
+
+Sometimes, scapy adds trash DNS records. PLease, always run test run with chrome browser (since firefox does not log errors). If something went wrong, you will see err::NAME_NOT_RESOLVED in result logs.
+In such cases, the simplest solution is to collect traffic again.
+
+All paths need to be with '/' instead of Windows '\' (config)

@@ -27,6 +27,7 @@ import docker
 # Custom modules
 from source.constants import GENERAL_ERROR, DNS_CONTAINER_NAME, DNS_CONTAINER_IMAGE
 from source.constants import DNS_CONFIGURATION_FOLDER
+from source.utils import print_progress
 
 class DNSRepeater:
     """Class representing the object used to manipulate DNS server running in docker"""
@@ -82,28 +83,44 @@ zone "{domain}" {{
 
         tar = tarfile.open(self.tar_path, mode='w')
         already_present = {}
+        progress_printer = print_progress(len(dns_records.items()), "Generating zone files...")
+        try:
+            # Prepare new zone for each record
+            for (key, value) in dns_records.items():
+                progress_printer()
+                zone_file = self.generate_zonefile(key, value)
+                zone_file_path = DNS_CONFIGURATION_FOLDER + key
 
-        # Prepare new zone for each record
-        for (key, value) in dns_records.items():
-            zone_file = self.generate_zonefile(key, value)
-            zone_file_path = DNS_CONFIGURATION_FOLDER + key
-
-            # Write the file
-            with open(zone_file_path, 'w', encoding='utf-8', newline="") as f:
-                f.write(zone_file)
-                f.write("\n")
-
-            # Include it in named.conf
-            with open(named_conf_file, 'a', encoding='utf-8', newline="") as f:
-
-                if not already_present.get(key):
-                    already_present[key] = True
-                    zone_config = zone_config_template.format(domain=key)
-                    f.write(zone_config)
+                # Write the file
+                with open(zone_file_path, 'w', encoding='utf-8', newline="") as f:
+                    f.write(zone_file)
                     f.write("\n")
 
-            # Add the zone to tmp tarfile
-            tar.add(zone_file_path, arcname=os.path.basename(zone_file_path))
+                # Include it in named.conf
+                with open(named_conf_file, 'a', encoding='utf-8', newline="") as f:
+
+                    if not already_present.get(key):
+                        already_present[key] = True
+                        zone_config = zone_config_template.format(domain=key)
+                        f.write(zone_config)
+                        f.write("\n")
+
+                # Add the zone to tmp tarfile
+                tar.add(zone_file_path, arcname=os.path.basename(zone_file_path))
+        except Exception:
+            # Remove all zone files and tar from folder and docker
+            print("Removing existing zone files...")
+            for file in os.listdir(DNS_CONFIGURATION_FOLDER):
+                filename = DNS_CONFIGURATION_FOLDER + file
+
+                # Remove existing file except for the placeholder file
+                if os.path.isfile(filename) and file != ".empty" and file != "named.conf":
+                    os.remove(filename)
+
+            # Restore original named.conf
+            named_conf_file = DNS_CONFIGURATION_FOLDER + "named.conf"
+            with open(named_conf_file, 'w', encoding='utf-8', newline="") as f:
+                f.write(self.original_config)
 
         tar.close()
 

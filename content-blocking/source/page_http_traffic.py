@@ -125,11 +125,14 @@ def get_network_requests(logs: dict, compact: bool) -> list[dict]:
             tmp_log = {}
 
             # Unimportant for evaluation? used only for checks
-            tmp_log["requested_by"] = log["params"]["documentURL"]
+            tmp_log["requested_for"] = log["params"]["documentURL"]
 
             # Used to establish which request was sent first to later match DNS responses
             tmp_log["time"] = log["params"]["timestamp"]
 
+            # Just useless stuff, but log it anyway cause it might be useful maybe later
+            tmp_log["requestId"] = log["params"]["requestId"]
+            tmp_log["loaderId"] = log["params"]["loaderId"]
 
             # "Name" of the reosurce in the F12 Network traffic
             tmp_log["requested_resource"] = log["params"]["request"]["url"]

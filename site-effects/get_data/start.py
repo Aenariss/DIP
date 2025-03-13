@@ -178,11 +178,48 @@ def testing_controller_thread(thread_mark, browser_type, top_sites, sites_offset
     driver_with_addon.quit()
 
 
+def visit_page(browser_type, with_addon, site, site_number):
+    logs = []
+    my_driver = driver.create_driver(browser_type, addon_driver=False)
+    print("get_page_data_thread")
+    #confirm_alerts_if_open(my_driver, with_addon, 20)
+    #clear_console_logs(my_driver, with_addon)
+    #confirm_alerts_if_open(my_driver, with_addon, 20)
+    my_driver.get('http://www.' + site)
+    sleep(1)
+    #confirm_alerts_if_open(my_driver, with_addon, 100)
+    my_driver.quit()
+    
+
+
+def test_controller_thread(thread_mark, browser_type, top_sites, sites_offset):
+    site_number = 1
+    top_sites_number = len(top_sites)
+    #driver_with_addon = driver.create_driver(browser_type, addon_driver=True)
+    print("SITES:", top_sites)
+    for top_site in top_sites:
+        get_logs_without_addon_thread = Process(target=visit_page, args=(browser_type, False, top_site, sites_offset + site_number, ))
+
+        print("Created process")
+
+        get_logs_without_addon_thread.start()
+
+        sleep(4)
+
+
+        get_logs_without_addon_thread.terminate()
+        get_logs_without_addon_thread.join()
+
+        print("Terminated process")
+
+
+        
+
 ## Start separate thread for every browser type for perform tests.
 def run_browsers_thread(thread_mark, browser_job, sites_offset):
     browser_threads = []
     for browser_type in Config.tested_browsers:
-        testing_controller_thread(thread_mark, browser_type, browser_job, sites_offset)
+        test_controller_thread(thread_mark, browser_type, browser_job, sites_offset)
         #new_thread = Process(target=testing_controller_thread, args=(thread_mark, browser_type, browser_job, sites_offset))
         #browser_threads.append(new_thread)
         #new_thread.start()
@@ -224,16 +261,20 @@ def main():
         try:
             io.init_output_files()
             run_getting_logs_threads()
-            io.finish_output_files()
+            #io.finish_output_files()
         except Exception as e:
             print(e)
         finally:
+            print("Turning off...")
             sleep(3)
+            print("Turning off zombies...")
             io.terminate_zombie_processes()
             grid.end_nodes(nodes, manually=False)
             grid.end_server(server)
+            sleep(2)
     else:
         grid.end_nodes(nodes, manually=True)
+    print("Everything finished!")
 
 
 if __name__ == "__main__":

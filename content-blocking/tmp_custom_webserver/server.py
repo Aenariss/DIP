@@ -11,12 +11,8 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-Type", "application/javascript")
             self.end_headers()
             self.wfile.write(b"""
-            console.log('Script 1 loaded');
-            const script2 = document.createElement('script');
-            script2.src = '/script2.js';
-            document.body.appendChild(script2);
+            eval("console.log('Script 1 loaded'); const script2 = document.createElement('script'); script2.src = '/script2.js'; document.body.appendChild(script2);")
 
-            eval('let x = 15')
             """)
         elif self.path == "/script2.js":
             # Serve the second script dynamically

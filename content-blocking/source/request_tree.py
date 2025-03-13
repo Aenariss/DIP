@@ -333,29 +333,13 @@ class RequestTree:
                 result += self.print_tree(level=level+1, current_node=child, printing=printing)
         return result
 
-def fix_missing_parent(observed_traffic: dict, resource: dict, tree: RequestTree,\
-                    previous_main_node: RequestNode, node: RequestNode, fp_attempts: int) -> None:
-    """Fix initiator when child resource was loaded before the parent, should rarely happen"""
+def fix_missing_parent(global_node: RequestNode, resource_node: RequestNode) -> None:
+    """handle initiator when child resource was loaded before the parent, should rarely happen"""
 
-    # Find every parent resource that requested the resource
-    direct_parents = look_for_specific_initiator(observed_traffic,\
-                                                resource["initiator"]["url"])
-    time = resource.get("time", sys.maxsize)
-    new_parent_node = RequestNode(time, resource["initiator"]["url"], \
-                                  children=[node], fp_attempts=fp_attempts)
-
-    # If direct parent wasnt found, set current root as the parent
-    # (maybe look recursively deeper instead?)
-    if not direct_parents:
-        previous_main_node.add_child(new_parent_node)
-
-    # Else find the parent of the parent
-    else:
-        for parent_node in direct_parents:
-            # Parents who requsted the parent of the current resource
-            parent_nodes = tree.find_nodes(parent_node["initiator"]["url"])
-            for parent_node in parent_nodes:
-                parent_node.add_child(new_parent_node)
+    # If parent was not found, it might be because of some javascript-magic or because of iframes
+    # that open for about:srcdoc or something like that. In that case, I'm unable to tell.
+    # So just add it as parent of the root resource
+    global_node.add_child(resource_node)
 
 def join_call_frames(stack: dict) -> list[str]:
     """Function to recursively obtain the callstack containing all parents"""
@@ -457,9 +441,9 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict) -> RequestTree:
         # Create new Node object representing the resource
         node = RequestNode(time, current_resource, children=[], fp_attempts=resource_fp_attempts)
 
-        # If requested_by matches requested_resource and initiator type is "other"
+        # If requested_for matches requested_resource and initiator type is "other"
         # it's a redirect and go globally a level deeper
-        if resource["requested_by"] == current_resource and\
+        if resource["requested_for"] == current_resource and\
             resource["initiator"]["type"] == "other":
 
             tree, global_level = construct_tree(tree, resource_number,\
@@ -469,23 +453,29 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict) -> RequestTree:
             # Direct initiator
             if resource["initiator"].get("url") is not None:
 
+                # Skip preflights since they will be loaded later anyway
+                if resource["initiator"]["type"] == "preflight":
+                    continue
+
                 # Check if the parent is already present
                 parent_nodes = tree.find_nodes(resource["initiator"]["url"])
 
                 # Parent not known should not happen often (child resource loaded before parent)
-                # May happen with some preflights -- I'll skip those since
-                # they will be already loaded anyway
                 if not parent_nodes:
-                    if resource["initiator"]["type"] == "preflight":
-                        continue
-
-                    # If it was not preflight, it's strange, but try to fix it
-                    fix_missing_parent(observed_traffic, resource, tree,\
-                                       global_level, node, resource_fp_attempts)
+                    # If it was not preflight, it's strange, so handle it
+                    fix_missing_parent(global_level, node)
 
                 # Parent present, add it as their child
                 else:
-                    # Resource can be requested by multiple requests - its a child of all of them
+                    # Resource can be requested by multiple requests -> very weird!
+                    if len(parent_nodes) > 1:
+                        pass
+                    # Assign the parent only once so that there are no virtual requests
+                    # Problem - how do I know which parent is the correct one?
+                    # A was requested 7 times by different resources. A requested B. Which from the
+                    # 7 A is responsible? Todo: Go recursively through LoaderId?
+                    # But it can be empty? Maybe a better approach would be to only use ID?
+                    # Temporarily assign to all.
                     for parent_node in parent_nodes:
                         parent_node.add_child(node)
 
@@ -507,12 +497,14 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict) -> RequestTree:
                     #calls = list(dict.fromkeys(calls))
 
                     # Remove dynamic content with no known initiator
+                    # and chrome-extension JShelter wrappers
                     # "" -> B -> C = just B -> C
-                    calls = [x for x in calls if x != '']
+                    calls = [x for x in calls if (x != '') and not x.startswith("chrome-extension")]
 
                     # Obtain only the direct initiator - only look for the final request that
                     # caused the resource to be loaded. Seems to work, tbd: ensure it does
                     last_two_calls = calls[-2:]
+
                     if len(last_two_calls) == 2:
 
                         # Check if the parent is already known (should be)
@@ -522,9 +514,7 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict) -> RequestTree:
 
                         # If parent unknown, try to fix it (should not happen)
                         if parent_nodes == []:
-                            fix_missing_parent(observed_traffic,\
-                                                {"initiator": {"url":last_two_calls[1]}},\
-                                                tree, global_level, node, resource_fp_attempts)
+                            fix_missing_parent(global_level, node)
 
                     # If all callframes were empty (dynamic), just set the last
                     # global level as parent of the resource
@@ -571,7 +561,6 @@ def create_trees(fp_attempts: dict) -> dict:
         # obtain corresponding FP attempts, in case of an error (should never happen)
         # return an empty dict with no FP attempts observed
         corresponding_fp_attempts = fp_attempts.get(pure_filename, {})
-
         trees[pure_filename] = reconstruct_tree(traffic, corresponding_fp_attempts)
 
     print("Request trees reconstructed!")

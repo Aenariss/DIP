@@ -159,8 +159,9 @@ def setup_jshelter_custom_fpd(options: dict, download_path: str) -> webdriver.Ch
     chrome_options.add_argument("--remote-debugging-port=9222")
     chrome_options.add_argument("--enable-javascript")
     chrome_options.add_argument('--enable-extensions')
-    # I already collected traffic without this setting, maybe enable in the future?
-    #chrome_options.add_argument('--ignore-certificate-errors')
+    chrome_options.add_argument('--ignore-certificate-errors')
+    chrome_options.add_argument("--allow-running-insecure-content")
+
     chrome_options.browser_version = options.get(LOGGING_BROWSER_VERSION)
     chrome_options.add_experimental_option('prefs', {
         'download.default_directory': download_path,
