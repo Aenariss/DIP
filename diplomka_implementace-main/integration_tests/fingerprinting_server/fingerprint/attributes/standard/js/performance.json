@@ -1,8 +1,0 @@
-{
-    "name" : "Performance",
-    "description" : "Information regarding performance.",
-    "files" : ["performance.js"],
-    "variables" :[], 
-    "hash" : "False"
-  }
-  

@@ -51,6 +51,7 @@ TESTED_ADDONS = "tested_addons"
 EXPERIMENT_NAME = "experiment_name"
 LOGGING_BROWSER_VERSION = "logging_browser_version"
 TIME_UNTIL_TIMEOUT = "time_until_timeout"
+HEADLESS = "headless_logging"
 
 # DNS server docker container name
 DNS_CONTAINER_NAME = "bind9"

@@ -297,7 +297,8 @@ class RequestTree:
         return self.__recursive_node_check(self.get_root(), searched_resource)
 
     def print_tree(self, level: int=1, current_node: RequestNode=None, printing: bool=False) -> str:
-        """Method to CLI-visualize the requests in a given tree or return the tree as a string"""
+        """Method to CLI-visualize the requests in a given tree or return the visualization as
+        a string"""
 
         # Print the initial request - tree root
         result = ""
@@ -323,7 +324,6 @@ class RequestTree:
             if printing:
                 print('|' + '--' * 2 * level + ' ' + current_node.get_resource()[:100]\
                      + ' ' + block_result + ' ' + current_fp_attempts)
-                    #"<-", ' '.join(x.get_resource()[:100] for x in current_node.get_parent()))
             # Add current level to result
             result += '\n|' + '--' * 2 * level + ' ' + current_node.get_resource()[:100] + ' '\
                     + block_result + ' ' + current_fp_attempts

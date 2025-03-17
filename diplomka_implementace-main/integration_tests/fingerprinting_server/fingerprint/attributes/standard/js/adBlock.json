@@ -1,7 +1,0 @@
-{
-  "name" : "adBlock",
-  "description" : "Return a boolean string indicating whether adBlock is installed in the user's browser or not",
-  "files" : ["adBlock.js"],
-  "variables" : ["adBlock installed"],
-  "hash" : "False"
-}

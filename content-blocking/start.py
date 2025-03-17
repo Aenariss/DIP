@@ -26,7 +26,7 @@ import time
 from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, RESULTS_FOLDER, USER_CONFIG_FILE
 from source.constants import PAGE_WAIT_TIME, BROWSER_TYPE, USING_CUSTOM_BROWSER, TESTED_ADDONS
 from source.constants import BROWSER_VERSION, EXPERIMENT_NAME, LOGGING_BROWSER_VERSION
-from source.constants import CUSTOM_BROWSER_BINARY
+from source.constants import CUSTOM_BROWSER_BINARY, HEADLESS
 from source.load_traffic import load_traffic
 from source.fp_attempts import parse_fp
 from source.request_tree import create_trees
@@ -69,12 +69,13 @@ def valid_options(options: dict) -> bool:
     experiment_name = options.get(EXPERIMENT_NAME)
     logging_browser_version = options.get(LOGGING_BROWSER_VERSION)
     custom_browser_binary = options.get(CUSTOM_BROWSER_BINARY, "")
+    headless = options.get(HEADLESS)
 
     result = [True]
 
     # The fields need to be present
     if not browser_version or not experiment_name or not logging_browser_version\
-        or custom_browser is None or tested_addons is None:
+        or custom_browser is None or tested_addons is None or headless is None:
         result.append(False)
 
     # Browser type supported is only chrome and firefox

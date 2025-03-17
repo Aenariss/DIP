@@ -1,8 +1,0 @@
-{
-    "name" : "toString methods",
-    "description" : "Test of toString methods.",
-    "files" : ["methodsToString.js"],
-    "variables" : [],
-    "hash" : "False"
-  }
-  

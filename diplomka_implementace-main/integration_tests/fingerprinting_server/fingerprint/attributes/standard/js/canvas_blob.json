@@ -1,8 +1,0 @@
-{
-    "name" : "canvas_blob",
-    "description" : "Calculation of canvas blob.",
-    "files" : ["canvas_blob.js"],
-    "variables" :[], 
-    "hash" : "True"
-  }
-  

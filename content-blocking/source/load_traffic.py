@@ -45,7 +45,7 @@ def load_traffic(options: dict, compact: bool) -> None:
 
         dns_traffic, network_traffic = get_page_logs(sniffer, page, options, compact)
 
-        dns_validity = is_dns_valid(dns_traffic, network_traffic)
+        dns_validity, dns_traffic = is_dns_valid(dns_traffic, network_traffic)
 
         if not dns_traffic and not network_traffic:
             print(f"Error loading {page}! Skipping...")
@@ -56,12 +56,15 @@ def load_traffic(options: dict, compact: bool) -> None:
         # If DNS error, try again, but only once
         if not dns_validity:
             print(f"Could not correctly sniff DNS traffic for {page}! Trying again...")
+            # Give it some time
+            time.sleep(5)
             dns_traffic, network_traffic = get_page_logs(sniffer, page, options, compact)
-            dns_validity = is_dns_valid(dns_traffic, network_traffic)
+            dns_validity, dns_traffic = is_dns_valid(dns_traffic, network_traffic)
 
         if not dns_validity:
             print(f"Could not correctly sniff DNS traffic for {page}! Skipping...")
             filename_counter += 1
+            delete_unsuccesfull_fpd()
             continue
 
         save_traffic(dns_traffic, page, str(filename_counter), "dns")
@@ -75,7 +78,7 @@ def get_page_logs(sniffer: DNSSniffer, page: str, options: dict, compact: bool)\
       -> tuple[dict, list]:
 
     sniffer.start_sniffer()
-    time.sleep(1)
+    time.sleep(0.2)
 
     # Get the HTTP(S) traffic associated with a page
     visit_status, network_traffic = visit_page(page, options, compact)
@@ -85,7 +88,7 @@ def get_page_logs(sniffer: DNSSniffer, page: str, options: dict, compact: bool)\
         sniffer.stop_sniffer()
         return {}, []
 
-    time.sleep(1)
+    time.sleep(0.2)
     sniffer.stop_sniffer()
     dns_traffic = sniffer.get_traffic()
 
@@ -112,16 +115,30 @@ def get_address(resource: str) -> str:
 
     return ""
 
-def is_dns_valid(dns_traffic: dict, network_traffic: list) -> bool:
-    """Function to ensure all observed network resources have also its DNS logged"""
+def is_dns_valid(dns_traffic: dict, network_traffic: list) -> tuple[bool, dict]:
+    """Function to ensure all observed network resources have also its DNS logged
+    Also removes unnecessary DNS records that do not match any of the network requests"""
+
+    status = False
+    observed_dns_logs = {}
+
+    # Mark all DNS logs as unnecessary in the beginning
+    for (key, _) in dns_traffic.items():
+        observed_dns_logs[key] = False
+
     for resource in network_traffic:
         requested_resource = resource["requested_resource"]
+
+        # skip all data:, blob: etc
+        if not requested_resource.startswith("http"):
+            continue
+
         address = get_address(requested_resource)
 
         # If empty address was returned, nothing was matched meaning an error
         if address == "":
             print("CDP format has probably changed! Fix load_traffic.py")
-            return False
+            return status, {}
 
         split = address.split('.')
         last_two = split[-2:]
@@ -132,13 +149,25 @@ def is_dns_valid(dns_traffic: dict, network_traffic: list) -> bool:
             rest = last_two
 
         top_level = dns_traffic.get('.'.join(last_two), None)
+
+        # Set the page as necessary
+        observed_dns_logs['.'.join(last_two)] = True
+
         if not top_level:
-            return False
+            return status, {}
 
         subdomain = top_level.get('.'.join(rest), None)
         if not subdomain:
-            return False
-        return True
+            return status, {}
+
+    status = True
+
+    # Go through all DNS and delete all records that do not belong to network request.
+    for (key, _) in observed_dns_logs.items():
+        if not observed_dns_logs[key]:
+            del dns_traffic[key]
+
+    return status, dns_traffic
 
 def save_traffic(traffic: dict, pagename: str, filename: str, traffic_type: str) -> None:
     """Function to append observed traffic to the traffic file"""
@@ -157,6 +186,17 @@ def save_traffic(traffic: dict, pagename: str, filename: str, traffic_type: str)
         print("Could not save traffic to a file! Problem with page:", pagename)
         print(error)
         exit(FILE_ERROR)
+
+def delete_unsuccesfull_fpd() -> None:
+    """Funciton to delete FPD files for pages that failed to correctly load"""
+
+    # Load the only different files
+    files = [f for f in os.listdir(TRAFFIC_FOLDER) if not re.match(r'^[0-9]', f)]
+
+    # if it wasnt .empty, load them and delete them
+    for file in files:
+        if file != ".empty":
+            os.remove(TRAFFIC_FOLDER + file)
 
 def match_jshelter_fpd(filename: int) -> None:
     """Function to match the downloaded JSHelter FPD report file to its results"""

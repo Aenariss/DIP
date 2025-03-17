@@ -54,18 +54,6 @@ def visit_test_server(options: dict, requests: list, dns_repeater: DNSRepeater, 
 
     print("Testing blocked resources for all visited pages...")
 
-    # For debugging purposes (Avast Secure Browser doesnt work when connected through selenium)
-    if args.testing_server_only:
-        try:
-            dns_repeater.start()
-            firewall_block_traffic()
-            time.sleep(3600)
-        finally:
-            firewall_unblock_traffic()
-            dns_repeater.stop()
-            stop_testing_server(server)
-            exit(0)
-
     # Correctly setup the driver according to given config
     driver = setup_driver(options)
 

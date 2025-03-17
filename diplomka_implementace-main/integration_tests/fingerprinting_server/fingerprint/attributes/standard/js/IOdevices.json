@@ -1,8 +1,0 @@
-{
-    "name" : "IO devices",
-    "description" : "List of user's io devices",
-    "files" : ["IOdevices.js"],
-    "variables" : ["io_devices.data"],
-    "hash" : "False"
-  }
-  

@@ -30,7 +30,7 @@ import selenium.webdriver.firefox.service as FirefoxService
 from source.constants import BROWSER_TYPE, BROWSER_VERSION, USING_CUSTOM_BROWSER, TESTED_ADDONS
 from source.constants import CHROME_ADDONS_FOLDER, FIREFOX_ADDONS_FOLDER, GENERAL_ERROR
 from source.constants import TIME_UNTIL_TIMEOUT, LOGGING_BROWSER_VERSION, JSHELTER_FPD_PATH
-from source.constants import CUSTOM_BROWSER_BINARY, FIREFOX_RESOURCE_LOGGER
+from source.constants import CUSTOM_BROWSER_BINARY, FIREFOX_RESOURCE_LOGGER, HEADLESS
 
 def setup_driver(options: dict) -> webdriver.Chrome | webdriver.Firefox:
     """Function to setup the driver depeneding on the specified browser"""
@@ -161,6 +161,9 @@ def setup_jshelter_custom_fpd(options: dict, download_path: str) -> webdriver.Ch
     chrome_options.add_argument('--enable-extensions')
     chrome_options.add_argument('--ignore-certificate-errors')
     chrome_options.add_argument("--allow-running-insecure-content")
+
+    if options.get(HEADLESS):
+        chrome_options.add_argument("--headless=new")
 
     chrome_options.browser_version = options.get(LOGGING_BROWSER_VERSION)
     chrome_options.add_experimental_option('prefs', {

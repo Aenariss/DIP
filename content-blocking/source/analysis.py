@@ -129,11 +129,11 @@ def analyse_subtrees_blocking(request_tree: RequestTree) -> dict:
                 not_blocked += 1
 
     return {
-        "fully_blocked": fully_blocked, 
-        "partially_blocked": partially_blocked,
-        "not_blocked": not_blocked,
-        "total_trees": total_trees,
-        "root_blocks": root_blocks
+        "subtrees_fully_blocked": fully_blocked, 
+        "subtrees_partially_blocked": partially_blocked,
+        "subtrees_not_blocked": not_blocked,
+        "subtrees_in_total": total_trees,
+        "trees_blocked_because_root_node": root_blocks
     }
 
 def add_subtrees(subtrees1: dict, subtrees2: dict) -> dict:
@@ -261,17 +261,28 @@ def simulate_blocking(request_tree: RequestTree, blocked_resources: list[str]) -
     blocked_with_children = calculate_blocked_who_brings_children(really_blocked_nodes)
 
     return {
-        "total_fpd_attempts": total_fpd_attempts, # Total FPD attempts observed
-        "direct_fpd_blocked": direct_fpd_blocked, # Number of FPD attempts blocked directly
-        "total_fpd_blocked": total_fpd_blocked, # Total number of FPD attempts blocked
-        "transitive_fpd_blocked": transitive_fpd_blocked, # Number of FPD attempts blocked tran.
-        "directly_blocked": directly_blocked, # Number of resources blocked directly
-        "total_requested": total_requested, # Number of all rsources requested
-        "total_blocked": total_blocked, # Number of all resources blocked (even transtiviely)
-        "blocked_transitively": blocked_transitively, # Number of resources blocked transitively
-        "blocked_with_children": blocked_with_children, # N of blocked resources which brought kids
-        "average_block_level": average_block_level, # Average level at which resource was blocked
-        "blocked_subtrees_data": blocked_subtrees_data # N of fully/partially/not blocked subtrees
+        # Total FPD attempts observed
+        "fpd_attempts_observed": total_fpd_attempts,
+        # Number of FPD attempts blocked directly
+        "fpd_attempts_blocked_directly": direct_fpd_blocked,
+        # Number of FPD attempts blocked transitively
+        "fpd_attempts_blocked_transitively": transitive_fpd_blocked,
+        # Total number of FPD attempts blocked
+        "fpd_attempts_blocked_in_total": total_fpd_blocked,
+        # Number of all rsources requested
+        "requests_observed": total_requested,
+        # Number of resources blocked directly
+        "requests_blocked_directly": directly_blocked,
+        # Number of all resources blocked (even transtiviely)
+        "requests_blocked_in_total": total_blocked,
+        # Number of resources blocked transitively
+        "requests_blocked_transitively": blocked_transitively,
+        # N of blocked resources which brought kids
+        "requests_blocked_that_have_child_requests": blocked_with_children,
+        # Average level at which resource was blocked
+        "average_request_block_level": average_block_level,
+        # N of fully/partially/not blocked subtrees
+        "blocked_subtrees_data": blocked_subtrees_data
     }
 
 def parse_console_logs_chrome(console_output: list[dict]) -> list[str]:
@@ -310,20 +321,7 @@ def parse_console_logs_chrome(console_output: list[dict]) -> list[str]:
 
 def parse_partial_results(results: list[dict]) -> dict:
     """Calculates finished results from a collection of partial results by
-    computing the sum and/or average of each value
-    
-    "total_fpd_attempts": Total FPD attempts observed across all pages (SUM, AVG)
-    "direct_fpd_blocked": Number of FPD attempts blocked directly (SUM, AVG)
-    "total_fpd_blocked": Total number of FPD attempts blocked across all pages (SUM, AVG)
-    "transitive_fpd_blocked": Number of FPD attempts blocked transitively (SUM, AVG)
-    "directly_blocked": Number of resources blocked directly (SUM, AVG)
-    "total_requested": Number of all rsources requested (SUM, AVG)
-    "total_blocked": Number of all resources blocked (even transtiviely) (SUM, AVG)
-    "blocked_transitively": Number of resources blocked transitively (SUM, AVG)
-    "blocked_with_children": N of blocked resources which brought kids (SUM, AVG)
-    "average_block_level": Average level at which resource was blocked (AVG)
-    "blocked_subtrees_data": N of subtrees fully/partially/not blocked (AVG, SUM)
-    """
+    computing the sum and/or average of each value"""
 
     sub_result = {
         "n_of_results": 0,
@@ -339,16 +337,16 @@ def parse_partial_results(results: list[dict]) -> dict:
 
     # Initialize completed results, needs to use same keys as in simulate_blocking() function
     total_results = {
-        "total_fpd_attempts": dict(sub_result_dicts),
-        "direct_fpd_blocked": dict(sub_result_dicts),
-        "total_fpd_blocked": dict(sub_result_dicts),
-        "transitive_fpd_blocked": dict(sub_result_dicts),
-        "directly_blocked": dict(sub_result),
-        "total_requested": dict(sub_result),
-        "total_blocked": dict(sub_result),
-        "blocked_transitively": dict(sub_result),
-        "blocked_with_children": dict(sub_result),
-        "average_block_level": dict(sub_result),
+        "fpd_attempts_observed": dict(sub_result_dicts),
+        "fpd_attempts_blocked_directly": dict(sub_result_dicts),
+        "fpd_attempts_blocked_transitively": dict(sub_result_dicts),
+        "fpd_attempts_blocked_in_total": dict(sub_result_dicts),
+        "requests_observed": dict(sub_result),
+        "requests_blocked_directly": dict(sub_result),
+        "requests_blocked_in_total": dict(sub_result),
+        "requests_blocked_transitively": dict(sub_result),
+        "requests_blocked_that_have_child_requests": dict(sub_result),
+        "average_request_block_level": dict(sub_result),
         "blocked_subtrees_data": dict(sub_result_dicts)
     }
 
