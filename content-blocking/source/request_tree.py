@@ -30,14 +30,14 @@ ANONYMOUS_CALLERS = "<anonymous>"
 class RequestNode:
     """Class representing each node in the request tree"""
     def __init__(self, time: str, resource: str,\
-                 children: list["RequestNode"]=None, fp_attempts: dict={}, level=1) -> None:
+                 children: list["RequestNode"]=None, fp_attempts: dict={}) -> None:
         """Init method for setting up each instance"""
         self.resource = resource
         self.children = children
         self.time = time
 
         self.root_node = False
-        self.level = level
+        self.repeated = False
 
         # Number of observed FP attempts used by this resource
         self.fp_attempts = fp_attempts
@@ -58,7 +58,9 @@ class RequestNode:
         return self.blocked
 
     def block(self) -> None:
-        self.blocked = True
+        # Only block if it was not a repeated node (cant say for 100% such node would be blocked)
+        if not self.repeated:
+            self.blocked = True
 
     def set_fp_attempts(self, fp_attempts) -> None:
         """Method to manually assign number of FP attempts to a resource"""
@@ -108,7 +110,6 @@ class RequestNode:
 
         self.children.append(child_node)
         child_node.add_parent(self)
-        child_node.level = self.level + 1
 
     def add_parent(self, parent_node: "RequestNode") -> None:
         """Method to add parent to a child node"""
@@ -467,15 +468,11 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
         # Create new Node object representing the resource. Creates duplicit requests!!
         # Check if node already exists, if so, at least do not assign it FP attempts
         node = RequestNode(time, current_resource, children=[], fp_attempts=resource_fp_attempts)
+        existing_nodes = []
         if tree:
             existing_nodes = tree.find_nodes(current_resource)
             if existing_nodes:
                 node.set_fp_attempts({})
-
-            # Solve LOWER-BOUND issue of A -> B -> A.
-            if lower_bound_trees:
-                if existing_nodes:
-                    continue
 
         # If requested_for matches requested_resource and initiator type is "other"
         # it's a redirect and go globally a level deeper
@@ -486,6 +483,13 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
                                         node, global_level, fp_attempts)
 
         else:
+            # Solve LOWER-BOUND issue of A -> B,C -> A,C by limiting at msot one of all.
+            if lower_bound_trees:
+                if existing_nodes:
+                    existing_node = existing_nodes[0]
+                    existing_node.repeated = True
+                    continue
+
             # Direct initiator
             if resource["initiator"].get("url") is not None:
 
@@ -507,25 +511,12 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
                     if len(parent_nodes) > 1:
                         pass
 
-                    # Assign the parent only once so that there are no virtual requests
                     # Problem - how do I know which parent is the correct one?
                     # A was requested 7 times by different resources. A requested B. Which from the
                     # 7 A is responsible? Assign to all.
-                    # UPPER-BOUND
-                    if not lower_bound_trees:
-                        for parent_node in parent_nodes:
-                            parent_node.add_child(node)
+                    for parent_node in parent_nodes:
+                        parent_node.add_child(node)
 
-                    # Assign to only the top-level parent to avoid duplicates
-                    # LOWER-BOUND
-                    if lower_bound_trees:
-                        highest_level_parent = None
-                        highest_level = 9999999
-                        for parent_node in parent_nodes:
-                            if parent_node.level < highest_level:
-                                highest_level = parent_node.level
-                                highest_level_parent = parent_node
-                        highest_level_parent.add_child(node)
 
             # Else go through the stack and parents
             else:
@@ -558,26 +549,12 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
                         # Check if the parent is already known (should be)
                         parent_nodes = tree.find_nodes(last_two_calls[0])
 
+                        for parent_node in parent_nodes:
+                            parent_node.add_child(node)
+
                         # If parent unknown, try to fix it (should not happen)
                         if parent_nodes == []:
                             fix_missing_parent(global_level, node)
-
-                        # UPPER-BOUND
-                        if not lower_bound_trees:
-                            for parent_node in parent_nodes:
-                                parent_node.add_child(node)
-
-                        # LOWER-BOUND
-                        # Does not solve the problem that node may have itself as transitive child.
-                        # Only solves the issue of A -> B, C -> A, C. Does A -> B,C -> A.
-                        if lower_bound_trees:
-                            highest_level_parent = None
-                            highest_level = 9999999
-                            for parent_node in parent_nodes:
-                                if parent_node.level < highest_level:
-                                    highest_level = parent_node.level
-                                    highest_level_parent = parent_node
-                            highest_level_parent.add_child(node)
 
                     # If all callframes were empty (dynamic), just set the last
                     # global level as parent of the resource

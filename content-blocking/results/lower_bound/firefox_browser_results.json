@@ -1,0 +1,101 @@
+{
+    "fpd_attempts_observed": {
+        "n_of_results": 937,
+        "sum": {
+            "BrowserProperties": 294613,
+            "AlgorithmicMethods": 215428,
+            "CrawlFpInspector": 6828
+        },
+        "average": {
+            "BrowserProperties": 314.42155816435434,
+            "AlgorithmicMethods": 229.91248665955177,
+            "CrawlFpInspector": 7.287086446104589
+        }
+    },
+    "fpd_attempts_blocked_directly": {
+        "n_of_results": 937,
+        "sum": {
+            "BrowserProperties": 136,
+            "AlgorithmicMethods": 25,
+            "CrawlFpInspector": 36
+        },
+        "average": {
+            "BrowserProperties": 0.14514407684098185,
+            "AlgorithmicMethods": 0.026680896478121666,
+            "CrawlFpInspector": 0.0384204909284952
+        }
+    },
+    "fpd_attempts_blocked_transitively": {
+        "n_of_results": 937,
+        "sum": {
+            "BrowserProperties": 7,
+            "AlgorithmicMethods": 0,
+            "CrawlFpInspector": 0
+        },
+        "average": {
+            "BrowserProperties": 0.007470651013874066,
+            "AlgorithmicMethods": 0.0,
+            "CrawlFpInspector": 0.0
+        }
+    },
+    "fpd_attempts_blocked_in_total": {
+        "n_of_results": 937,
+        "sum": {
+            "BrowserProperties": 143,
+            "AlgorithmicMethods": 25,
+            "CrawlFpInspector": 36
+        },
+        "average": {
+            "BrowserProperties": 0.1526147278548559,
+            "AlgorithmicMethods": 0.026680896478121666,
+            "CrawlFpInspector": 0.0384204909284952
+        }
+    },
+    "requests_observed": {
+        "n_of_results": 937,
+        "sum": 98333,
+        "average": 104.94450373532551
+    },
+    "requests_blocked_directly": {
+        "n_of_results": 937,
+        "sum": 75,
+        "average": 0.08004268943436499
+    },
+    "requests_blocked_in_total": {
+        "n_of_results": 937,
+        "sum": 90,
+        "average": 0.096051227321238
+    },
+    "requests_blocked_transitively": {
+        "n_of_results": 937,
+        "sum": 15,
+        "average": 0.016008537886873
+    },
+    "requests_blocked_that_have_child_requests": {
+        "n_of_results": 937,
+        "sum": 5,
+        "average": 0.005336179295624333
+    },
+    "average_request_block_level": {
+        "n_of_results": 937,
+        "sum": 290.5,
+        "average": 0.31003201707577377
+    },
+    "blocked_subtrees_data": {
+        "n_of_results": 937,
+        "sum": {
+            "subtrees_fully_blocked": 25,
+            "subtrees_partially_blocked": 45,
+            "subtrees_not_blocked": 59508,
+            "subtrees_in_total": 59578,
+            "trees_blocked_because_root_node": 0
+        },
+        "average": {
+            "subtrees_fully_blocked": 0.026680896478121666,
+            "subtrees_partially_blocked": 0.048025613660619,
+            "subtrees_not_blocked": 63.50907150480256,
+            "subtrees_in_total": 63.5837780149413,
+            "trees_blocked_because_root_node": 0.0
+        }
+    }
+}

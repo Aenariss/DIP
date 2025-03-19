@@ -187,6 +187,11 @@ def calculate_transitively_blocked(request_tree: RequestTree, blocked_resources:
             # Also mark all children as blocked
             child_nodes = parent_node.get_all_children_nodes()
 
+            # If parent was repeated, mark all children as repeated.
+            if parent_node.repeated:
+                for node in child_nodes:
+                    node.repeated = True
+
             for node in child_nodes:
                 node.block()
 
