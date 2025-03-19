@@ -52,6 +52,7 @@ EXPERIMENT_NAME = "experiment_name"
 LOGGING_BROWSER_VERSION = "logging_browser_version"
 TIME_UNTIL_TIMEOUT = "time_until_timeout"
 HEADLESS = "headless_logging"
+MAX_LOG_ATTEMPTS = "max_log_attempts"
 
 # DNS server docker container name
 DNS_CONTAINER_NAME = "bind9"

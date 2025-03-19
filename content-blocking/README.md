@@ -73,3 +73,7 @@ Sometimes, scapy adds weird DNS records. PLease, always run test run with pure c
 In such cases, the simplest solution is to collect traffic again.
 
 All paths need to be with '/' instead of Windows '\' (config)
+
+Experiments with "avast secure browser" need to have experiment name starting with "avast" -- only then the profile is correctly loaded
+
+Tested addons needs whole name of the file

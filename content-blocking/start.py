@@ -179,7 +179,7 @@ def parse_traffic() -> dict:
             valid_fp_attempts += 1
 
     print(f"FP Attempts succesfully collected for {valid_fp_attempts}\
-out of {len(fp_attempts.items())} logs.")
+ out of {len(fp_attempts.items())} logs.")
 
 
     # Create initiator tree-like chains from data in the ./traffic/ folder

@@ -26,7 +26,7 @@ import time
 # Custom modules
 from source.file_manipulation import load_pages
 from source.page_http_traffic import get_page_traffic
-from source.constants import TRAFFIC_FOLDER, FILE_ERROR, GENERAL_ERROR
+from source.constants import TRAFFIC_FOLDER, FILE_ERROR, GENERAL_ERROR, MAX_LOG_ATTEMPTS
 from source.dns_observer import DNSSniffer
 
 def load_traffic(options: dict, compact: bool) -> None:
@@ -39,10 +39,14 @@ def load_traffic(options: dict, compact: bool) -> None:
     filename_counter = 1
     max_file_counter = len(pages)
 
+    max_attempts = options.get(MAX_LOG_ATTEMPTS)
+
     # Go through each page and observe traffic
     for page in pages:
 
+        attempts = 1
         sniffer = DNSSniffer()
+
         print(f"Page visit progress: {filename_counter}/{max_file_counter}")
         dns_traffic, network_traffic = get_page_logs(sniffer, page, options, compact)
 
@@ -55,15 +59,24 @@ def load_traffic(options: dict, compact: bool) -> None:
             continue
 
         # Check all traffic has its DNS logged
-        # If DNS error, try again, but only once
-        if not dns_validity:
+        # If DNS error, try again as many times as user wants
+        while attempts < max_attempts:
+            attempts += 1
+            if not dns_validity:
 
-            print(f"Could not correctly sniff DNS traffic for {page}! Trying again...")
-            delete_unsuccesfull_fpd()
-            # Give it some time
-            time.sleep(6)
-            dns_traffic, network_traffic = get_page_logs(sniffer, page, options, compact)
-            dns_validity, dns_traffic = is_dns_valid(dns_traffic, network_traffic)
+                print(f"Could not correctly sniff DNS traffic for {page}! Trying again...")
+                delete_unsuccesfull_fpd()
+                # Give it some time
+                time.sleep(6)
+                dns_traffic, network_traffic = get_page_logs(sniffer, page, options, compact)
+                dns_validity, dns_traffic = is_dns_valid(dns_traffic, network_traffic)
+            else:
+                break
+
+            # If not network error happened that did not happen before, try again
+            if not network_traffic:
+                print(f"Error loading {page}! Trying again...")
+                dns_validity = False
 
         if not dns_validity:
             print(f"Could not correctly sniff DNS traffic for {page}! Skipping...")
