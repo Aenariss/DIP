@@ -37,27 +37,31 @@ def load_traffic(options: dict, compact: bool) -> None:
 
     # Counter to name files like 1.json, 2.json... to prevent issues
     filename_counter = 1
-
-    sniffer = DNSSniffer()
+    max_file_counter = len(pages)
 
     # Go through each page and observe traffic
     for page in pages:
 
+        sniffer = DNSSniffer()
+        print(f"Page visit progress: {filename_counter}/{max_file_counter}")
         dns_traffic, network_traffic = get_page_logs(sniffer, page, options, compact)
 
         dns_validity, dns_traffic = is_dns_valid(dns_traffic, network_traffic)
 
-        if not dns_traffic and not network_traffic:
+        if not network_traffic:
             print(f"Error loading {page}! Skipping...")
+            delete_unsuccesfull_fpd()
             filename_counter += 1
             continue
 
         # Check all traffic has its DNS logged
         # If DNS error, try again, but only once
         if not dns_validity:
+
             print(f"Could not correctly sniff DNS traffic for {page}! Trying again...")
+            delete_unsuccesfull_fpd()
             # Give it some time
-            time.sleep(5)
+            time.sleep(6)
             dns_traffic, network_traffic = get_page_logs(sniffer, page, options, compact)
             dns_validity, dns_traffic = is_dns_valid(dns_traffic, network_traffic)
 
@@ -78,7 +82,6 @@ def get_page_logs(sniffer: DNSSniffer, page: str, options: dict, compact: bool)\
       -> tuple[dict, list]:
 
     sniffer.start_sniffer()
-    time.sleep(0.2)
 
     # Get the HTTP(S) traffic associated with a page
     visit_status, network_traffic = visit_page(page, options, compact)
@@ -88,8 +91,11 @@ def get_page_logs(sniffer: DNSSniffer, page: str, options: dict, compact: bool)\
         sniffer.stop_sniffer()
         return {}, []
 
-    time.sleep(0.2)
+    # Give sniffer time to process all callbacks
+    time.sleep(1)
     sniffer.stop_sniffer()
+
+    time.sleep(1)
     dns_traffic = sniffer.get_traffic()
 
     return dns_traffic, network_traffic
@@ -148,10 +154,8 @@ def is_dns_valid(dns_traffic: dict, network_traffic: list) -> tuple[bool, dict]:
         if not rest:
             rest = last_two
 
-        top_level = dns_traffic.get('.'.join(last_two), None)
-
-        # Set the page as necessary
-        observed_dns_logs['.'.join(last_two)] = True
+        top_level_key = '.'.join(last_two)
+        top_level = dns_traffic.get(top_level_key, None)
 
         if not top_level:
             return status, {}
@@ -160,12 +164,34 @@ def is_dns_valid(dns_traffic: dict, network_traffic: list) -> tuple[bool, dict]:
         if not subdomain:
             return status, {}
 
-    status = True
+        # Set the page as necessary
+        observed_dns_logs[top_level_key] = True
+
+        # Set all logged CNAMEs for this domain as neccessary
+        for (_, records) in dns_traffic[top_level_key].items():
+            cname_records = records.get("CNAME", [])
+            for record in cname_records:
+                split = record.split('.')
+                last_two = split[-2:]
+                cname_key = '.'.join(last_two)
+                observed_dns_logs[cname_key] = True
 
     # Go through all DNS and delete all records that do not belong to network request.
-    for (key, _) in observed_dns_logs.items():
+    for (key, subdomains) in observed_dns_logs.items():
         if not observed_dns_logs[key]:
+            # Check it's not a CNAME-only record
             del dns_traffic[key]
+
+    for (_, subdomains) in dns_traffic.items():
+        # For each valid key, check all subkeys are either CNAMEs or A, both cant be empty
+        for (_, records) in subdomains.items():
+            cname_records = records.get("CNAME", [])
+            a_records = records.get("A", [])
+
+            if not a_records and not cname_records:
+                return status, {}
+
+    status = True
 
     return status, dns_traffic
 
@@ -211,8 +237,11 @@ def match_jshelter_fpd(filename: int) -> None:
     # However, sometimes, the download may trigger twice -> delete other non-matching
     found_files = []
     for file in files:
+        _, extension = os.path.splitext(file)
         if file != ".empty":
-            found_files.append(file)
+            # Only add JSON files
+            if extension == ".json":
+                found_files.append(file)
 
     if not found_files:
         print("Can't match FP file to its corresponding traffic files!")
@@ -223,9 +252,4 @@ def match_jshelter_fpd(filename: int) -> None:
     new_filename = TRAFFIC_FOLDER + str(filename) + "_fp.json"
     os.rename(original_filepath, new_filename)
 
-    # Remove original renamed file so that it is not deleted
-    found_files.remove(found_files[0])
-
-    # Delete other found files
-    for file in found_files:
-        os.remove(TRAFFIC_FOLDER + file)
+    delete_unsuccesfull_fpd()

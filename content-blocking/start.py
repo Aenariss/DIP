@@ -173,6 +173,15 @@ def parse_traffic() -> dict:
     # Assign total FP attempts for each domain from FP logs
     fp_attempts = parse_fp()
 
+    valid_fp_attempts = 0
+    for (_, value) in fp_attempts.items():
+        if value != {}:
+            valid_fp_attempts += 1
+
+    print(f"FP Attempts succesfully collected for {valid_fp_attempts}\
+out of {len(fp_attempts.items())} logs.")
+
+
     # Create initiator tree-like chains from data in the ./traffic/ folder
     request_trees = create_trees(fp_attempts)
 
@@ -213,6 +222,29 @@ def filter_out_unresolved_dns(dns_records: dict, request_trees: dict)\
         progress_printer()
         resources = tree.get_all_requests()
 
+        number = tree_name.split('_')
+        corresp_dns = load_json(TRAFFIC_FOLDER + number[0] + '_dns.json')
+
+        break_point = False
+        # Go through all DNS and delete all records that do not belong to network request.
+        for (_, subdomains) in corresp_dns.items():
+
+            if break_point:
+                break
+
+            # For each key, check all subkeys are either CNAMEs or A, both cant be empty
+            for (subdomain, records) in subdomains.items():
+                cname_records = records.get("CNAME", [])
+                a_records = records.get("A", [])
+
+                if not a_records and not cname_records:
+                    print(f"Error, {resource} was not\
+DNS-matched for file {tree_name}! Removing...")
+                    delete_logs(tree_name)
+                    trees_to_remove.append(tree_name)
+                    break_point = True
+                    break
+
         for resource in resources:
 
             # skip all data:, blob: etc
@@ -246,6 +278,7 @@ def filter_out_unresolved_dns(dns_records: dict, request_trees: dict)\
                 delete_logs(tree_name)
                 trees_to_remove.append(tree_name)
                 break
+
     for tree in trees_to_remove:
         request_trees.pop(tree)
     return request_trees

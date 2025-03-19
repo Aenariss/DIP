@@ -65,7 +65,7 @@ class DNSSniffer():
         return query_name, zone_key
 
     def assign_cnames(self, original_query: str, original_zone: str, cname_records: list) -> None:
-        """Method to be maybe used in the future
+        """
            Goes through the CNAME chain and creates new record for each CNAME
            For CNAME record for X being A,B,C, creates A and sets it as CNAME of B
            and sets B as CNAME of C. To C, it assigns the A results for the original query. """

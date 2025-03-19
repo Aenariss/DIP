@@ -8,7 +8,7 @@
     "using_custom_browser": 0,
     "custom_browser_binary": "C:/Program Files/Avast Software/Browser/Application/AvastBrowser.exe",
     "tested_addons": [],
-    "experiment_name": "tmp_test",
+    "experiment_name": "adblock_plus_4_15_0",
     "profile": "C:/Users/Noxx/AppData/Local/AVAST Software/Browser/User Data",
     "chromedriver_path": "./chromedriver_134.exe"
 }

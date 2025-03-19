@@ -156,6 +156,10 @@ ns       IN      A      127.0.0.1
         # Iterate over all subdomains and edit zonefile accordingly
         for (subdomain, record) in all_subdomains.items():
 
+            # Somehow, this has happened once. Skip all such subdomains.
+            if subdomain == "ns":
+                continue
+
             # If there is some CNAME-type record, only take the first and add record
             if record.get("CNAME", []) != []:
                 first_cname = record["CNAME"][0]

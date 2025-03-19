@@ -64,12 +64,12 @@ The workflow is as follows:
 5. The results of the simulation will be saved in ``results/`` folder.
 
 Problems:
-Loading is absolutely terrible -> Selenium arbitrarily crashes, gets stuck on a page, after relaunch works perfectly... please be patient and prepare for multiple relaunches (dont forget to save your traffic each time cuz folder is deleted!) and
+Loading has (only once) been observed to crash -> please be patient and prepare for multiple relaunches (dont forget to save your traffic each time cuz folder is deleted!) and
 then setting all the traffic fragments together
 
 JShelter FPD sometimes has a race condition which causes fingerprinting to not work on some pages. 
 
-Sometimes, scapy adds trash DNS records. PLease, always run test run with chrome browser (since firefox does not log errors). If something went wrong, you will see err::NAME_NOT_RESOLVED in result logs.
+Sometimes, scapy adds weird DNS records. PLease, always run test run with pure chrome browser (since firefox does not log errors). If something went wrong, you will see err::NAME_NOT_RESOLVED in result logs.
 In such cases, the simplest solution is to collect traffic again.
 
 All paths need to be with '/' instead of Windows '\' (config)
