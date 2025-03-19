@@ -21,12 +21,13 @@ import argparse
 import os
 import re
 import time
+import sys
 
 # Custom modules
 from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, RESULTS_FOLDER, USER_CONFIG_FILE
 from source.constants import PAGE_WAIT_TIME, BROWSER_TYPE, USING_CUSTOM_BROWSER, TESTED_ADDONS
 from source.constants import BROWSER_VERSION, EXPERIMENT_NAME, LOGGING_BROWSER_VERSION
-from source.constants import CUSTOM_BROWSER_BINARY, HEADLESS
+from source.constants import CUSTOM_BROWSER_BINARY, HEADLESS, LOWER_BOUND_TREES
 from source.load_traffic import load_traffic
 from source.fp_attempts import parse_fp
 from source.request_tree import create_trees
@@ -38,6 +39,9 @@ from source.firewall import firewall_unblock_traffic, firewall_block_traffic
 from source.utils import squash_dns_records, squash_tree_resources, print_progress
 
 from custom_dns_server.dns_repeater_server import DNSRepeater
+
+# Increase recursion limit because of the trees
+sys.setrecursionlimit(3000)
 
 # Argument parsing
 parser = argparse.ArgumentParser(prog="Content-blocking evaluation",
@@ -70,12 +74,14 @@ def valid_options(options: dict) -> bool:
     logging_browser_version = options.get(LOGGING_BROWSER_VERSION)
     custom_browser_binary = options.get(CUSTOM_BROWSER_BINARY, "")
     headless = options.get(HEADLESS)
+    lower_bound = options.get(LOWER_BOUND_TREES)
 
     result = [True]
 
     # The fields need to be present
     if not browser_version or not experiment_name or not logging_browser_version\
-        or custom_browser is None or tested_addons is None or headless is None:
+        or custom_browser is None or tested_addons is None or headless is None or\
+        lower_bound is None:
         result.append(False)
 
     # Browser type supported is only chrome and firefox
@@ -165,7 +171,7 @@ def obtain_data(options: dict) -> bool:
             return True
     return False
 
-def parse_traffic() -> dict:
+def parse_traffic(options) -> dict:
     """Function to parse the traffic logs and return request trees"""
     # Check traffic folder is present and not empty
     check_traffic_folder()
@@ -183,7 +189,7 @@ def parse_traffic() -> dict:
 
 
     # Create initiator tree-like chains from data in the ./traffic/ folder
-    request_trees = create_trees(fp_attempts)
+    request_trees = create_trees(fp_attempts, options)
 
     return request_trees
 
@@ -366,7 +372,7 @@ def start() -> None:
         return
 
     # Generate request trees from traffic data
-    request_trees = parse_traffic()
+    request_trees = parse_traffic(options)
 
     print(f"Starting experiment {options.get(EXPERIMENT_NAME)}...")
 

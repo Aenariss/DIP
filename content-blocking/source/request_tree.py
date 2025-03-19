@@ -23,17 +23,21 @@ import sys
 # Custom modules
 from source.file_manipulation import load_json, get_traffic_files
 from source.utils import print_progress
+from source.constants import LOWER_BOUND_TREES
 
 ANONYMOUS_CALLERS = "<anonymous>"
 
 class RequestNode:
     """Class representing each node in the request tree"""
     def __init__(self, time: str, resource: str,\
-                 children: list["RequestNode"]=None, fp_attempts: dict={}) -> None:
+                 children: list["RequestNode"]=None, fp_attempts: dict={}, level=1) -> None:
         """Init method for setting up each instance"""
         self.resource = resource
         self.children = children
         self.time = time
+
+        self.root_node = False
+        self.level = level
 
         # Number of observed FP attempts used by this resource
         self.fp_attempts = fp_attempts
@@ -48,7 +52,7 @@ class RequestNode:
                 child.add_parent(self)
 
         # New node has initially no parent
-        self.parent = None
+        self.parents = []
 
     def is_blocked(self) -> bool:
         return self.blocked
@@ -60,7 +64,7 @@ class RequestNode:
         """Method to manually assign number of FP attempts to a resource"""
         self.fp_attempts = fp_attempts
 
-    def get_fp_attempts(self) -> int:
+    def get_fp_attempts(self) -> dict:
         """Method to return the number of FP attempts associated with a given resource"""
         return self.fp_attempts
 
@@ -72,9 +76,9 @@ class RequestNode:
         """Method to return the timestamp of the resource stored in the node"""
         return self.time
 
-    def get_parent(self) -> "RequestNode":
+    def get_parents(self) -> list["RequestNode"]:
         """Method to return the parent of the node"""
-        return self.parent
+        return self.parents
 
     def get_children(self) -> list["RequestNode"]:
         """Method to return all direct children of the node"""
@@ -90,9 +94,10 @@ class RequestNode:
 
     def __parent_already_present(self, parent_node: "RequestNode") -> bool:
         """Internal method to avoid parent duplicates"""
-        parent = self.get_parent()
-        if parent.get_resource() == parent_node.get_resource():
-            return True
+        parents = self.get_parents()
+        for parent in parents:
+            if parent.get_resource() == parent_node.get_resource():
+                return True
         return False
 
     def add_child(self, child_node: "RequestNode") -> None:
@@ -103,16 +108,17 @@ class RequestNode:
 
         self.children.append(child_node)
         child_node.add_parent(self)
+        child_node.level = self.level + 1
 
     def add_parent(self, parent_node: "RequestNode") -> None:
         """Method to add parent to a child node"""
-        if self.parent is None:
-            self.parent = parent_node
+        if not self.get_parents():
+            self.parents.append(parent_node)
         else:
             # Check if the parent isn't alreaddy defined to avoid duplicates
             if self.__parent_already_present(parent_node):
                 return
-            self.parent = parent_node
+            self.parents.append(parent_node)
 
     def get_all_children_resources(self) -> list[str]:
         """Method to return all children resources of the node -> even transitively.
@@ -393,18 +399,19 @@ def add_substract_fp_attempts(callers1: dict, callers2: dict, add: bool=True) ->
 def construct_tree(tree: RequestTree, resource_counter: int, node: RequestNode,\
                 global_level: RequestNode, fp_attempts: dict) -> tuple[RequestTree, RequestNode]:
     """Function to update global level and create a tree if it's the very first primary request"""
+
+    # Get anonymous attempts
+    anonymous_attempts = fp_attempts.get(ANONYMOUS_CALLERS, {})
     if resource_counter == 0:
         tree = RequestTree(node)
+
+        node.root_node = True
 
         # Add anonymous attempts to the root
         # Get number of attempts already associated with root
         root_fp_attempts = node.get_fp_attempts()
 
-        # Get number of anonymous attempts
-        anonymous_attempts = fp_attempts.get(ANONYMOUS_CALLERS, {})
-
         # Combine the root FP attempts with anonymous caller FP attempts
-
         new_total = add_substract_fp_attempts(root_fp_attempts, anonymous_attempts)
         node.set_fp_attempts(new_total)
 
@@ -415,14 +422,33 @@ def construct_tree(tree: RequestTree, resource_counter: int, node: RequestNode,\
         if tree.find_nodes(node.get_resource()):
 
             global_level.add_child(node)
+
+            # Remove FP attempts that are associated with this node, since it is a duplicate
+            # They are already associated with the main node
+            node.set_fp_attempts({})
+
             return tree, global_level
 
         global_level.add_child(node)
+        node.root_node = True
+
+        # Delete all anonymous FP attempts from the previous root node and add them to the new one
+        root_fp_attempts = global_level.get_fp_attempts()
+        previous_root_node_fp_attempts = add_substract_fp_attempts(root_fp_attempts,\
+                                                         anonymous_attempts, add=False)
+        global_level.set_fp_attempts(previous_root_node_fp_attempts)
+
+        new_root_node_fp_attempts = node.get_fp_attempts()
+        with_anonymous_callers = add_substract_fp_attempts(new_root_node_fp_attempts,\
+                                                           anonymous_attempts)
+
+        node.set_fp_attempts(with_anonymous_callers)
 
     global_level = node
     return tree, global_level
 
-def reconstruct_tree(observed_traffic: dict, fp_attempts: dict) -> RequestTree:
+def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_trees: bool)\
+      -> RequestTree:
     """Function to reconstruct initiator chains from observed traffic and assign FP
     attempts to each page"""
     tree = None
@@ -438,8 +464,18 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict) -> RequestTree:
         # Either get number of observed FP attempts or 0 if none observed
         resource_fp_attempts = fp_attempts.get(current_resource, {})
 
-        # Create new Node object representing the resource
+        # Create new Node object representing the resource. Creates duplicit requests!!
+        # Check if node already exists, if so, at least do not assign it FP attempts
         node = RequestNode(time, current_resource, children=[], fp_attempts=resource_fp_attempts)
+        if tree:
+            existing_nodes = tree.find_nodes(current_resource)
+            if existing_nodes:
+                node.set_fp_attempts({})
+
+            # Solve LOWER-BOUND issue of A -> B -> A.
+            if lower_bound_trees:
+                if existing_nodes:
+                    continue
 
         # If requested_for matches requested_resource and initiator type is "other"
         # it's a redirect and go globally a level deeper
@@ -470,14 +506,26 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict) -> RequestTree:
                     # Resource can be requested by multiple requests -> very weird!
                     if len(parent_nodes) > 1:
                         pass
+
                     # Assign the parent only once so that there are no virtual requests
                     # Problem - how do I know which parent is the correct one?
                     # A was requested 7 times by different resources. A requested B. Which from the
-                    # 7 A is responsible? Todo: Go recursively through LoaderId?
-                    # But it can be empty? Maybe a better approach would be to only use ID?
-                    # Temporarily assign to all.
-                    for parent_node in parent_nodes:
-                        parent_node.add_child(node)
+                    # 7 A is responsible? Assign to all.
+                    # UPPER-BOUND
+                    if not lower_bound_trees:
+                        for parent_node in parent_nodes:
+                            parent_node.add_child(node)
+
+                    # Assign to only the top-level parent to avoid duplicates
+                    # LOWER-BOUND
+                    if lower_bound_trees:
+                        highest_level_parent = None
+                        highest_level = 9999999
+                        for parent_node in parent_nodes:
+                            if parent_node.level < highest_level:
+                                highest_level = parent_node.level
+                                highest_level_parent = parent_node
+                        highest_level_parent.add_child(node)
 
             # Else go through the stack and parents
             else:
@@ -509,12 +557,27 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict) -> RequestTree:
 
                         # Check if the parent is already known (should be)
                         parent_nodes = tree.find_nodes(last_two_calls[0])
-                        for parent_node in parent_nodes:
-                            parent_node.add_child(node)
 
                         # If parent unknown, try to fix it (should not happen)
                         if parent_nodes == []:
                             fix_missing_parent(global_level, node)
+
+                        # UPPER-BOUND
+                        if not lower_bound_trees:
+                            for parent_node in parent_nodes:
+                                parent_node.add_child(node)
+
+                        # LOWER-BOUND
+                        # Does not solve the problem that node may have itself as transitive child.
+                        # Only solves the issue of A -> B, C -> A, C. Does A -> B,C -> A.
+                        if lower_bound_trees:
+                            highest_level_parent = None
+                            highest_level = 9999999
+                            for parent_node in parent_nodes:
+                                if parent_node.level < highest_level:
+                                    highest_level = parent_node.level
+                                    highest_level_parent = parent_node
+                            highest_level_parent.add_child(node)
 
                     # If all callframes were empty (dynamic), just set the last
                     # global level as parent of the resource
@@ -538,7 +601,7 @@ def look_for_specific_initiator(traffic: dict, find: str) -> dict:
                 results.append(resource)
     return results
 
-def create_trees(fp_attempts: dict) -> dict:
+def create_trees(fp_attempts: dict, options: dict) -> dict:
     """Function to load all HTTP traffic files and reconstruct request trees
     Also assigns observed fingerprinting attempts to each page"""
     print("Reconstructing request trees...")
@@ -551,6 +614,8 @@ def create_trees(fp_attempts: dict) -> dict:
     total = len(network_files)
     progress_printer = print_progress(total, "Creating request trees...")
 
+    lower_bound_trees = options.get(LOWER_BOUND_TREES)
+
     for file in network_files:
         progress_printer()
         traffic = load_json(file)
@@ -561,7 +626,11 @@ def create_trees(fp_attempts: dict) -> dict:
         # obtain corresponding FP attempts, in case of an error (should never happen)
         # return an empty dict with no FP attempts observed
         corresponding_fp_attempts = fp_attempts.get(pure_filename, {})
-        trees[pure_filename] = reconstruct_tree(traffic, corresponding_fp_attempts)
+        trees[pure_filename] = reconstruct_tree(traffic, corresponding_fp_attempts,\
+                                            lower_bound_trees)
+
+        #if "125" in pure_filename:
+        #    trees[pure_filename].print_tree(printing=True)
 
     print("Request trees reconstructed!")
     return trees

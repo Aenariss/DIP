@@ -36,7 +36,7 @@ def get_first_level_with_multiple_children(request_tree: RequestTree)\
     # If one of the root-level nodes was blocked, mark whole tree as blocked
     if current_level.is_blocked():
         status = "full_block"
-        root_block = True
+        root_block = current_level.root_node
 
     current_level_children = current_level.get_children()
 
@@ -53,7 +53,7 @@ def get_first_level_with_multiple_children(request_tree: RequestTree)\
 
         if current_level.is_blocked():
             status = "full_block"
-            root_block = True
+            root_block = current_level.root_node
 
         current_level_children = current_level.get_children()
 
@@ -186,6 +186,7 @@ def calculate_transitively_blocked(request_tree: RequestTree, blocked_resources:
 
             # Also mark all children as blocked
             child_nodes = parent_node.get_all_children_nodes()
+
             for node in child_nodes:
                 node.block()
 

@@ -6,6 +6,7 @@
     "headless_logging": true,
     "logging_browser_version": "134",
     "browser_version": "134",
+    "lower_bound_trees": false,
     "using_custom_browser": 0,
     "custom_browser_binary": "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe",
     "tested_addons": [],
