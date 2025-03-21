@@ -62,7 +62,7 @@ class RequestNode:
         if not self.repeated:
             self.blocked = True
 
-    def set_fp_attempts(self, fp_attempts) -> None:
+    def set_fp_attempts(self, fp_attempts: dict) -> None:
         """Method to manually assign number of FP attempts to a resource"""
         self.fp_attempts = fp_attempts
 
@@ -468,14 +468,9 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
         # Create new Node object representing the resource. Creates duplicit requests!!
         # Check if node already exists, if so, at least do not assign it FP attempts
         node = RequestNode(time, current_resource, children=[], fp_attempts=resource_fp_attempts)
-        existing_nodes = []
-        if tree:
-            existing_nodes = tree.find_nodes(current_resource)
-            if existing_nodes:
-                node.set_fp_attempts({})
 
         # If requested_for matches requested_resource and initiator type is "other"
-        # it's a redirect and go globally a level deeper
+        # it's probably a redirect and go globally a level deeper, also mark it as root node
         if resource["requested_for"] == current_resource and\
             resource["initiator"]["type"] == "other":
 
@@ -483,6 +478,12 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
                                         node, global_level, fp_attempts)
 
         else:
+            # Do not repeat FP attempts for nodes already in the tree -> the original node
+            # already has them all
+            existing_nodes = tree.find_nodes(current_resource)
+            if existing_nodes:
+                node.set_fp_attempts({})
+
             # Solve LOWER-BOUND issue of A -> B,C -> A,C by limiting at msot one of all.
             if lower_bound_trees:
                 if existing_nodes:
@@ -567,17 +568,6 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
 
     return tree
 
-def look_for_specific_initiator(traffic: dict, find: str) -> dict:
-    """Function to find the direct initiator of a specific resource"""
-    requests_count = len(traffic)
-    results = []
-    for resource_number in range(requests_count):
-        resource = traffic[resource_number]
-        if resource["initiator"].get("url") is not None:
-            if resource["requested_resource"] == find:
-                results.append(resource)
-    return results
-
 def create_trees(fp_attempts: dict, options: dict) -> dict:
     """Function to load all HTTP traffic files and reconstruct request trees
     Also assigns observed fingerprinting attempts to each page"""
@@ -605,9 +595,6 @@ def create_trees(fp_attempts: dict, options: dict) -> dict:
         corresponding_fp_attempts = fp_attempts.get(pure_filename, {})
         trees[pure_filename] = reconstruct_tree(traffic, corresponding_fp_attempts,\
                                             lower_bound_trees)
-
-        #if "125" in pure_filename:
-        #    trees[pure_filename].print_tree(printing=True)
 
     print("Request trees reconstructed!")
     return trees

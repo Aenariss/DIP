@@ -54,6 +54,7 @@ TIME_UNTIL_TIMEOUT = "time_until_timeout"
 HEADLESS = "headless_logging"
 MAX_LOG_ATTEMPTS = "max_log_attempts"
 LOWER_BOUND_TREES = "lower_bound_trees"
+BROWSER_INITIALIZATION_TIME = "browser_initialization_time"
 
 # DNS server docker container name
 DNS_CONTAINER_NAME = "bind9"

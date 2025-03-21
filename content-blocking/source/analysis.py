@@ -133,7 +133,7 @@ def analyse_subtrees_blocking(request_tree: RequestTree) -> dict:
         "subtrees_partially_blocked": partially_blocked,
         "subtrees_not_blocked": not_blocked,
         "subtrees_in_total": total_trees,
-        "trees_blocked_because_root_node": root_blocks
+        "trees_with_blocked_root_node": root_blocks
     }
 
 def add_subtrees(subtrees1: dict, subtrees2: dict) -> dict:

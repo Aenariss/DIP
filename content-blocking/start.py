@@ -28,6 +28,7 @@ from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, RESULTS_FOLDER, USER
 from source.constants import PAGE_WAIT_TIME, BROWSER_TYPE, USING_CUSTOM_BROWSER, TESTED_ADDONS
 from source.constants import BROWSER_VERSION, EXPERIMENT_NAME, LOGGING_BROWSER_VERSION
 from source.constants import CUSTOM_BROWSER_BINARY, HEADLESS, LOWER_BOUND_TREES
+from source.constants import BROWSER_INITIALIZATION_TIME
 from source.load_traffic import load_traffic
 from source.fp_attempts import parse_fp
 from source.request_tree import create_trees
@@ -75,6 +76,7 @@ def valid_options(options: dict) -> bool:
     custom_browser_binary = options.get(CUSTOM_BROWSER_BINARY, "")
     headless = options.get(HEADLESS)
     lower_bound = options.get(LOWER_BOUND_TREES)
+    init_time = options.get(BROWSER_INITIALIZATION_TIME)
 
     result = [True]
 
@@ -89,7 +91,7 @@ def valid_options(options: dict) -> bool:
         result.append(False)
 
     # Page wait time must be a valid number
-    if not str(page_wait_time).isnumeric():
+    if not str(page_wait_time).isnumeric() or not str(init_time).isnumeric():
         result.append(False)
 
     # Custom browser specifies whether something else chromium or firefox-based is used

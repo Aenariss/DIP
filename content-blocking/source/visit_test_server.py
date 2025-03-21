@@ -25,7 +25,7 @@ from selenium import webdriver
 
 # Custom modules
 from source.setup_driver import setup_driver, get_firefox_console_logs
-from source.constants import BROWSER_TYPE
+from source.constants import BROWSER_TYPE, BROWSER_INITIALIZATION_TIME
 from source.firewall import firewall_block_traffic, firewall_unblock_traffic
 from source.test_page_server import stop_testing_server
 from custom_dns_server.dns_repeater_server import DNSRepeater
@@ -61,7 +61,7 @@ def visit_test_server(options: dict, requests: list, dns_repeater: DNSRepeater, 
     browser_type = options.get(BROWSER_TYPE)
 
     # Wait for the extensions to load
-    time.sleep(10)
+    time.sleep(options.get(BROWSER_INITIALIZATION_TIME))
 
     # Start DNS repeating and firewall only here, to give the browser (or extensions)
     # time to load their stuff

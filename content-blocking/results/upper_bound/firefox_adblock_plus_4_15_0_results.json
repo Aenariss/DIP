@@ -88,14 +88,14 @@
             "subtrees_partially_blocked": 546,
             "subtrees_not_blocked": 57401,
             "subtrees_in_total": 59618,
-            "trees_blocked_because_root_node": 0
+            "trees_with_blocked_root_node": 0
         },
         "average": {
             "subtrees_fully_blocked": 1.783351120597652,
             "subtrees_partially_blocked": 0.5827107790821772,
             "subtrees_not_blocked": 61.26040554962647,
             "subtrees_in_total": 63.6264674493063,
-            "trees_blocked_because_root_node": 0.0
+            "trees_with_blocked_root_node": 0.0
         }
     }
 }
