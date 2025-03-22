@@ -53,9 +53,9 @@
         "average": 0.0
     },
     "average_request_block_level": {
-        "n_of_results": 937,
+        "n_of_results": 0,
         "sum": 0,
-        "average": 0.0
+        "average": 0
     },
     "blocked_subtrees_data": {
         "n_of_results": 937,

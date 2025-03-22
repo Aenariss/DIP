@@ -261,7 +261,7 @@ def simulate_blocking(request_tree: RequestTree, blocked_resources: list[str]) -
                                                         add=False)
 
     average_block_levels = directly_blocked_tree.blocked_at_levels()
-    average_block_level = 0 # Default value if no blocked requests
+    average_block_level = 0
     if average_block_levels:
         average_block_level = sum(average_block_levels) / len(average_block_levels)
     blocked_with_children = calculate_blocked_who_brings_children(really_blocked_nodes)
@@ -362,9 +362,6 @@ def parse_partial_results(results: list[dict]) -> dict:
         # For each result, go through each sub-result
         for (sub_result, total_result) in total_results.items():
 
-            # Update total_results accordingly
-            total_result["n_of_results"] += 1
-
             # Check if its not fpd - we need to be special for that
             if "fpd" in sub_result:
                 total_result["sum"] = add_substract_fp_attempts(total_result["sum"],\
@@ -373,7 +370,14 @@ def parse_partial_results(results: list[dict]) -> dict:
             elif sub_result == "blocked_subtrees_data":
                 total_result["sum"] = add_subtrees(total_result["sum"], result[sub_result])
             else:
+                # For average block level, do not increase N of results if no blocking occured
+                if sub_result == "average_request_block_level":
+                    if result[sub_result] == 0:
+                        total_result["n_of_results"] -= 1
                 total_result["sum"] += result[sub_result]
+
+            # increase number of results by one for each record
+            total_result["n_of_results"] += 1
 
     # Now each result has sum value stored in together with nubmer of results - calculate averages
     for (sub_result, total_result) in total_results.items():
@@ -387,7 +391,14 @@ def parse_partial_results(results: list[dict]) -> dict:
                 total_result["average"][group_name] = count / total_result["n_of_results"]
 
         else:
-            total_result["average"] = total_result["sum"] / total_result["n_of_results"]
+            # For average block level, check there was at least 1, else set this metric to 0
+            if sub_result == "average_request_block_level":
+                if total_result["n_of_results"] > 0:
+                    total_result["average"] = total_result["sum"] / total_result["n_of_results"]
+                else:
+                    total_result["average"] = 0
+            else:
+                total_result["average"] = total_result["sum"] / total_result["n_of_results"]
 
     return total_results
 

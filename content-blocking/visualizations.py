@@ -150,8 +150,9 @@ def print_table(results, metrics, submetrics, headers, total, percentage):
                     for submetric in submetrics:
                         all_metric_values[tool].append(value[submetric])
                 else:
+                    all_metric_values[tool] = []
                     for submetric in submetrics:
-                        all_metric_values[tool] = [value[submetric]]
+                        all_metric_values[tool].append(value[submetric])
             else:
                 if all_metric_values.get(tool):
                     all_metric_values[tool].append(value)
@@ -199,9 +200,9 @@ def main():
 
     #plot_results(results, metric, metric_legend, value_in_bar, legend, "requests_blocked_directly.pdf")
 
-    metrics = ["blocked_subtrees_data"]
+    metrics = ["requests_blocked_that_have_child_requests", "average_request_block_level"]
     headers = ["Tool", "RBCR", "ARBL"]
-    submetrics = ["trees_blocked_because_root_node"]
+    submetrics = ["BrowserProperties", "AlgorithmicMethods", "CrawlFpInspector"]
 
     first_key = list(results.keys())[0]
     total = results[first_key]["requests_observed"][SUM]

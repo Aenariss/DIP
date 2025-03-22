@@ -77,9 +77,9 @@
         "average": 1.9797225186766276
     },
     "average_request_block_level": {
-        "n_of_results": 937,
+        "n_of_results": 795,
         "sum": 2637.903666099679,
-        "average": 2.815265385378526
+        "average": 3.318117818993307
     },
     "blocked_subtrees_data": {
         "n_of_results": 937,
