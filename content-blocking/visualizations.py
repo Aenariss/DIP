@@ -200,7 +200,8 @@ def main():
 
     #plot_results(results, metric, metric_legend, value_in_bar, legend, "requests_blocked_directly.pdf")
 
-    metrics = ["requests_blocked_that_have_child_requests", "average_request_block_level"]
+    metrics = ["requests_blocked_directly", "requests_observed", 
+        "requests_blocked_in_total"]
     headers = ["Tool", "RBCR", "ARBL"]
     submetrics = ["BrowserProperties", "AlgorithmicMethods", "CrawlFpInspector"]
 

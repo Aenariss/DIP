@@ -15,7 +15,30 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"""
             eval("console.log('Script 1 loaded'); const script2 = document.createElement('script'); script2.src = '/script2.js'; document.body.appendChild(script2);")
+            const code = `
+            const canvas = document.createElement("canvas");
+            canvas.width = 200;
+            canvas.height = 200;
+            canvas.style.border = "1px solid black";
+            document.body.appendChild(canvas);
+            const ctx = canvas.getContext("2d");
 
+            // Draw a red dot in the center
+            ctx.fillStyle = "red";
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Get canvas information
+            console.log("Canvas Width:", canvas.width);
+            console.log("Canvas Height:", canvas.height);
+
+            // Get pixel data from the center of the canvas
+            const pixelData = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data;
+            console.log("Pixel Data at Center:", pixelData);
+            `;
+
+            eval(code);
             """)
         elif self.path == "/script2.js":
             # Serve the second script dynamically

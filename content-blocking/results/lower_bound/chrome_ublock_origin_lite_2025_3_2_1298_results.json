@@ -2,25 +2,25 @@
     "fpd_attempts_observed": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 294613,
-            "AlgorithmicMethods": 215428,
-            "CrawlFpInspector": 6828
+            "BrowserProperties": 293498,
+            "AlgorithmicMethods": 215418,
+            "CrawlFpInspector": 6706
         },
         "average": {
-            "BrowserProperties": 314.42155816435434,
-            "AlgorithmicMethods": 229.91248665955177,
-            "CrawlFpInspector": 7.287086446104589
+            "BrowserProperties": 313.2315901814301,
+            "AlgorithmicMethods": 229.90181430096052,
+            "CrawlFpInspector": 7.1568836712913555
         }
     },
     "fpd_attempts_blocked_directly": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 63938,
+            "BrowserProperties": 64044,
             "AlgorithmicMethods": 3235,
             "CrawlFpInspector": 691
         },
         "average": {
-            "BrowserProperties": 68.23692636072572,
+            "BrowserProperties": 68.35005336179296,
             "AlgorithmicMethods": 3.4525080042689433,
             "CrawlFpInspector": 0.7374599786552828
         }
@@ -28,12 +28,12 @@
     "fpd_attempts_blocked_transitively": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 114134,
+            "BrowserProperties": 114330,
             "AlgorithmicMethods": 6006,
             "CrawlFpInspector": 1117
         },
         "average": {
-            "BrowserProperties": 121.80789754535752,
+            "BrowserProperties": 122.017075773746,
             "AlgorithmicMethods": 6.4098185699039485,
             "CrawlFpInspector": 1.1921024546424759
         }
@@ -41,12 +41,12 @@
     "fpd_attempts_blocked_in_total": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 178072,
+            "BrowserProperties": 178374,
             "AlgorithmicMethods": 9241,
             "CrawlFpInspector": 1808
         },
         "average": {
-            "BrowserProperties": 190.04482390608325,
+            "BrowserProperties": 190.36712913553896,
             "AlgorithmicMethods": 9.862326574172892,
             "CrawlFpInspector": 1.9295624332977588
         }

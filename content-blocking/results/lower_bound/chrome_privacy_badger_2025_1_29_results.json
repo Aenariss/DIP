@@ -2,25 +2,25 @@
     "fpd_attempts_observed": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 294613,
-            "AlgorithmicMethods": 215428,
-            "CrawlFpInspector": 6828
+            "BrowserProperties": 293498,
+            "AlgorithmicMethods": 215418,
+            "CrawlFpInspector": 6706
         },
         "average": {
-            "BrowserProperties": 314.42155816435434,
-            "AlgorithmicMethods": 229.91248665955177,
-            "CrawlFpInspector": 7.287086446104589
+            "BrowserProperties": 313.2315901814301,
+            "AlgorithmicMethods": 229.90181430096052,
+            "CrawlFpInspector": 7.1568836712913555
         }
     },
     "fpd_attempts_blocked_directly": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 36728,
+            "BrowserProperties": 36838,
             "AlgorithmicMethods": 1032,
             "CrawlFpInspector": 655
         },
         "average": {
-            "BrowserProperties": 39.1974386339381,
+            "BrowserProperties": 39.31483457844183,
             "AlgorithmicMethods": 1.1013874066168623,
             "CrawlFpInspector": 0.6990394877267876
         }
@@ -28,12 +28,12 @@
     "fpd_attempts_blocked_transitively": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 67228,
+            "BrowserProperties": 67366,
             "AlgorithmicMethods": 9579,
             "CrawlFpInspector": 1310
         },
         "average": {
-            "BrowserProperties": 71.74813233724653,
+            "BrowserProperties": 71.89541088580576,
             "AlgorithmicMethods": 10.223052294557098,
             "CrawlFpInspector": 1.3980789754535752
         }
@@ -41,12 +41,12 @@
     "fpd_attempts_blocked_in_total": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 103956,
+            "BrowserProperties": 104204,
             "AlgorithmicMethods": 10611,
             "CrawlFpInspector": 1965
         },
         "average": {
-            "BrowserProperties": 110.94557097118464,
+            "BrowserProperties": 111.21024546424759,
             "AlgorithmicMethods": 11.32443970117396,
             "CrawlFpInspector": 2.097118463180363
         }

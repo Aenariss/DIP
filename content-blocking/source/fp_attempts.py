@@ -249,18 +249,30 @@ def parse_callers(all_callers: dict, fp_logs: dict, primary_group: list,\
 
         # Split it by space and get the last
         split_by_space = last_caller.split(" ")
-        last_caller = split_by_space[-1]
+        final_last_caller = split_by_space[-1]
+
+        # If it was an anonymous caller, check if there's an associated URL where
+        # the anonymous funciton comes from.
+        if final_last_caller.startswith(ANONYMOUS_CALLER):
+            split_by_comma = last_caller.rsplit(",", 1)
+
+            # If I could split it, the URL is the second to last part
+            if len(split_by_comma) >= 2:
+                second_to_last_part = split_by_comma[-2]
+
+                # Now go through the part with the url
+                return parse_last_caller(second_to_last_part)
 
         # Remove brackets in case they're there
-        if (last_caller[0]) == '(':
-            last_caller = last_caller[1:-1]
+        if (final_last_caller[0]) == '(':
+            final_last_caller = final_last_caller[1:-1]
 
         # Split twice from the right, because last caller has formatting :1:1 (line number)
-        last_caller = last_caller.rsplit(':', 2)
+        final_last_caller = final_last_caller.rsplit(':', 2)
 
-        last_caller = last_caller[0]
+        final_last_caller = final_last_caller[0]
 
-        return last_caller
+        return final_last_caller
 
     # Callstacks are still in the form of a key in dict, obtain it
     # Get all callers of a given property

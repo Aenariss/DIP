@@ -2,25 +2,25 @@
     "fpd_attempts_observed": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 296536,
-            "AlgorithmicMethods": 215569,
-            "CrawlFpInspector": 6835
+            "BrowserProperties": 295421,
+            "AlgorithmicMethods": 215559,
+            "CrawlFpInspector": 6713
         },
         "average": {
-            "BrowserProperties": 316.47385272145146,
-            "AlgorithmicMethods": 230.06296691568838,
-            "CrawlFpInspector": 7.294557097118463
+            "BrowserProperties": 315.2838847385272,
+            "AlgorithmicMethods": 230.05229455709713,
+            "CrawlFpInspector": 7.164354322305229
         }
     },
     "fpd_attempts_blocked_directly": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 22522,
+            "BrowserProperties": 22644,
             "AlgorithmicMethods": 602,
             "CrawlFpInspector": 640
         },
         "average": {
-            "BrowserProperties": 24.036286019210245,
+            "BrowserProperties": 24.16648879402348,
             "AlgorithmicMethods": 0.6424759871931697,
             "CrawlFpInspector": 0.6830309498399146
         }
@@ -28,12 +28,12 @@
     "fpd_attempts_blocked_transitively": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 35156,
+            "BrowserProperties": 35452,
             "AlgorithmicMethods": 1272,
             "CrawlFpInspector": 328
         },
         "average": {
-            "BrowserProperties": 37.51974386339381,
+            "BrowserProperties": 37.83564567769477,
             "AlgorithmicMethods": 1.3575240128068302,
             "CrawlFpInspector": 0.35005336179295626
         }
@@ -41,12 +41,12 @@
     "fpd_attempts_blocked_in_total": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 57678,
+            "BrowserProperties": 58096,
             "AlgorithmicMethods": 1874,
             "CrawlFpInspector": 968
         },
         "average": {
-            "BrowserProperties": 61.55602988260406,
+            "BrowserProperties": 62.00213447171825,
             "AlgorithmicMethods": 2.0,
             "CrawlFpInspector": 1.033084311632871
         }
