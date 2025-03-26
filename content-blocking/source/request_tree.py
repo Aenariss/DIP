@@ -398,7 +398,8 @@ def add_substract_fp_attempts(callers1: dict, callers2: dict, add: bool=True) ->
     return new_dict
 
 def construct_tree(tree: RequestTree, resource_counter: int, node: RequestNode,\
-                global_level: RequestNode, fp_attempts: dict) -> tuple[RequestTree, RequestNode]:
+                global_level: RequestNode, fp_attempts: dict, lower_bound_trees: bool)\
+                -> tuple[RequestTree, RequestNode]:
     """Function to update global level and create a tree if it's the very first primary request"""
 
     # Get anonymous attempts
@@ -421,6 +422,10 @@ def construct_tree(tree: RequestTree, resource_counter: int, node: RequestNode,\
         # It is unnecessary for the analysis and makes results weird.
         # Just add it as a regular child of the previous global level
         if tree.find_nodes(node.get_resource()):
+
+            if lower_bound_trees:
+                # Do not repeat root nodes if lower bound
+                return tree, global_level
 
             global_level.add_child(node)
 
@@ -475,7 +480,7 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
             resource["initiator"]["type"] == "other":
 
             tree, global_level = construct_tree(tree, resource_number,\
-                                        node, global_level, fp_attempts)
+                                        node, global_level, fp_attempts, lower_bound_trees)
 
         else:
             # Do not repeat FP attempts for nodes already in the tree -> the original node
@@ -487,8 +492,11 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
             # Solve LOWER-BOUND issue of A -> B,C -> A,C by limiting at msot one of all.
             if lower_bound_trees:
                 if existing_nodes:
-                    existing_node = existing_nodes[0]
-                    existing_node.repeated = True
+                    node = existing_nodes[0]
+                    node.repeated = True
+
+                    # Need to continue here because adding parents for lower bound breaks the logic
+                    # since A -> B -> A would make A child of itself.
                     continue
 
             # Direct initiator

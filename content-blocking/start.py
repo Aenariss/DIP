@@ -28,8 +28,8 @@ from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, RESULTS_FOLDER, USER
 from source.constants import PAGE_WAIT_TIME, BROWSER_TYPE, USING_CUSTOM_BROWSER, TESTED_ADDONS
 from source.constants import BROWSER_VERSION, EXPERIMENT_NAME, LOGGING_BROWSER_VERSION
 from source.constants import CUSTOM_BROWSER_BINARY, HEADLESS, LOWER_BOUND_TREES
-from source.constants import BROWSER_INITIALIZATION_TIME
-from source.load_traffic import load_traffic
+from source.constants import BROWSER_INITIALIZATION_TIME, DEBUG, FIREFOX_PROTECTION
+from source.traffic_logger.load_traffic import load_traffic
 from source.fp_attempts import parse_fp
 from source.request_tree import create_trees
 from source.test_page_server import start_testing_server, stop_testing_server
@@ -77,13 +77,15 @@ def valid_options(options: dict) -> bool:
     headless = options.get(HEADLESS)
     lower_bound = options.get(LOWER_BOUND_TREES)
     init_time = options.get(BROWSER_INITIALIZATION_TIME)
+    debug = options.get(DEBUG)
+    ff_prot = options.get(FIREFOX_PROTECTION)
 
     result = [True]
 
     # The fields need to be present
     if not browser_version or not experiment_name or not logging_browser_version\
         or custom_browser is None or tested_addons is None or headless is None or\
-        lower_bound is None:
+        lower_bound is None or debug is None or ff_prot is None:
         result.append(False)
 
     # Browser type supported is only chrome and firefox
@@ -96,7 +98,7 @@ def valid_options(options: dict) -> bool:
 
     # Custom browser specifies whether something else chromium or firefox-based is used
     # Can only be 1 or 0
-    if custom_browser not in [0,1]:
+    if custom_browser not in [True, False]:
         result.append(False)
 
     # If custom browser is being used, check binary is not empty

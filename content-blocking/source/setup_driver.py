@@ -31,6 +31,7 @@ from source.constants import BROWSER_TYPE, BROWSER_VERSION, USING_CUSTOM_BROWSER
 from source.constants import CHROME_ADDONS_FOLDER, FIREFOX_ADDONS_FOLDER, GENERAL_ERROR
 from source.constants import TIME_UNTIL_TIMEOUT, LOGGING_BROWSER_VERSION, JSHELTER_FPD_PATH
 from source.constants import CUSTOM_BROWSER_BINARY, FIREFOX_RESOURCE_LOGGER, HEADLESS
+from source.constants import FIREFOX_PROTECTION
 
 def setup_driver(options: dict) -> webdriver.Chrome | webdriver.Firefox:
     """Function to setup the driver depeneding on the specified browser"""
@@ -121,7 +122,7 @@ def setup_firefox(options: dict) -> webdriver.Firefox:
 
         # If using Firefox and no extensions, test Firefox Capabilities
         # Dont turn off extended protection
-        if options.get(TESTED_ADDONS) != []:
+        if not options.get(FIREFOX_PROTECTION):
 
             # Turn off Firefox Extended Protection and DNS-over-HTTPS
             firefox_options.set_preference("privacy.trackingprotection.custom.enabled", False)
@@ -161,6 +162,7 @@ def setup_jshelter_custom_fpd(options: dict, download_path: str) -> webdriver.Ch
     chrome_options.add_argument('--enable-extensions')
     chrome_options.add_argument('--ignore-certificate-errors')
     chrome_options.add_argument("--allow-running-insecure-content")
+    chrome_options.add_argument("--disable-cache")
 
     if options.get(HEADLESS):
         chrome_options.add_argument("--headless=new")

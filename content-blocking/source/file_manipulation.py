@@ -60,22 +60,23 @@ def get_traffic_files(traffic_type: str) -> list:
     """
 
     # Types of traffic files to ignore
-    regex = [r"fp", r"dns", r"network"]
+    inverse_regex = [r"fp", r"dns", r"network"]
 
-    if traffic_type in regex:
-        # Remove given type of files from the regex to obtain them
-        regex.remove(traffic_type)
+    if traffic_type in inverse_regex:
+        # Remove given type of files from the inverse regex to obtain them
+        inverse_regex.remove(traffic_type)
     else:
         print("Invalid traffic file type!")
         exit(GENERAL_ERROR)
 
     # Append .empty file to not count it
-    regex.append(r"\.empty")
+    inverse_regex.append(r"\.empty")
 
     # Create the regex by adding '|' between the options
-    regex = '|'.join(regex)
+    inverse_regex = '|'.join(inverse_regex)
 
     # Load the only the type of file we want from the traffic folder
-    files = [TRAFFIC_FOLDER + f for f in os.listdir(TRAFFIC_FOLDER) if not re.search(regex, f)]
+    files = [TRAFFIC_FOLDER + f for f in os.listdir(TRAFFIC_FOLDER)
+            if not re.search(inverse_regex, f)]
 
     return files

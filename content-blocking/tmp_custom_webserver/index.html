@@ -15,9 +15,21 @@
             timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
 
             // Perform the fetch request with the timeout signal
-            let response = await fetch("http://dbctv.cz", { mode: 'no-cors', signal });
+            let response = await fetch("https://linkedin.com/", { mode: 'no-cors', signal });
         }
         fetching();
+
+        fetch(self.location.origin)
+
+        
+    </script>
+    <script>
+        // Register the service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(reg => {
+                console.log('Service Worker registered:', reg);
+            });
+        }
     </script>
 </head>
 <body>

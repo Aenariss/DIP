@@ -53,18 +53,18 @@
     },
     "requests_observed": {
         "n_of_results": 937,
-        "sum": 98333,
-        "average": 104.94450373532551
+        "sum": 98244,
+        "average": 104.8495197438634
     },
     "requests_blocked_directly": {
         "n_of_results": 937,
-        "sum": 8830,
-        "average": 9.423692636072571
+        "sum": 8783,
+        "average": 9.373532550693703
     },
     "requests_blocked_in_total": {
         "n_of_results": 937,
-        "sum": 19826,
-        "average": 21.159018143009604
+        "sum": 19779,
+        "average": 21.108858057630737
     },
     "requests_blocked_transitively": {
         "n_of_results": 937,
@@ -77,25 +77,25 @@
         "average": 1.9135538954108857
     },
     "average_request_block_level": {
-        "n_of_results": 937,
-        "sum": 2789.2670556709563,
-        "average": 2.9768058224876803
+        "n_of_results": 805,
+        "sum": 2791.751389147936,
+        "average": 3.4680141480098587
     },
     "blocked_subtrees_data": {
         "n_of_results": 937,
         "sum": {
-            "subtrees_fully_blocked": 5381,
+            "subtrees_fully_blocked": 5334,
             "subtrees_partially_blocked": 1014,
-            "subtrees_not_blocked": 53183,
-            "subtrees_in_total": 59578,
-            "trees_blocked_because_root_node": 1
+            "subtrees_not_blocked": 53233,
+            "subtrees_in_total": 59581,
+            "trees_with_blocked_root_node": 1
         },
         "average": {
-            "subtrees_fully_blocked": 5.742796157950907,
+            "subtrees_fully_blocked": 5.692636072572038,
             "subtrees_partially_blocked": 1.0821771611526148,
-            "subtrees_not_blocked": 56.75880469583778,
-            "subtrees_in_total": 63.5837780149413,
-            "trees_blocked_because_root_node": 0.0010672358591248667
+            "subtrees_not_blocked": 56.81216648879403,
+            "subtrees_in_total": 63.58697972251868,
+            "trees_with_blocked_root_node": 0.0010672358591248667
         }
     }
 }

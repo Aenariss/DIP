@@ -53,8 +53,8 @@
     },
     "requests_observed": {
         "n_of_results": 937,
-        "sum": 98333,
-        "average": 104.94450373532551
+        "sum": 98244,
+        "average": 104.8495197438634
     },
     "requests_blocked_directly": {
         "n_of_results": 937,
@@ -63,13 +63,13 @@
     },
     "requests_blocked_in_total": {
         "n_of_results": 937,
-        "sum": 19220,
-        "average": 20.512273212379935
+        "sum": 19204,
+        "average": 20.495197438633937
     },
     "requests_blocked_transitively": {
         "n_of_results": 937,
-        "sum": 10852,
-        "average": 11.581643543223052
+        "sum": 10836,
+        "average": 11.564567769477055
     },
     "requests_blocked_that_have_child_requests": {
         "n_of_results": 937,
@@ -77,25 +77,25 @@
         "average": 1.743863393810032
     },
     "average_request_block_level": {
-        "n_of_results": 937,
+        "n_of_results": 750,
         "sum": 2713.295479883127,
-        "average": 2.8957262325326862
+        "average": 3.617727306510836
     },
     "blocked_subtrees_data": {
         "n_of_results": 937,
         "sum": {
-            "subtrees_fully_blocked": 6013,
+            "subtrees_fully_blocked": 6012,
             "subtrees_partially_blocked": 1049,
-            "subtrees_not_blocked": 52516,
-            "subtrees_in_total": 59578,
-            "trees_blocked_because_root_node": 31
+            "subtrees_not_blocked": 52520,
+            "subtrees_in_total": 59581,
+            "trees_with_blocked_root_node": 31
         },
         "average": {
-            "subtrees_fully_blocked": 6.417289220917823,
+            "subtrees_fully_blocked": 6.416221985058698,
             "subtrees_partially_blocked": 1.119530416221985,
-            "subtrees_not_blocked": 56.046958377801495,
-            "subtrees_in_total": 63.5837780149413,
-            "trees_blocked_because_root_node": 0.033084311632870865
+            "subtrees_not_blocked": 56.051227321237995,
+            "subtrees_in_total": 63.58697972251868,
+            "trees_with_blocked_root_node": 0.033084311632870865
         }
     }
 }

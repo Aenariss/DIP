@@ -77,3 +77,5 @@ All paths need to be with '/' instead of Windows '\' (config)
 Experiments with "avast secure browser" need to have experiment name starting with "avast" -- only then the profile is correctly loaded
 
 Tested addons needs whole name of the file
+
+Traffic logging requires valid page address (http(s)://my.example.com, does not work for localhost etc. Requires at least one dot. Unless config.ddebug is specified)

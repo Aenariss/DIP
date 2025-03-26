@@ -6,12 +6,14 @@
     "headless_logging": true,
     "logging_browser_version": "134",
     "browser_version": "134",
-    "lower_bound_trees": false,
-    "using_custom_browser": 0,
+    "lower_bound_trees": true,
+    "using_custom_browser": false,
     "browser_initialization_time": 10,
     "custom_browser_binary": "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe",
     "tested_addons": [],
     "experiment_name": "firefox_ublock_origin_1_62_0",
     "profile": "C:/Users/Noxx/AppData/Local/AVAST Software/Browser/User Data",
-    "chromedriver_path": "./chromedriver_134.exe"
+    "chromedriver_path": "./chromedriver_134.exe",
+    "debug": false,
+    "firefox_default_protection": false
 }

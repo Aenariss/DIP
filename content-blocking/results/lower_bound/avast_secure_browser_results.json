@@ -53,8 +53,8 @@
     },
     "requests_observed": {
         "n_of_results": 937,
-        "sum": 98333,
-        "average": 104.94450373532551
+        "sum": 98244,
+        "average": 104.8495197438634
     },
     "requests_blocked_directly": {
         "n_of_results": 937,
@@ -63,13 +63,13 @@
     },
     "requests_blocked_in_total": {
         "n_of_results": 937,
-        "sum": 10033,
-        "average": 10.707577374599786
+        "sum": 10032,
+        "average": 10.706510138740661
     },
     "requests_blocked_transitively": {
         "n_of_results": 937,
-        "sum": 5481,
-        "average": 5.849519743863394
+        "sum": 5480,
+        "average": 5.848452508004269
     },
     "requests_blocked_that_have_child_requests": {
         "n_of_results": 937,
@@ -77,25 +77,25 @@
         "average": 0.727854855923159
     },
     "average_request_block_level": {
-        "n_of_results": 937,
+        "n_of_results": 589,
         "sum": 2172.5537966399106,
-        "average": 2.318627317651986
+        "average": 3.6885463440405952
     },
     "blocked_subtrees_data": {
         "n_of_results": 937,
         "sum": {
-            "subtrees_fully_blocked": 2423,
+            "subtrees_fully_blocked": 2422,
             "subtrees_partially_blocked": 673,
-            "subtrees_not_blocked": 56482,
-            "subtrees_in_total": 59578,
-            "trees_blocked_because_root_node": 2
+            "subtrees_not_blocked": 56486,
+            "subtrees_in_total": 59581,
+            "trees_with_blocked_root_node": 2
         },
         "average": {
-            "subtrees_fully_blocked": 2.5859124866595518,
+            "subtrees_fully_blocked": 2.5848452508004267,
             "subtrees_partially_blocked": 0.7182497331910352,
-            "subtrees_not_blocked": 60.27961579509071,
-            "subtrees_in_total": 63.5837780149413,
-            "trees_blocked_because_root_node": 0.0021344717182497333
+            "subtrees_not_blocked": 60.28388473852721,
+            "subtrees_in_total": 63.58697972251868,
+            "trees_with_blocked_root_node": 0.0021344717182497333
         }
     }
 }
