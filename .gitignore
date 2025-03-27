@@ -2,4 +2,4 @@ content-blocking/source/__pycache__/*
 content-blocking/custom_dns_server/__pycache__/*
 content-blocking/traffic/*.json
 content-blocking/traffic_backup_big.zip
-custom-jshelter-fpd/
+jshelter_0_20_custom_fpd/

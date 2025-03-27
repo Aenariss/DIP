@@ -186,12 +186,16 @@ def main():
     results = result_dict(RESULT_FILES)
     fpd_metrics = [
         "fpd_attempts_blocked_directly", "fpd_attempts_blocked_transitively", 
-        "fpd_attempts_blocked_in_total", "fpd_attempts_observed"]
+        "fpd_attempts_blocked_in_total"]
+    fpd_submetrics = ["BrowserProperties", "AlgorithmicMethods", "CrawlFpInspector"]
     
-    request_metrics = ["requests_blocked_directly", "requests_observed", 
+    request_metrics = ["requests_blocked_directly",
         "requests_blocked_in_total", "requests_blocked_transitively"]
     
     experimental_metrics = ["requests_blocked_that_have_child_requests", "average_request_block_level"]
+
+    subtree_data = ["blocked_subtrees_data"]
+    subtree_submetrics = ["subtrees_fully_blocked", "subtrees_partially_blocked", "subtrees_not_blocked"]
 
     metric = "fpd_attempts_blocked_directly"
     metric_legend = "FPD Attempts Blocked Directly"
@@ -200,10 +204,9 @@ def main():
 
     #plot_results(results, metric, metric_legend, value_in_bar, legend, "requests_blocked_directly.pdf")
 
-    metrics = ["requests_blocked_directly", "requests_observed", 
-        "requests_blocked_in_total"]
+    metrics = ["fpd_attempts_blocked_in_total"]
     headers = ["Tool", "RBCR", "ARBL"]
-    submetrics = ["BrowserProperties", "AlgorithmicMethods", "CrawlFpInspector"]
+    submetrics = fpd_submetrics
 
     first_key = list(results.keys())[0]
     total = results[first_key]["requests_observed"][SUM]
