@@ -26,10 +26,11 @@ import time
 # Custom modules
 from source.file_manipulation import load_pages
 from source.traffic_logger.page_http_traffic import get_page_traffic
-from source.constants import TRAFFIC_FOLDER, FILE_ERROR, GENERAL_ERROR, MAX_LOG_ATTEMPTS, DEBUG
+from source.config import Config
+from source.constants import TRAFFIC_FOLDER, FILE_ERROR, GENERAL_ERROR
 from source.traffic_logger.dns_observer import DNSSniffer
 
-def load_traffic(options: dict, compact: bool) -> None:
+def load_traffic(options: Config, compact: bool) -> None:
     """Function to observe traffic on given list of pages"""
     print("Loading the traffic...")
 
@@ -39,7 +40,7 @@ def load_traffic(options: dict, compact: bool) -> None:
     filename_counter = 1
     max_file_counter = len(pages)
 
-    max_attempts = options.get(MAX_LOG_ATTEMPTS)
+    max_attempts = options.max_repeat_log_attempts
 
     # Go through each page and observe traffic
     for page in pages:
@@ -50,10 +51,10 @@ def load_traffic(options: dict, compact: bool) -> None:
         print(f"Page visit progress: {filename_counter}/{max_file_counter}")
         dns_traffic, network_traffic = get_page_logs(sniffer, page, options, compact)
 
-        if not options.get(DEBUG):
-            dns_validity, dns_traffic = is_dns_valid(dns_traffic, network_traffic)
-        else:
+        if options.no_dns_validation_during_logging:
             dns_validity = True
+        else:
+            dns_validity, dns_traffic = is_dns_valid(dns_traffic, network_traffic)
 
         if not network_traffic:
             print(f"Error loading {page}! Skipping...")
@@ -76,7 +77,7 @@ def load_traffic(options: dict, compact: bool) -> None:
             else:
                 break
 
-            # If not network error happened that did not happen before, try again
+            # If network error happened that did not happen before, try again
             if not network_traffic:
                 print(f"Error loading {page}! Trying again...")
                 dns_validity = False
@@ -94,7 +95,7 @@ def load_traffic(options: dict, compact: bool) -> None:
 
     print("Traffic loading finished!")
 
-def get_page_logs(sniffer: DNSSniffer, page: str, options: dict, compact: bool)\
+def get_page_logs(sniffer: DNSSniffer, page: str, options: Config, compact: bool)\
       -> tuple[dict, list]:
 
     sniffer.start_sniffer()
@@ -117,7 +118,7 @@ def get_page_logs(sniffer: DNSSniffer, page: str, options: dict, compact: bool)\
     return dns_traffic, network_traffic
 
 
-def visit_page(page: str, options: dict, compact: bool) -> tuple[bool, list]:
+def visit_page(page: str, options: Config, compact: bool) -> tuple[bool, list]:
     # Get the HTTP(S) traffic associated with a page
     network_traffic = []
     try:

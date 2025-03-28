@@ -28,10 +28,11 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
 # Custom modules
-from source.constants import PAGE_WAIT_TIME, TRAFFIC_FOLDER
+from source.constants import TRAFFIC_FOLDER
 from source.setup_driver import setup_jshelter_custom_fpd
+from source.config import Config
 
-def get_page_traffic(page: str, options: dict, compact: bool) -> list:
+def get_page_traffic(page: str, options: Config, compact: bool) -> list:
     """Function to load page network traffic. Returns observed network traffic and 
        saves FPD report into traffic folder"""
 
@@ -52,7 +53,7 @@ def get_page_traffic(page: str, options: dict, compact: bool) -> list:
         driver.get(page)
 
         # Wait at the page for a user-specified time
-        page_wait_time = options.get(PAGE_WAIT_TIME)
+        page_wait_time = options.page_wait_time
         time.sleep(page_wait_time)
 
         # Get network logs

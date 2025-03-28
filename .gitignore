@@ -1,4 +1,5 @@
 content-blocking/source/__pycache__/*
+content-blocking/__pycache__/*
 content-blocking/source/traffic_logger/__pycache__/*
 content-blocking/source/traffic_parser/__pycache__/*
 content-blocking/source/simulation_engine/__pycache__/*

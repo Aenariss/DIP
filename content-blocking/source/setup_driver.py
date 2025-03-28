@@ -27,15 +27,13 @@ import selenium.webdriver.firefox.options as FirefoxOptions
 import selenium.webdriver.firefox.service as FirefoxService
 
 # Custom modules
-from source.constants import BROWSER_TYPE, BROWSER_VERSION, USING_CUSTOM_BROWSER, TESTED_ADDONS
 from source.constants import CHROME_ADDONS_FOLDER, FIREFOX_ADDONS_FOLDER, GENERAL_ERROR
-from source.constants import TIME_UNTIL_TIMEOUT, LOGGING_BROWSER_VERSION, JSHELTER_FPD_PATH
-from source.constants import CUSTOM_BROWSER_BINARY, FIREFOX_RESOURCE_LOGGER, HEADLESS
-from source.constants import FIREFOX_PROTECTION
+from source.constants import JSHELTER_FPD_PATH, FIREFOX_RESOURCE_LOGGER
+from source.config import Config
 
-def setup_driver(options: dict) -> webdriver.Chrome | webdriver.Firefox:
+def setup_driver(options: Config) -> webdriver.Chrome | webdriver.Firefox:
     """Function to setup the driver depeneding on the specified browser"""
-    browser_type = options.get(BROWSER_TYPE)
+    browser_type = options.browser_type
     # Setting up for Chrome
     if browser_type == "chrome":
         return setup_chrome(options)
@@ -43,13 +41,13 @@ def setup_driver(options: dict) -> webdriver.Chrome | webdriver.Firefox:
     # If chrome wasnt selected, lets suppose it was firefox
     return setup_firefox(options)
 
-def setup_chrome(options: dict) -> webdriver.Chrome:
+def setup_chrome(options: Config) -> webdriver.Chrome:
     """Function to setup driver for chrome-based browser"""
 
     # Check if we're using custom browser
-    if options.get(USING_CUSTOM_BROWSER):
+    if options.using_custom_browser:
 
-        custom_browser_path = options.get(CUSTOM_BROWSER_BINARY)
+        custom_browser_path = options.custom_browser_binary
 
         chrome_options = ChromeOptions.Options()
         chrome_options.add_argument("--remote-debugging-port=9222")
@@ -59,20 +57,20 @@ def setup_chrome(options: dict) -> webdriver.Chrome:
         chrome_options.binary_location = custom_browser_path
 
         # Special case for ASB
-        if options.get("experiment_name").startswith("avast"):
-            profile = options.get("profile")
+        if options.experiment_name.startswith("avast"):
+            profile = options.profile
             chrome_options.add_argument(f'user-data-dir={profile}')
 
         # Go through all specified extensions and add them
         # Will not be used in the thesis, but allows more potential flexibility
         try:
-            for extension in options.get(TESTED_ADDONS):
+            for extension in options.tested_addons:
                 chrome_options.add_extension(CHROME_ADDONS_FOLDER + extension)
         except Exception:
             print(f"Error loading extension {extension}. Is it present in {CHROME_ADDONS_FOLDER}?")
             exit(GENERAL_ERROR)
 
-        chromedriver_path = options.get("chromedriver_path")
+        chromedriver_path = options.chromedriver_path
         service = ChromeService.Service(chromedriver_path)
 
         driver = webdriver.Chrome(service=service, options=chrome_options)
@@ -82,11 +80,11 @@ def setup_chrome(options: dict) -> webdriver.Chrome:
         chrome_options = ChromeOptions.Options()
         chrome_options.add_argument("--remote-debugging-port=9222")
         chrome_options.add_argument("--enable-javascript")
-        chrome_options.browser_version = options.get(BROWSER_VERSION)
+        chrome_options.browser_version = options.chrome_browser_version
 
         # Go through all specified extensions and add them
         try:
-            for extension in options.get(TESTED_ADDONS):
+            for extension in options.tested_addons:
                 chrome_options.add_extension(CHROME_ADDONS_FOLDER + extension)
         except Exception:
             print(f"Error loading extension {extension}. Is it present in {CHROME_ADDONS_FOLDER}?")
@@ -110,11 +108,11 @@ def get_firefox_console_logs(driver):
 
     return json.loads(resource_logs)
 
-def setup_firefox(options: dict) -> webdriver.Firefox:
+def setup_firefox(options: Config) -> webdriver.Firefox:
     """Function to setup driver for firefox-based browser"""
 
     # Check if we're using custom browser
-    if options.get(USING_CUSTOM_BROWSER):
+    if options.using_custom_browser:
         # tbd
         return None
     else:
@@ -122,7 +120,7 @@ def setup_firefox(options: dict) -> webdriver.Firefox:
 
         # If using Firefox and no extensions, test Firefox Capabilities
         # Dont turn off extended protection
-        if not options.get(FIREFOX_PROTECTION):
+        if not options.use_firefox_default_protection:
 
             # Turn off Firefox Extended Protection and DNS-over-HTTPS
             firefox_options.set_preference("privacy.trackingprotection.custom.enabled", False)
@@ -145,7 +143,7 @@ def setup_firefox(options: dict) -> webdriver.Firefox:
 
         # Go through all specified extensions and add them
         try:
-            for extension in options.get(TESTED_ADDONS):
+            for extension in options.tested_addons:
                 driver.install_addon(FIREFOX_ADDONS_FOLDER + extension, temporary=True)
         except Exception:
             print(f"Error loading extension {extension}. Is it present in {FIREFOX_ADDONS_FOLDER}?")
@@ -153,7 +151,7 @@ def setup_firefox(options: dict) -> webdriver.Firefox:
 
         return driver
 
-def setup_jshelter_custom_fpd(options: dict, download_path: str) -> webdriver.Chrome:
+def setup_jshelter_custom_fpd(options: Config, download_path: str) -> webdriver.Chrome:
 
     # Set up Chrome options and enable DevTools Protocol
     chrome_options = ChromeOptions.Options()
@@ -164,10 +162,10 @@ def setup_jshelter_custom_fpd(options: dict, download_path: str) -> webdriver.Ch
     chrome_options.add_argument("--allow-running-insecure-content")
     chrome_options.add_argument("--disable-cache")
 
-    if options.get(HEADLESS):
+    if options.headless_logging:
         chrome_options.add_argument("--headless=new")
 
-    chrome_options.browser_version = options.get(LOGGING_BROWSER_VERSION)
+    chrome_options.browser_version = options.logging_browser_version
     chrome_options.add_experimental_option('prefs', {
         'download.default_directory': download_path,
         'download.prompt_for_download': False,
@@ -184,6 +182,6 @@ def setup_jshelter_custom_fpd(options: dict, download_path: str) -> webdriver.Ch
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     # Wait at most this time (seconds) for a page to load
-    driver.set_page_load_timeout(options.get(TIME_UNTIL_TIMEOUT))
+    driver.set_page_load_timeout(options.time_until_timeout)
 
     return driver

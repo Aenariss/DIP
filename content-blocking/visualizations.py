@@ -29,7 +29,8 @@ from tabulate import tabulate
 from source.file_manipulation import load_json
 
 FOLDER_WITH_RESULTS = "./results/upper_bound/"
-RESULT_FILES = [f for f in os.listdir(FOLDER_WITH_RESULTS) if (f != ".empty" and not f.startswith("chrome_browser"))]
+RESULT_FILES = [f for f in os.listdir(FOLDER_WITH_RESULTS) if (f != ".empty" and not\
+                f.startswith("chrome_browser") and not f.startswith("firefox_pure"))]
 CHROME_RESULTS = [f for f in RESULT_FILES if not f.startswith("firefox")]
 FIREFOX_RESULTS = [f for f in RESULT_FILES if f.startswith("firefox")]
 SUM = "sum"
@@ -188,10 +189,10 @@ def main():
         "fpd_attempts_blocked_directly", "fpd_attempts_blocked_transitively", 
         "fpd_attempts_blocked_in_total"]
     fpd_submetrics = ["BrowserProperties", "AlgorithmicMethods", "CrawlFpInspector"]
-    
+
     request_metrics = ["requests_blocked_directly",
         "requests_blocked_in_total", "requests_blocked_transitively"]
-    
+
     experimental_metrics = ["requests_blocked_that_have_child_requests", "average_request_block_level"]
 
     subtree_data = ["blocked_subtrees_data"]
@@ -212,8 +213,6 @@ def main():
     total = results[first_key]["requests_observed"][SUM]
     percentage = False
     print_table(results, metrics, submetrics, headers, total, percentage)
-    
-
 
 if __name__ == "__main__":
     main()

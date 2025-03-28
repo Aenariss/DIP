@@ -1,5 +1,5 @@
 # constants.py
-# Specifies constants and user-defined options
+# Specifies constants
 # Copyright (C) 2025 Vojtěch Fiala
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@ TRAFFIC_FOLDER = "./traffic/"
 RESULTS_FOLDER = "./results/"
 DNS_CONFIGURATION_FOLDER = "./custom_dns_server/server_configuration/"
 ADDON_FOLDER = "./addons/"
-FPD_GROUP_FOLDER = "./source/fp_files/"
+FPD_GROUP_FOLDER = "./source/traffic_parser/fp_files/"
 CHROME_ADDONS_FOLDER = ADDON_FOLDER + "chrome/"
 FIREFOX_ADDONS_FOLDER = ADDON_FOLDER + "firefox/"
 
@@ -40,23 +40,6 @@ FIREFOX_RESOURCE_LOGGER = FIREFOX_ADDONS_FOLDER + "firefox_resource_logger.xpi"
 
 # Paths - system
 HOSTS_FILE = "C:/Windows/System32/drivers/etc/hosts"
-
-# User option strings from config.json
-PAGE_WAIT_TIME = "page_wait_time"
-BROWSER_TYPE = "browser_type"
-BROWSER_VERSION = "browser_version"
-USING_CUSTOM_BROWSER = "using_custom_browser"
-CUSTOM_BROWSER_BINARY = "custom_browser_binary"
-TESTED_ADDONS = "tested_addons"
-EXPERIMENT_NAME = "experiment_name"
-LOGGING_BROWSER_VERSION = "logging_browser_version"
-TIME_UNTIL_TIMEOUT = "time_until_timeout"
-HEADLESS = "headless_logging"
-MAX_LOG_ATTEMPTS = "max_log_attempts"
-LOWER_BOUND_TREES = "lower_bound_trees"
-BROWSER_INITIALIZATION_TIME = "browser_initialization_time"
-DEBUG = "debug"
-FIREFOX_PROTECTION = "firefox_default_protection"
 
 # DNS server docker container name
 DNS_CONTAINER_NAME = "bind9"

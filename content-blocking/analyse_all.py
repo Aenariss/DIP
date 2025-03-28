@@ -19,22 +19,20 @@
 
 # Built-in modules
 import os
-import subprocess
+from multiprocessing import Process
 from time import sleep
 
 # Custom modules
-from source.file_manipulation import load_json, save_json
-from source.constants import RESULTS_FOLDER, EXPERIMENT_NAME, BROWSER_TYPE
+from source.constants import RESULTS_FOLDER
+from source.config import Config
+from start import start
 
 def run_analyses():
-    options = load_json("./config.json")
     log_files = [f for f in os.listdir(RESULTS_FOLDER) if f.endswith("_log.json")]
-
-    # Command to be used for all launches
-    launch_command = ["python", "./start.py", "--analysis-only"]
 
     # Remove this part from each _log file
     len_to_remove = len("_log.json")
+    processes = []
 
     for file in log_files:
         file_len = len(file)
@@ -43,20 +41,27 @@ def run_analyses():
         # Compute experiment_name for each logs
         experiment_name = file[:remove_index]
 
-        # Edit config accordingly to allow correct log parsing for each simulation result
-        options[EXPERIMENT_NAME] = experiment_name
-        if experiment_name.startswith("firefox"):
-            options[BROWSER_TYPE] = "firefox"
-        else:
-            options[BROWSER_TYPE] = "chrome"
+        current_config = Config()
 
-        save_json(options, "./config.json")
+        # Edit config accordingly to allow correct log parsing for each simulation result
+        current_config.experiment_name = experiment_name
+        if experiment_name.startswith("firefox"):
+            current_config.browser_type = "firefox"
+        else:
+            current_config.browser_type = "chrome"
+
         sleep(1)
 
         # Launch each analysis as a new subprocess
-        subprocess.Popen(launch_command, shell=True)
+        proc = Process(target=start, args=(current_config, True))
+        proc.start()
+        processes.append(proc)
 
         sleep(1)
+
+    # Optional: Wait for all subprocesses to finish
+    for proc in processes:
+        proc.join()
 
 if __name__ == "__main__":
     run_analyses()

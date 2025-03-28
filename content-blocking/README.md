@@ -79,3 +79,5 @@ Experiments with "avast secure browser" need to have experiment name starting wi
 Tested addons needs whole name of the file
 
 Traffic logging requires valid page address (http(s)://my.example.com, does not work for localhost etc. Requires at least one dot. Unless config.ddebug is specified)
+
+Not everything in the config is validated since there are many possible options (which may even be expanded in the future), so please do not change what you do not understand to not break the program.

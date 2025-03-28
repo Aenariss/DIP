@@ -61,9 +61,9 @@ class DNSSniffer():
 
             Returns:
                 tuple:
-                    - str: 2nd and 1st level domain of the original query, 
+                    - main_zone_name(str): 2nd and 1st level domain of the original query, 
                     for *test.example.com*, returns *example.com*
-                    - str: Rest of the subdomains, for *test.example.com*, return *test*
+                    - subdomains(str): Rest of the subdomains, for *test.example.com*, returns *test*
         """
 
         # Try to split the domain into subdomains (example.com = example, com)
@@ -74,11 +74,11 @@ class DNSSniffer():
         remain = domains[:-2]
 
         # If there were subdomains left, they are the key. Else, zone_name is the key.
-        zone_key = main_zone_name
+        subdomains = main_zone_name
         if remain:
-            zone_key = '.'.join(remain)
+            subdomains = '.'.join(remain)
 
-        return main_zone_name, zone_key
+        return main_zone_name, subdomains
 
     def _assign_cnames(self, two_highest_level_domains: str, remaining_subdomain: str,\
                         cname_records: list[str]) -> None:
@@ -137,8 +137,8 @@ class DNSSniffer():
         
         Returns:
             tuple:
-            - list[str]: The first list contains 'A' record reponses - IP addresses
-            - list[str]: The second list contains 'CNAME' responses - aliases
+            - a_records (list[str]): The first list contains 'A' record reponses - IP addresses
+            - cname_records (list[str]): The second list contains 'CNAME' responses - aliases
         """
 
         a_records = []
