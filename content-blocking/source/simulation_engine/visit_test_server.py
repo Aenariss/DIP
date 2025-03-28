@@ -27,7 +27,7 @@ from selenium import webdriver
 from source.setup_driver import setup_driver, get_firefox_console_logs
 from source.simulation_engine.firewall import firewall_block_traffic
 from source.config import Config
-from custom_dns_server.dns_repeater_server import DNSRepeater
+from source.simulation_engine.custom_dns_server.dns_repeater_server import DNSRepeater
 
 TEST_SERVER_IP = "http://localhost:5000"
 

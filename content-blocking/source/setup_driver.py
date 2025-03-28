@@ -151,7 +151,7 @@ def setup_firefox(options: Config) -> webdriver.Firefox:
 
         return driver
 
-def setup_jshelter_custom_fpd(options: Config, download_path: str) -> webdriver.Chrome:
+def setup_chrome_for_traffic_logging(options: Config, download_path: str) -> webdriver.Chrome:
 
     # Set up Chrome options and enable DevTools Protocol
     chrome_options = ChromeOptions.Options()

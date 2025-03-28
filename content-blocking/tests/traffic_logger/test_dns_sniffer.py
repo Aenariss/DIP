@@ -1,5 +1,5 @@
 # test_dns_sniffer.py
-# Test the functions used in DNS Sniffer
+# Test the functions used in DNS Sniffer from traffic_logger
 # https://0xbharath.github.io/art-of-packet-crafting-with-scapy/scapy/creating_packets/index.html
 # Copyright (C) 2025 Vojtěch Fiala
 #
@@ -82,6 +82,14 @@ class TestDNSCallback(unittest.TestCase):
 
         self.assertEqual(primary_zone, "example.com")
         self.assertEqual(subdomains, "long.test")
+
+    def test_no_subdomain(self):
+        """Test to check if page with no 3-rd and further subdomains is logged ok"""
+        query = "example.com"
+        primary_zone, subdomains = self.dns_sniffer_class._obtain_subdomains(query)
+
+        self.assertEqual(primary_zone, "example.com")
+        self.assertEqual(subdomains, "example.com")
 
     def test_record_assigning(self):
         """Test _process_dns_answers() correctly returns A and CNAME records"""

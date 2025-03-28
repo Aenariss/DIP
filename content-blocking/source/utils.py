@@ -78,3 +78,33 @@ def squash_tree_resources(request_trees: dict) -> list[str]:
     # Remove duplicates
     resources = list(dict.fromkeys(resources))
     return resources
+
+def add_substract_fp_attempts(callers1: dict, callers2: dict, add: bool=True) -> dict:
+    """Function to add together 2 dicts with observed FP attempts"""
+    new_dict = {}
+
+    # compatibility fix across analysis
+    if isinstance(callers1, int):
+        callers1 = {}
+
+    if isinstance(callers2, int):
+        callers2 = {}
+
+    # Get the dict that is longer (one of them may be empty)
+    longer_callers = callers1 if len(callers1.items()) >= len(callers2.items()) else callers2
+
+    # If one of the dicts is empty, return the other
+    if callers1 == {} or callers2 == {}:
+        return longer_callers
+
+    other_caller = callers1 if longer_callers == callers2 else callers2
+
+    # Else add them together (I assume both have correctly assigned values)
+
+    for (group_name, group_fp_attempts) in longer_callers.items():
+        other_attempts_count = other_caller.get(group_name)
+        if add:
+            new_dict[group_name] = group_fp_attempts + other_attempts_count
+        else:
+            new_dict[group_name] = group_fp_attempts - other_attempts_count
+    return new_dict

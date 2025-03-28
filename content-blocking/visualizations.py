@@ -162,6 +162,12 @@ def print_table(results, metrics, submetrics, headers, total, percentage):
 
     table_data = []
 
+    desired_order = ['Avast Secure Browser', 'Brave Browser', 'Firefox Browser', 'Chrome Adblock Plus', 'Firefox Adblock Plus',
+                    'Chrome Ghostery', 'Firefox Ghostery', 'Chrome Privacy Badger', 'Firefox Privacy Badger', 
+                    'Chrome uBlock Origin Lite', 'Firefox uBlock Origin']
+    
+    all_metric_values = {key: all_metric_values[key] for key in desired_order}
+
     for (tool, values) in all_metric_values.items():
         if isinstance(values, dict):
             row = [tool] + [values.get(x, 0) for x in headers[1:]]

@@ -5,5 +5,9 @@ content-blocking/source/traffic_parser/__pycache__/*
 content-blocking/source/simulation_engine/__pycache__/*
 content-blocking/source/analysis_engine/__pycache__/*
 content-blocking/traffic/*.json
+content-blocking/source/simulation_engine/custom_dns_server/__pycache__/*
 content-blocking/tests/__pycache__/*
-content-blocking/custom_dns_server/__pycache__/*
+content-blocking/tests/traffic_logger/__pycache__/*
+content-blocking/tests/traffic_parser/__pycache__/*
+content-blocking/tests/simulation_engine/__pycache__/*
+content-blocking/tests/analysis_engine/__pycache__/*

@@ -26,7 +26,8 @@ class DNSSniffer():
         """Method to initialize the sniffer"""
 
         self.dns_responses = {}
-        self.sniffer = AsyncSniffer(filter="udp port 53", prn=self.parse_dns_packet, store=False)
+        self.sniffer = AsyncSniffer(filter="udp port 53", prn=self.store_packet, store=False)
+        self.packets = []
 
     def start_sniffer(self) -> None:
         """Method to start the DNS sniffer"""
@@ -42,6 +43,10 @@ class DNSSniffer():
         if self.sniffer.running:
             self.sniffer.stop()
 
+    def store_packet(self, packet: Packet) -> None:
+        """Method to store DNS packet into internal list"""
+        self.packets.append(packet)
+
     def get_traffic(self) -> dict:
         """Method to obtain the saved DNS responses
         
@@ -50,6 +55,9 @@ class DNSSniffer():
                     First-level keys can be used as names of zone files, secnod-level
                     keys can be used as names of records in the zone file
         """
+        for packet in self.packets:
+            self.parse_dns_packet(packet)
+
         return self.dns_responses
 
     def _obtain_subdomains(self, query_name: str) -> tuple[str, str]:
@@ -212,7 +220,7 @@ class DNSSniffer():
 
     # https://scapy.readthedocs.io/en/latest/api/scapy.layers.dns.html#scapy.layers.dns.DNS
     def parse_dns_packet(self, packet: Packet) -> None:
-        """Function to be used as callback with scapy sniffer
+        """Function to be used for each sniffed packet
         
         Args:
             packet: The DNS packet to process

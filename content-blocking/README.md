@@ -6,11 +6,10 @@ Please, read the **IMPORTANT** section in this file before launching anything.
 
 The files in this folder are used to measure the effectivity of given content-blocking tools.  
 
-- ``./config.json`` -- user options for the evaluation, includes browsers/extensions to test
+- ``./source/config.py`` -- user options for the evaluation, includes browsers/extensions to test
 - ``./results`` -- results of the evaluation, automatically created after starting the program
-- ``./scripts`` -- Powershell scripts to control OS-specific functionalities
 - ``./source`` -- source codes
-    - ``./source/fp_files`` -- JShelter files used for FPD purposes
+- ``./source/fp_files`` -- JShelter files used for FPD purposes
 - ``./traffic`` -- observed traffic data, automatically created after starting the program
 
 Requirements to run:
@@ -64,12 +63,12 @@ The workflow is as follows:
 5. The results of the simulation will be saved in ``results/`` folder.
 
 Problems:
-Loading has (only once) been observed to crash -> please be patient and prepare for multiple relaunches (dont forget to save your traffic each time cuz folder is deleted!) and
-then setting all the traffic fragments together
+DNS observation during traffic logging sometimes fails, cause unknown (Scapy-caused issue). During traffic logging, it is recommended to not use the computer to avoid unnecessary DNS traffic.
+Can be partially solved by setting higher number of repeat attempts in config.
 
 JShelter FPD sometimes has a race condition which causes fingerprinting to not work on some pages. 
 
-Sometimes, scapy adds weird DNS records. PLease, always run test run with pure chrome browser (since firefox does not log errors). If something went wrong, you will see err::NAME_NOT_RESOLVED in result logs.
+Sometimes, DNS server fails since some unexpected DNS situations may occur. PLease, always first run test with pure chrome browser (since firefox does not log errors). If something went wrong, you will see err::NAME_NOT_RESOLVED in result logs.
 In such cases, the simplest solution is to collect traffic again.
 
 All paths need to be with '/' instead of Windows '\' (config)

@@ -23,7 +23,7 @@ FILE_ERROR = 51
 # Paths - folders
 TRAFFIC_FOLDER = "./traffic/"
 RESULTS_FOLDER = "./results/"
-DNS_CONFIGURATION_FOLDER = "./custom_dns_server/server_configuration/"
+DNS_CONFIGURATION_FOLDER = "./source/simulation_engine/custom_dns_server/server_configuration/"
 ADDON_FOLDER = "./addons/"
 FPD_GROUP_FOLDER = "./source/traffic_parser/fp_files/"
 CHROME_ADDONS_FOLDER = ADDON_FOLDER + "chrome/"

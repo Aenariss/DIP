@@ -31,7 +31,7 @@ class Config:
     time_until_timeout = 10
 
     # If logging fails (e.g. due to invalid DNS logs), how many times should the traffic logger
-    # attempt to repeat the visit
+    # attempt to repeat the visit. Should be at least 1 or 2, since DNS logging often fails.
     max_repeat_log_attempts = 3
 
     # Chrome version that should be used for traffic logging
@@ -94,14 +94,14 @@ class Config:
     # Addon must match the chosen browser_type, e.g. 'crx' for Chrome, 'xpi' for Firefox.
     # Evaluations described in Thesis were completed with only a single addon present
     # which was the tested tool. However, for future-proofing should work with multiple.
-    tested_addons = ["ghostery_10_4_25.crx"]
+    tested_addons = ["adblock_plus_4_15_0_log.crx"]
 
     # Experiment name to be used for the current evaluation. When launching --analysis-only,
     # it needs to correspond to one of the previous experiments.
     # The log file is saved in results/ folder and it's named experiment_name + _log.json
     # The analysis results are also saved in results/ folder, named experiment_name + _results.json
     # If using Avast Secure Browser, experiment name MUST start with "avast"!! Only then!
-    experiment_name = "chrome_ghostery_10_4_25"
+    experiment_name = "chrome_adblock_plus_4_15_0"
 
     # Time to wait after browser is launched before accessing the simulation page.
     # The time can be used to wait for tested extensions to properly load, or to manually
