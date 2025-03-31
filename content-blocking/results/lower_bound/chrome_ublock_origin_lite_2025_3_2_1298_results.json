@@ -15,86 +15,86 @@
     "fpd_attempts_blocked_directly": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 64044,
-            "AlgorithmicMethods": 3235,
+            "BrowserProperties": 64040,
+            "AlgorithmicMethods": 1235,
             "CrawlFpInspector": 691
         },
         "average": {
-            "BrowserProperties": 68.35005336179296,
-            "AlgorithmicMethods": 3.4525080042689433,
+            "BrowserProperties": 68.34578441835646,
+            "AlgorithmicMethods": 1.3180362860192103,
             "CrawlFpInspector": 0.7374599786552828
         }
     },
     "fpd_attempts_blocked_transitively": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 114330,
-            "AlgorithmicMethods": 6006,
+            "BrowserProperties": 114279,
+            "AlgorithmicMethods": 3634,
             "CrawlFpInspector": 1117
         },
         "average": {
-            "BrowserProperties": 122.017075773746,
-            "AlgorithmicMethods": 6.4098185699039485,
+            "BrowserProperties": 121.96264674493062,
+            "AlgorithmicMethods": 3.8783351120597653,
             "CrawlFpInspector": 1.1921024546424759
         }
     },
     "fpd_attempts_blocked_in_total": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 178374,
-            "AlgorithmicMethods": 9241,
+            "BrowserProperties": 178319,
+            "AlgorithmicMethods": 4869,
             "CrawlFpInspector": 1808
         },
         "average": {
-            "BrowserProperties": 190.36712913553896,
-            "AlgorithmicMethods": 9.862326574172892,
+            "BrowserProperties": 190.30843116328708,
+            "AlgorithmicMethods": 5.196371398078975,
             "CrawlFpInspector": 1.9295624332977588
         }
     },
     "requests_observed": {
         "n_of_results": 937,
-        "sum": 98244,
-        "average": 104.8495197438634
+        "sum": 98017,
+        "average": 104.60725720384205
     },
     "requests_blocked_directly": {
         "n_of_results": 937,
-        "sum": 8808,
-        "average": 9.400213447171826
+        "sum": 8813,
+        "average": 9.40554962646745
     },
     "requests_blocked_in_total": {
         "n_of_results": 937,
-        "sum": 20432,
-        "average": 21.805763073639273
+        "sum": 20376,
+        "average": 21.74599786552828
     },
     "requests_blocked_transitively": {
         "n_of_results": 937,
-        "sum": 11624,
-        "average": 12.40554962646745
+        "sum": 11563,
+        "average": 12.340448239060832
     },
     "requests_blocked_that_have_child_requests": {
         "n_of_results": 937,
-        "sum": 1809,
-        "average": 1.9306296691568836
+        "sum": 1806,
+        "average": 1.9274279615795091
     },
     "average_request_block_level": {
         "n_of_results": 786,
-        "sum": 2607.4298060314336,
-        "average": 3.317340720141773
+        "sum": 2591.4304345542714,
+        "average": 3.296985285692457
     },
     "blocked_subtrees_data": {
         "n_of_results": 937,
         "sum": {
-            "subtrees_fully_blocked": 5818,
-            "subtrees_partially_blocked": 690,
-            "subtrees_not_blocked": 53073,
-            "subtrees_in_total": 59581,
+            "subtrees_fully_blocked": 6177,
+            "subtrees_partially_blocked": 650,
+            "subtrees_not_blocked": 53748,
+            "subtrees_in_total": 60575,
             "trees_with_blocked_root_node": 0
         },
         "average": {
-            "subtrees_fully_blocked": 6.209178228388474,
-            "subtrees_partially_blocked": 0.736392742796158,
-            "subtrees_not_blocked": 56.64140875133405,
-            "subtrees_in_total": 63.58697972251868,
+            "subtrees_fully_blocked": 6.592315901814301,
+            "subtrees_partially_blocked": 0.6937033084311632,
+            "subtrees_not_blocked": 57.36179295624333,
+            "subtrees_in_total": 64.64781216648879,
             "trees_with_blocked_root_node": 0.0
         }
     }

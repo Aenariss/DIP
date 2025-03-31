@@ -53,8 +53,8 @@
     },
     "requests_observed": {
         "n_of_results": 937,
-        "sum": 98244,
-        "average": 104.8495197438634
+        "sum": 98017,
+        "average": 104.60725720384205
     },
     "requests_blocked_directly": {
         "n_of_results": 937,
@@ -63,13 +63,13 @@
     },
     "requests_blocked_in_total": {
         "n_of_results": 937,
-        "sum": 10032,
-        "average": 10.706510138740661
+        "sum": 10030,
+        "average": 10.704375667022411
     },
     "requests_blocked_transitively": {
         "n_of_results": 937,
-        "sum": 5480,
-        "average": 5.848452508004269
+        "sum": 5478,
+        "average": 5.84631803628602
     },
     "requests_blocked_that_have_child_requests": {
         "n_of_results": 937,
@@ -78,23 +78,23 @@
     },
     "average_request_block_level": {
         "n_of_results": 589,
-        "sum": 2172.5537966399106,
-        "average": 3.6885463440405952
+        "sum": 2160.748686469189,
+        "average": 3.6685037121717983
     },
     "blocked_subtrees_data": {
         "n_of_results": 937,
         "sum": {
-            "subtrees_fully_blocked": 2422,
-            "subtrees_partially_blocked": 673,
-            "subtrees_not_blocked": 56486,
-            "subtrees_in_total": 59581,
+            "subtrees_fully_blocked": 2642,
+            "subtrees_partially_blocked": 653,
+            "subtrees_not_blocked": 57280,
+            "subtrees_in_total": 60575,
             "trees_with_blocked_root_node": 2
         },
         "average": {
-            "subtrees_fully_blocked": 2.5848452508004267,
-            "subtrees_partially_blocked": 0.7182497331910352,
-            "subtrees_not_blocked": 60.28388473852721,
-            "subtrees_in_total": 63.58697972251868,
+            "subtrees_fully_blocked": 2.8196371398078974,
+            "subtrees_partially_blocked": 0.6969050160085379,
+            "subtrees_not_blocked": 61.13127001067236,
+            "subtrees_in_total": 64.64781216648879,
             "trees_with_blocked_root_node": 0.0021344717182497333
         }
     }

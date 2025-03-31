@@ -20,7 +20,7 @@
 import re
 
 # custom modules
-from source.traffic_parser.requests_tree import RequestTree
+from source.traffic_parser.request_tree import RequestTree
 from source.traffic_parser.request_node import RequestNode
 from source.utils import print_progress, squash_tree_resources, add_substract_fp_attempts
 from source.config import Config

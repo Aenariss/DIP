@@ -1,5 +1,5 @@
 # test_dns_validity.py
-# Test the is_dns_valid from traffic_logger.py
+# Test the is_dns_valid from traffic_loader.py
 # Copyright (C) 2025 Vojtěch Fiala
 #
 # This program is free software: you can redistribute it and/or modify
@@ -66,6 +66,72 @@ class TestIsDnsValid(unittest.TestCase):
         # nothing should be removed in this case
         self.assertEqual(dns_traffic, clean_dns_traffic)
 
+    def test_valid_dns_logs_skip(self):
+        """Test that all network resources have corresponding DNS logs and
+        internals are skipped."""
+
+        dns_traffic = {
+            "example.com": {
+                "www": {"A": ["192.168.1.1"], "CNAME": []}
+            },
+            "first-level.cz": {
+                "first-level.cz": {"A": ["192.168.1.2"], "CNAME": []}
+            }
+        }
+        network_traffic = [{"requested_resource": "https://www.example.com/a.js"},
+                           {"requested_resource": "https://first-level.cz/"},
+                           {"requested_resource": "chrome://extension"}]
+
+        valid, clean_dns_traffic = is_dns_valid(dns_traffic, network_traffic)
+
+        self.assertTrue(valid)
+        self.assertEqual(dns_traffic, clean_dns_traffic)
+
+    def test_invalid_address_skip(self):
+        """Test that for invalid network address, dns_valid returns {}"""
+
+        dns_traffic = {
+            "example.com": {
+                "www": {"A": ["192.168.1.1"], "CNAME": []}
+            }
+        }
+        network_traffic = [{"requested_resource": "http://weirdlog"}]
+
+        valid, clean_dns_traffic = is_dns_valid(dns_traffic, network_traffic)
+
+        self.assertFalse(valid)
+        self.assertEqual(clean_dns_traffic, {})
+
+    def test_missing_dns_logs_top_level(self):
+        """Test that when checking for not logged addres, {} is returned as well as False"""
+
+        dns_traffic = {
+            "example.com": {
+                "www": {"A": ["192.168.1.1"], "CNAME": []}
+            }
+        }
+        network_traffic = [{"requested_resource": "http://nonexistent-example.com/"}]
+
+        valid, clean_dns_traffic = is_dns_valid(dns_traffic, network_traffic)
+
+        self.assertFalse(valid)
+        self.assertEqual(clean_dns_traffic, {})
+
+    def test_missing_data(self):
+        """Test that when missing data (A, CNAME), False and {} is returned"""
+
+        dns_traffic = {
+            "example.com": {
+                "www": {"A": [], "CNAME": []}
+            }
+        }
+        network_traffic = [{"requested_resource": "https://www.example.com/"}]
+
+        valid, clean_dns_traffic = is_dns_valid(dns_traffic, network_traffic)
+
+        self.assertFalse(valid)
+        self.assertEqual(clean_dns_traffic, {})
+
     def test_missing_dns_logs(self):
         """Test if missing network logs are detected"""
 
@@ -81,9 +147,8 @@ class TestIsDnsValid(unittest.TestCase):
 
         valid, cleaned_dns = is_dns_valid(dns_traffic, network_traffic)
 
-        # Check it failed since missing.example.com is not present in DNS logs
         self.assertFalse(valid)
-        self.assertEqual(cleaned_dns, {})  # Should return empty dict due to missing DNS
+        self.assertEqual(cleaned_dns, {})
 
     def test_unnecessary_dns_entries_removed(self):
         """Test if unnecessary DNS logs are removed if they dont match any network"""

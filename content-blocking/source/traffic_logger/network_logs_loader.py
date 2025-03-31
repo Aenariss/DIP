@@ -50,7 +50,7 @@ def enable_developer_mode(driver: webdriver.Chrome) -> None:
     # Everything is inside shadow root inside <extensions-amanger>
     shadow_root = driver.find_element(By.TAG_NAME, "extensions-manager").shadow_root
 
-    # Get toolbar inside shadow root 
+    # Get toolbar inside shadow root
     toolbar = shadow_root.find_element(By.ID, "toolbar")
 
     # The button is in <cr-toggle id="devMode"> inside toolbar shadowroot

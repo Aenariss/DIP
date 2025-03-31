@@ -46,6 +46,8 @@ class RequestNode:
         if children:
             for child in children:
                 child.add_parent(self)
+        else:
+            self.children = []
 
         # New node has initially no parent
         self.parents = []
@@ -158,11 +160,13 @@ class RequestNode:
         """
         if not self.get_parents():
             self.parents.append(parent_node)
+            parent_node.add_child(self)
         else:
             # Check if the parent isn't alreaddy defined to avoid duplicates
             if self._parent_already_present(parent_node):
                 return
             self.parents.append(parent_node)
+            parent_node.add_child(self)
 
     def get_all_children_resources(self) -> list[str]:
         """Method to return all children resources of the node -> even transitively.

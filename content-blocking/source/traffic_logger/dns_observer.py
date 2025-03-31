@@ -71,7 +71,7 @@ class DNSSniffer():
                 tuple:
                     - main_zone_name(str): 2nd and 1st level domain of the original query, 
                     for *test.example.com*, returns *example.com*
-                    - subdomains(str): Rest of the subdomains, for *test.example.com*, returns *test*
+                    - subdomains(str): Rest of the subdomains, for *test.a.com*, returns *test*
         """
 
         # Try to split the domain into subdomains (example.com = example, com)

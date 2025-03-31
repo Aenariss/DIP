@@ -25,9 +25,10 @@ from source.file_manipulation import load_json, get_traffic_files
 from source.utils import print_progress, add_substract_fp_attempts
 from source.config import Config
 from source.traffic_parser.request_node import RequestNode
-from source.traffic_parser.requests_tree import RequestTree
+from source.traffic_parser.request_tree import RequestTree
 
 ANONYMOUS_CALLERS = "<anonymous>"
+
 
 def fix_missing_parent(current_root_node: RequestNode, resource_node: RequestNode) -> None:
     """handle initiator when child resource was loaded before the parent, should rarely happen
@@ -164,7 +165,7 @@ def assign_direct_parent(resource: dict, tree: RequestTree, current_root_node: R
 
     # Parent present, add it as their child
     else:
-        # Resource can be requested by multiple requests -> very weird!
+        # Resource can be requested by multiple requests -> add some printing here if analysing
         if len(parent_nodes) > 1:
             pass
 
@@ -246,7 +247,6 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
         resource_fp_attempts = fp_attempts.get(current_resource, {})
 
         # Create new Node object representing the resource. Creates duplicit requests!!
-        # Check if node already exists, if so, at least do not assign it FP attempts
         node = RequestNode(time, current_resource, fp_attempts=resource_fp_attempts, children=[])
 
         # If requested_for matches requested_resource and initiator type is "other"
@@ -254,7 +254,9 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
         if resource["requested_for"] == current_resource and\
             resource["initiator"]["type"] == "other":
 
-            tree, current_root_node = add_new_root_node(tree, resource_number,\
+            # Also, no URL attribute can be present
+            if resource["initiator"].get("url", {}) == {}:
+                tree, current_root_node = add_new_root_node(tree, resource_number,\
                                         node, current_root_node, fp_attempts, lower_bound_trees)
 
         else:
@@ -292,32 +294,54 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
 
     return tree
 
-def create_trees(fp_attempts: dict, options: Config) -> dict:
-    """Function to load all HTTP traffic files and reconstruct request trees
-    Also assigns observed fingerprinting attempts to each page"""
-    print("Reconstructing request trees...")
-
-    trees = {}
-
+def load_network_traffic_files() -> list[dict]:
+    """Function to return observed network traffic  for each page as a record in dict
+    
+    Returns:
+        list[dict]: List of loaded network logs
+    """
     # Load all HTTP(S) traffic files from `./traffic/` folder
     network_files = get_traffic_files("network")
 
-    total = len(network_files)
-    progress_printer = print_progress(total, "Creating request trees...")
-
-    lower_bound_trees = options.lower_bound_trees
-
+    traffic_logs = []
     for file in network_files:
-        progress_printer()
         traffic = load_json(file)
 
         # obtain pure filename to be used as key for both FP files and resource tree
         pure_filename = os.path.basename(file)
 
+        # Add name of the file as part of tuple
+        traffic_logs.append((traffic, pure_filename))
+
+    return traffic_logs
+
+
+def create_trees(fp_attempts: dict, options: Config) -> dict[RequestTree]:
+    """Function to load all HTTP traffic files and reconstruct request trees
+    Also assigns observed fingerprinting attempts to each page
+    
+    Args:
+        fp_attempts: Loaded dictionary of assigned FP attempts
+        options: instance of Config
+
+    Returns:
+        dict[RequestTree]: Request trees with associated FP attempts
+    """
+    print("Reconstructing request trees...")
+
+    trees = {}
+    traffic_logs = load_network_traffic_files()
+    total = len(traffic_logs)
+    progress_printer = print_progress(total, "Creating request trees...")
+    lower_bound_trees = options.lower_bound_trees
+
+    for (traffic, traffic_file_number) in traffic_logs:
+        progress_printer()
+
         # obtain corresponding FP attempts, in case of an error (should never happen)
         # return an empty dict with no FP attempts observed
-        corresponding_fp_attempts = fp_attempts.get(pure_filename, {})
-        trees[pure_filename] = reconstruct_tree(traffic, corresponding_fp_attempts,\
+        corresponding_fp_attempts = fp_attempts.get(traffic_file_number, {})
+        trees[traffic_file_number] = reconstruct_tree(traffic, corresponding_fp_attempts,\
                                             lower_bound_trees)
 
     print("Request trees reconstructed!")

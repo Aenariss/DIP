@@ -1,0 +1,115 @@
+[
+    {
+        "requested_for": "https://a.cz/",
+        "time": 336435.582136,
+        "requestId": "712DA420742DB23172F7B9E570AB33A7",
+        "loaderId": "712DA420742DB23172F7B9E570AB33A7",
+        "requested_resource": "https://a.cz/",
+        "initiator": {
+            "type": "other"
+        }
+    },
+    {
+        "requested_for": "https://www.a.cz/",
+        "time": 336435.778335,
+        "requestId": "712DA420742DB23172F7B9E570AB33A7",
+        "loaderId": "712DA420742DB23172F7B9E570AB33A7",
+        "requested_resource": "https://www.a.cz/",
+        "initiator": {
+            "type": "other"
+        }
+    },
+    {
+        "requested_for": "https://www.a.cz/",
+        "time": 336436.161914,
+        "requestId": "26124.3",
+        "loaderId": "712DA420742DB23172F7B9E570AB33A7",
+        "requested_resource": "https://b.cz/sc.js",
+        "initiator": {
+            "type": "other"
+        }
+    },
+    {
+        "requested_for": "https://www.a.cz/",
+        "time": 336436.161668,
+        "requestId": "26124.2",
+        "loaderId": "712DA420742DB23172F7B9E570AB33A7",
+        "requested_resource": "https://loaded-twice.cz/script.js",
+        "initiator": {
+            "type": "other"
+        }
+    },
+    {
+        "requested_for": "https://www.a.cz/",
+        "time": 336436.161668,
+        "requestId": "26124.2",
+        "loaderId": "712DA420742DB23172F7B9E570AB33A7",
+        "requested_resource": "https://loaded-twice.cz/script.js",
+        "initiator": {
+            "type": "parser",
+            "url": "https://b.cz/sc.js"
+        }
+    },
+    {
+        "requested_for": "https://www.a.cz/",
+        "time": 336436.161669,
+        "requestId": "26124.2",
+        "loaderId": "712DA420742DB23172F7B9E570AB33A7",
+        "requested_resource": "https://two-parents.cz/script.js",
+        "initiator": {
+            "columnNumber": 3623,
+            "lineNumber": 0,
+            "type": "parser",
+            "url": "https://loaded-twice.cz/script.js"
+        }
+    },
+    {
+        "requested_for": "https://www.a.cz/",
+        "time": 336436.526287,
+        "requestId": "26124.22",
+        "loaderId": "712DA420742DB23172F7B9E570AB33A7",
+        "requested_resource": "https://b.cz/asc.js",
+        "initiator": {
+            "stack": {
+                "callFrames": [
+                    {
+                        "columnNumber": 26,
+                        "functionName": "apply",
+                        "lineNumber": 284,
+                        "scriptId": "13",
+                        "url": "chrome-extension://bbogkpojpmdnlonjjogfkaclifmgnbfe/8aa718be-717b-4302-881c-ad3e4fa8e6ce"
+                    },
+                    {
+                        "columnNumber": 24,
+                        "functionName": "apply",
+                        "lineNumber": 404,
+                        "scriptId": "13",
+                        "url": "chrome-extension://bbogkpojpmdnlonjjogfkaclifmgnbfe/8aa718be-717b-4302-881c-ad3e4fa8e6ce"
+                    },
+                    {
+                        "columnNumber": 53598,
+                        "functionName": "qj",
+                        "lineNumber": 10,
+                        "scriptId": "17",
+                        "url": "https://b.cz/sc.js"
+                    },
+                    {
+                        "columnNumber": 54876,
+                        "functionName": "",
+                        "lineNumber": 10,
+                        "scriptId": "17",
+                        "url": "https://b.cz/sc.js"
+                    },
+                    {
+                        "columnNumber": 54942,
+                        "functionName": "",
+                        "lineNumber": 10,
+                        "scriptId": "17",
+                        "url": "https://b.cz/sc.js"
+                    }
+                ]
+            },
+            "type": "script"
+        }
+    }
+]

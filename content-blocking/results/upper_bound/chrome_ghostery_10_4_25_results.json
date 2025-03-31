@@ -15,86 +15,86 @@
     "fpd_attempts_blocked_directly": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 53944,
-            "AlgorithmicMethods": 5146,
+            "BrowserProperties": 53940,
+            "AlgorithmicMethods": 1147,
             "CrawlFpInspector": 761
         },
         "average": {
-            "BrowserProperties": 57.5709711846318,
-            "AlgorithmicMethods": 5.491995731056564,
+            "BrowserProperties": 57.5667022411953,
+            "AlgorithmicMethods": 1.224119530416222,
             "CrawlFpInspector": 0.8121664887940235
         }
     },
     "fpd_attempts_blocked_transitively": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 106927,
-            "AlgorithmicMethods": 2932,
+            "BrowserProperties": 106887,
+            "AlgorithmicMethods": 2560,
             "CrawlFpInspector": 1323
         },
         "average": {
-            "BrowserProperties": 114.11632870864462,
-            "AlgorithmicMethods": 3.1291355389541087,
+            "BrowserProperties": 114.07363927427961,
+            "AlgorithmicMethods": 2.7321237993596585,
             "CrawlFpInspector": 1.4119530416221986
         }
     },
     "fpd_attempts_blocked_in_total": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 160871,
-            "AlgorithmicMethods": 8078,
+            "BrowserProperties": 160827,
+            "AlgorithmicMethods": 3707,
             "CrawlFpInspector": 2084
         },
         "average": {
-            "BrowserProperties": 171.68729989327642,
-            "AlgorithmicMethods": 8.621131270010672,
+            "BrowserProperties": 171.64034151547492,
+            "AlgorithmicMethods": 3.9562433297758806,
             "CrawlFpInspector": 2.224119530416222
         }
     },
     "requests_observed": {
         "n_of_results": 937,
-        "sum": 100825,
-        "average": 107.60405549626468
+        "sum": 100525,
+        "average": 107.28388473852722
     },
     "requests_blocked_directly": {
         "n_of_results": 937,
-        "sum": 9321,
-        "average": 9.947705442902882
+        "sum": 9322,
+        "average": 9.948772678762007
     },
     "requests_blocked_in_total": {
         "n_of_results": 937,
-        "sum": 22996,
-        "average": 24.542155816435432
+        "sum": 22935,
+        "average": 24.477054429028815
     },
     "requests_blocked_transitively": {
         "n_of_results": 937,
-        "sum": 13675,
-        "average": 14.59445037353255
+        "sum": 13613,
+        "average": 14.528281750266808
     },
     "requests_blocked_that_have_child_requests": {
         "n_of_results": 937,
-        "sum": 1796,
-        "average": 1.9167556029882604
+        "sum": 1793,
+        "average": 1.9135538954108857
     },
     "average_request_block_level": {
         "n_of_results": 800,
-        "sum": 2761.9585784267847,
-        "average": 3.452448223033481
+        "sum": 2746.4898287019273,
+        "average": 3.4331122858774092
     },
     "blocked_subtrees_data": {
         "n_of_results": 937,
         "sum": {
-            "subtrees_fully_blocked": 5489,
-            "subtrees_partially_blocked": 985,
-            "subtrees_not_blocked": 53144,
-            "subtrees_in_total": 59618,
+            "subtrees_fully_blocked": 5851,
+            "subtrees_partially_blocked": 944,
+            "subtrees_not_blocked": 53822,
+            "subtrees_in_total": 60617,
             "trees_with_blocked_root_node": 0
         },
         "average": {
-            "subtrees_fully_blocked": 5.8580576307363925,
-            "subtrees_partially_blocked": 1.0512273212379937,
-            "subtrees_not_blocked": 56.71718249733191,
-            "subtrees_in_total": 63.6264674493063,
+            "subtrees_fully_blocked": 6.244397011739594,
+            "subtrees_partially_blocked": 1.007470651013874,
+            "subtrees_not_blocked": 57.44076840981857,
+            "subtrees_in_total": 64.69263607257204,
             "trees_with_blocked_root_node": 0.0
         }
     }

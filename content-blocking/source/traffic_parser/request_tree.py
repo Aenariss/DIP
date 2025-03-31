@@ -94,7 +94,8 @@ class RequestTree:
         return blocked_attempts
 
     def total_blocked_fpd_attempts(self, start: RequestNode=None) -> dict:
-        """Method to calculate total number of FPD attempts blockedd in a tree
+        """Method to calculate total number of FPD attempts blockedd in a tree.
+        Assumes all required nodes throught the tree have been blocked.
         
         Args:
             start: Node from which to start calculating total blocked FPD attempts
@@ -111,7 +112,7 @@ class RequestTree:
         if start.is_blocked():
             blocked_attempts = add_substract_fp_attempts(start.get_fp_attempts(), blocked_attempts)
 
-        # If start was not blocked, repeat for all children
+        # Repeat for all children
         for child in start.get_children():
             blocked_attempts = add_substract_fp_attempts(
                 self.total_blocked_fpd_attempts(start=child), blocked_attempts)
@@ -205,14 +206,12 @@ class RequestTree:
         Returns:
             list: All resources in the tree
         """
-        resource_list = []
         if not start_node:
             start_node = self.get_root()
 
-        children = start_node.get_all_children_resources()
-        resource_list.extend(children)
+        requests_with_root_as_start = start_node.get_all_children_resources()
 
-        return resource_list
+        return requests_with_root_as_start
 
     def _recursive_node_check(self, node: RequestNode, searched_resource: str)\
         -> list[RequestNode]:
@@ -251,9 +250,8 @@ class RequestTree:
         """
         return self._recursive_node_check(self.get_root(), searched_resource)
 
-    def print_tree(self, level: int=1, current_node: RequestNode=None, printing: bool=False) -> str:
-        """Method to CLI-visualize the requests in a given tree or return the visualization as
-        a string
+    def ascii_tree(self, level: int=1, current_node: RequestNode=None) -> str:
+        """Method to return a CLI-visual of the requests in a given tree
         
         Args:
             level: How deep the printed node should be
@@ -265,33 +263,19 @@ class RequestTree:
 
         # Print the initial request - tree root
         result = ""
+
         if not current_node:
-            current_fp_attempts = str(self.get_root().get_fp_attempts())
-            block_result = "-- Blocked" if self.get_root().is_blocked() else "-- Loaded"
-            if printing:
-                print('--' * level, self.get_root().get_resource(), block_result,\
-                       current_fp_attempts)
+            current_node = self.get_root()
 
-            # Add current level to result
-            result += '\n' + '--' * level + ' ' + self.get_root().get_resource()\
-                + ' ' + block_result + ' ' + current_fp_attempts
+        current_fp_attempts = str(current_node.get_fp_attempts())
+        block_result = "-- Blocked" if current_node.is_blocked() else "-- Loaded"
 
-            # Recursively print for children
-            for child in self.get_root().get_children():
-                result += self.print_tree(level=level+1, current_node=child, printing=printing)
+        # Add current level to result
+        result += '\n|' + '--' * 2 * level + ' ' + current_node.get_resource()[:100] + ' '\
+                + block_result + ' ' + current_fp_attempts
 
-        # Other requests - child nodes
-        else:
-            current_fp_attempts = str(current_node.get_fp_attempts())
-            block_result = "-- Blocked" if current_node.is_blocked() else "-- Loaded"
-            if printing:
-                print('|' + '--' * 2 * level + ' ' + current_node.get_resource()[:100]\
-                     + ' ' + block_result + ' ' + current_fp_attempts)
-            # Add current level to result
-            result += '\n|' + '--' * 2 * level + ' ' + current_node.get_resource()[:100] + ' '\
-                    + block_result + ' ' + current_fp_attempts
+        # Recursively print for children
+        for child in current_node.get_children():
+            result += self.ascii_tree(level=level+1, current_node=child)
 
-            # Recursively print for children
-            for child in current_node.get_children():
-                result += self.print_tree(level=level+1, current_node=child, printing=printing)
         return result

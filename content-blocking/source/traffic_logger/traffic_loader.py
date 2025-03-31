@@ -29,6 +29,23 @@ from source.config import Config
 from source.constants import TRAFFIC_FOLDER, FILE_ERROR, GENERAL_ERROR
 from source.traffic_logger.dns_observer import DNSSniffer
 
+def get_address(resource: str) -> str:
+    """Function to obtain only the domain from URL
+    Needs for the URL to end with '/', logs from Chrome logging fit this form
+    
+    Args:
+        resource: URL of the resource
+        
+    Returns:
+        domain (str): URL of the domain, if available
+    """
+    domain = ""
+    matched = re.search(r"\/\/(.*?)\/", resource)
+    if matched:
+        domain = matched.group(1)
+
+    return domain
+
 def is_dns_valid(dns_traffic: dict, network_traffic: list) -> tuple[bool, dict]:
     """Function to ensure all observed network resources have also its DNS logged
     Also removes unnecessary DNS records of primary domains (not subdomains)
@@ -116,23 +133,6 @@ def is_dns_valid(dns_traffic: dict, network_traffic: list) -> tuple[bool, dict]:
 
     return status, dns_traffic
 
-def get_address(resource: str) -> str:
-    """Function to obtain only the domain from URL
-    Needs for the URL to end with '/', logs from Chrome logging fit this form
-    
-    Args:
-        resource: URL of the resource
-        
-    Returns:
-        domain (str): URL of the domain, if available
-    """
-    domain = ""
-    matched = re.search(r"\/\/(.*?)\/", resource)
-    if matched:
-        domain = matched.group(1)
-
-    return domain
-
 def visit_page(page: str, options: Config, compact: bool) -> tuple[bool, list]:
     """Function to visit the specified page and obtain its network traffic
     
@@ -165,7 +165,7 @@ def save_traffic(traffic: dict, pagename: str, filename: str, traffic_type: str)
     Args:
         traffic: Traffic that should be saved (either DNS or Network)
         pagename: Name of the page from which the traffic was collected
-        filename: Name of the file to save the data into
+        filename: Number of the accessed page as a str (1,2...)
         traffic_type: Type of saved traffic ('dns' or 'network')
     """
     try:
@@ -174,14 +174,15 @@ def save_traffic(traffic: dict, pagename: str, filename: str, traffic_type: str)
             f = open(TRAFFIC_FOLDER + filename + '_dns' + '.json', 'w', encoding='utf-8')
         else: # http
             f = open(TRAFFIC_FOLDER + filename + '_network.json', 'w', encoding='utf-8')
+
         # Format the dictionary as json
         jsoned_traffic = json.dumps(traffic, indent=4)
         f.write(jsoned_traffic)
         f.close()
 
-    except OSError as error:
+    except Exception as e:
         print("Could not save traffic to a file! Problem with page:", pagename)
-        print(error)
+        print(e)
         delete_unsuccesfull_fpd()
         exit(FILE_ERROR)
 

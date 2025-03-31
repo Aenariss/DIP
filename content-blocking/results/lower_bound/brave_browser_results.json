@@ -15,86 +15,86 @@
     "fpd_attempts_blocked_directly": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 53194,
-            "AlgorithmicMethods": 3084,
+            "BrowserProperties": 53190,
+            "AlgorithmicMethods": 1084,
             "CrawlFpInspector": 1154
         },
         "average": {
-            "BrowserProperties": 56.77054429028816,
-            "AlgorithmicMethods": 3.2913553895410885,
+            "BrowserProperties": 56.76627534685166,
+            "AlgorithmicMethods": 1.1568836712913555,
             "CrawlFpInspector": 1.231590181430096
         }
     },
     "fpd_attempts_blocked_transitively": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 98091,
-            "AlgorithmicMethods": 6405,
+            "BrowserProperties": 98040,
+            "AlgorithmicMethods": 4033,
             "CrawlFpInspector": 1278
         },
         "average": {
-            "BrowserProperties": 104.68623265741729,
-            "AlgorithmicMethods": 6.835645677694771,
+            "BrowserProperties": 104.63180362860192,
+            "AlgorithmicMethods": 4.304162219850587,
             "CrawlFpInspector": 1.3639274279615796
         }
     },
     "fpd_attempts_blocked_in_total": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 151285,
-            "AlgorithmicMethods": 9489,
+            "BrowserProperties": 151230,
+            "AlgorithmicMethods": 5117,
             "CrawlFpInspector": 2432
         },
         "average": {
-            "BrowserProperties": 161.45677694770544,
-            "AlgorithmicMethods": 10.12700106723586,
+            "BrowserProperties": 161.3980789754536,
+            "AlgorithmicMethods": 5.461045891141942,
             "CrawlFpInspector": 2.5955176093916754
         }
     },
     "requests_observed": {
         "n_of_results": 937,
-        "sum": 98244,
-        "average": 104.8495197438634
+        "sum": 98017,
+        "average": 104.60725720384205
     },
     "requests_blocked_directly": {
         "n_of_results": 937,
-        "sum": 8783,
-        "average": 9.373532550693703
+        "sum": 8788,
+        "average": 9.378868729989328
     },
     "requests_blocked_in_total": {
         "n_of_results": 937,
-        "sum": 19779,
-        "average": 21.108858057630737
+        "sum": 19723,
+        "average": 21.049092849519745
     },
     "requests_blocked_transitively": {
         "n_of_results": 937,
-        "sum": 10996,
-        "average": 11.735325506937032
+        "sum": 10935,
+        "average": 11.670224119530417
     },
     "requests_blocked_that_have_child_requests": {
         "n_of_results": 937,
-        "sum": 1793,
-        "average": 1.9135538954108857
+        "sum": 1790,
+        "average": 1.9103521878335112
     },
     "average_request_block_level": {
         "n_of_results": 805,
-        "sum": 2791.751389147936,
-        "average": 3.4680141480098587
+        "sum": 2776.2918315202555,
+        "average": 3.448809728596591
     },
     "blocked_subtrees_data": {
         "n_of_results": 937,
         "sum": {
-            "subtrees_fully_blocked": 5334,
-            "subtrees_partially_blocked": 1014,
-            "subtrees_not_blocked": 53233,
-            "subtrees_in_total": 59581,
+            "subtrees_fully_blocked": 5683,
+            "subtrees_partially_blocked": 972,
+            "subtrees_not_blocked": 53920,
+            "subtrees_in_total": 60575,
             "trees_with_blocked_root_node": 1
         },
         "average": {
-            "subtrees_fully_blocked": 5.692636072572038,
-            "subtrees_partially_blocked": 1.0821771611526148,
-            "subtrees_not_blocked": 56.81216648879403,
-            "subtrees_in_total": 63.58697972251868,
+            "subtrees_fully_blocked": 6.065101387406617,
+            "subtrees_partially_blocked": 1.0373532550693703,
+            "subtrees_not_blocked": 57.54535752401281,
+            "subtrees_in_total": 64.64781216648879,
             "trees_with_blocked_root_node": 0.0010672358591248667
         }
     }

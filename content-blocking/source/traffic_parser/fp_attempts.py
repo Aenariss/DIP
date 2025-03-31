@@ -145,7 +145,6 @@ def parse_property_logs(primary_group: list, property_logs: dict, fp_logs: dict,
     Returns:
         dict: Associated FP attempts to each logged resource
     """
-
     # Go throug call/get/set
     for (obtain_key, _) in property_logs.items():
         property_log_data = property_logs[obtain_key]
@@ -265,7 +264,7 @@ def assign_property_group(fp_groups: dict) -> dict:
         Returns:
             str: name of the primary parent group
         """
-        primary_name = fp_groups.get(group_name)
+        primary_name = fp_groups.get(group_name, None)
 
         if primary_name:
             # Check if it isnt top-level parent, if so, return the parent themselves
@@ -277,7 +276,7 @@ def assign_property_group(fp_groups: dict) -> dict:
 
         # If primary name is unknown (should not happen), it ssignalizes wrong file format
         print("Error parsing FP files! Are files in ./source/traffic_parser/fp_files/ valid?")
-        return ""
+        exit(GENERAL_ERROR)
 
     wrapped_properties = load_json(FPD_WRAPPERS_FILE)
 
@@ -292,7 +291,6 @@ def assign_property_group(fp_groups: dict) -> dict:
         if assigned_groups:
             for group in assigned_groups:
                 group_name = group.get("group")
-
                 primary_group = get_primary_group(group_name, fp_groups)
 
                 # Check if property already has group assigned

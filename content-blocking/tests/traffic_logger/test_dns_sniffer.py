@@ -19,6 +19,7 @@
 
 # Built-in modules
 import unittest
+from unittest.mock import MagicMock
 
 # 3rd party modules
 from scapy.layers.dns import DNS, DNSQR, DNSRR
@@ -74,6 +75,38 @@ class TestDNSCallback(unittest.TestCase):
 
         return test_packet
 
+    def test_start(self):
+        """Unnecessary test case to check if start was called, only for coverage"""
+        self.dns_sniffer_class.sniffer = MagicMock()
+        self.dns_sniffer_class.start_sniffer()
+        self.assertEqual(self.dns_sniffer_class.sniffer.start.call_count, 1)
+
+    def test_stop(self):
+        """Unnecessary test case to check if stop was called, only for coverage"""
+        self.dns_sniffer_class.sniffer = MagicMock()
+        self.dns_sniffer_class.stop_sniffer()
+        self.assertEqual(self.dns_sniffer_class.sniffer.stop.call_count, 1)
+
+    def test_store_packet(self):
+        """Check if packets are stored correctly"""
+        test_packet = self._craft_dns_packet("test.example.com",\
+                        a_replies=["192.168.0.1"], cname_replies=[])
+        self.dns_sniffer_class.store_packet(test_packet)
+
+        # Assert packet was added to the list
+        self.assertIn(test_packet, self.dns_sniffer_class.packets)
+        self.assertEqual(len(self.dns_sniffer_class.packets), 1)
+
+    def test_get_traffic(self):
+        """Check if packets are parsed on getting them"""
+        test_packet = self._craft_dns_packet("test.example.com",\
+                        a_replies=["192.168.0.1"], cname_replies=[])
+        self.dns_sniffer_class.store_packet(test_packet)
+
+        dns_results = self.dns_sniffer_class.get_traffic()
+        self.assertIn("example.com", dns_results)
+        self.assertIn("test", dns_results["example.com"])
+
     def test_subdomains_obtaining(self):
         """Test _obtain_subdomains() works as intended"""
 
@@ -121,7 +154,7 @@ class TestDNSCallback(unittest.TestCase):
         self.assertEqual(a_records, ["192.168.0.1", "192.168.0.2"])
         self.assertEqual(cname_records, ["next.test.example.com"])
 
-    def test_dns_callback_a_record(self):
+    def test_parse_dns_packet_a_record(self):
         """Test that parse_dns_packet() works as intended for A replies"""
 
         test_packet = self._craft_dns_packet("next.test.example.com",\
@@ -170,7 +203,23 @@ class TestDNSCallback(unittest.TestCase):
         self.assertEqual(new_example_a, ["192.168.0.3"])
         self.assertEqual(test_test_com_a, ["192.168.0.4"])
 
-    def test_dns_callback_cname_record(self):
+    def test_parse_dns_packet_a_record_twice(self):
+        """Test that parse_dns_packet() works as intended for A replies requested twice"""
+
+        test_packet = self._craft_dns_packet("next.test.example.com",\
+                                        a_replies=["192.168.0.1"], cname_replies=[])
+        test_packet_2 = self._craft_dns_packet("next.test.example.com",\
+                                        a_replies=["192.168.0.1"], cname_replies=[])
+        self.dns_sniffer_class.parse_dns_packet(test_packet)
+        self.dns_sniffer_class.parse_dns_packet(test_packet_2)
+
+        # Check it's present only once
+        self.assertIn("example.com", self.dns_sniffer_class.dns_responses)
+        self.assertEqual(len(self.dns_sniffer_class.dns_responses), 1)
+        self.assertEqual(self.dns_sniffer_class.dns_responses["example.com"]["next.test"]["A"],\
+                        ["192.168.0.1"])
+
+    def test_parse_dns_packet_cname_record(self):
         """Test that parse_dns_packet() works as intended for CNAME replies"""
 
         test_packet = self._craft_dns_packet("next.test.example.com",\
@@ -226,3 +275,26 @@ class TestDNSCallback(unittest.TestCase):
         self.assertEqual(new_example_cname, ["only_one.com"])
         self.assertEqual(only_one_a, ["192.168.0.3"])
         self.assertEqual(only_one_cname, [])
+
+    def test_save_dns_answer_new_cname(self):
+        """Test new CNAME entry and new subdomain for save_dns_answer"""
+        top_level_domain = "example.com"
+        subdomain = "test"
+        a_records = []
+        cname_records = ["cname.anotherdomain.com"]
+
+        self.dns_sniffer_class._save_dns_answer(top_level_domain, subdomain, a_records,\
+                                                cname_records)
+
+        self.assertIn(top_level_domain, self.dns_sniffer_class.dns_responses)
+        self.assertIn(subdomain, self.dns_sniffer_class.dns_responses[top_level_domain])
+        self.assertEqual(self.dns_sniffer_class.dns_responses[top_level_domain], {\
+            subdomain: {'A': [], 'CNAME': cname_records}})
+
+        top_level_domain = "example.com"
+        subdomain = "test-2"
+        cname_records = ["another-cname.anotherdomain.com"]
+        self.dns_sniffer_class._save_dns_answer(top_level_domain, subdomain, a_records,\
+                                                cname_records)
+
+        self.assertIn("another-cname", self.dns_sniffer_class.dns_responses["anotherdomain.com"])
