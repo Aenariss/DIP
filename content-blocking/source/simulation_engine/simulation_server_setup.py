@@ -32,21 +32,38 @@ app = Flask(__name__, template_folder="simulation_webserver")
 list_of_resources = []
 
 @app.route('/')
-def index():
+def index() -> str:
+    """Function to return an index page for the test server.
+    
+    Returns:
+        str: Rendered HTML document of the page
+    """
     if not list_of_resources:
         print("Could not load any resources! Is traffic folder empty?")
     return render_template("index.html", resources=list_of_resources,\
                             n_of_resources=len(list_of_resources))
 
-def run_test_server(resource_list: list):
+def run_test_server(resource_list: list) -> None:
+    """Function to launch the test server with the configured resources
+    
+    Args:
+        resource_list: List of all resources from all loaded trees
+    """
     global list_of_resources
     list_of_resources = resource_list
 
     # http://localhost:5000
     app.run(port=5000, use_reloader=False)
 
-def start_testing_server(resource_list: list):
-    """Function to start the http testing server to observe content blocking behavior"""
+def start_testing_server(resource_list: list) -> Process:
+    """Function to start the http testing server to observe content blocking behavior
+    
+    Args:
+        resource_list: List of all resources from all loaded trees
+
+    Returns:
+        Process: The process which runs the server
+    """
     print("Starting the test server...")
 
     # Start another process running the server
@@ -54,8 +71,12 @@ def start_testing_server(resource_list: list):
     server.start()
     return server
 
-def stop_testing_server(server):
-    """Function to stop the http testing server"""
+def stop_testing_server(server: Process) -> None:
+    """Function to stop the given http testing server
+
+    Args:
+        server: The process which runs the server.
+    """
     print("Stopping the test server...")
     server.terminate()
     server.join()

@@ -16,15 +16,23 @@
 # If not, see <https://www.gnu.org/licenses/>.
 #
 
-# built-in modules
+# Built-in modules
 import os
 
 BLOCK_HTTP_RULE_NAME = "Block-HTTP"
 BLOCK_HTTPS_RULE_NAME = "Block-HTTPS"
 
 def setup_block_rule(name: str, protocol: str, port: str) -> str:
-    """Function to setup command to add rule using netsh utility
-    Needs name of the rule, protocol to use and port to block"""
+    """Function to setup command to add outgoing block rule using netsh utility
+    
+    Args:
+        name: Name of the blocking rule
+        protocol: Which protocol to block (TCP/UDP)
+        port: Which port to block
+    
+    Returns:
+        str: The created netsh command to block specified data
+    """
 
     netsh_str = f"netsh advfirewall firewall add rule name=\"{name}\" dir=out action=block "
     netsh_str += f"protocol={protocol} remoteport={port}"
@@ -32,7 +40,14 @@ def setup_block_rule(name: str, protocol: str, port: str) -> str:
     return netsh_str
 
 def remove_block_rule(name: str) -> str:
-    """Function to setup command to remove firewall rule using netsh"""
+    """Function to setup command to remove firewall rule using netsh
+    
+    Args:
+        name: Name of the rule to remove
+
+    Returns:
+        str: The created netsh command to remove specified blocking rule
+    """
 
     netsh_str = f"netsh advfirewall firewall delete rule name=\"{name}\""
 

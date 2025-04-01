@@ -220,7 +220,7 @@ class TestNetworkLogsLoader(unittest.TestCase):
         mock_dev_mode_button = MagicMock()
         mock_update_button = MagicMock()
 
-        mock_webdriver_wait.return_value.until.return_value = mock_extensions_manager
+        mock_webdriver_wait.return_value.until.return_value = True
         mock_driver.find_element.return_value = mock_extensions_manager
         mock_extensions_manager.shadow_root = mock_toolbar
         mock_toolbar.shadow_root = mock_toolbar

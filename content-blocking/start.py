@@ -27,7 +27,7 @@ from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, RESULTS_FOLDER
 from source.traffic_logger.traffic_loader import load_traffic
 from source.traffic_parser.fp_attempts import parse_fp
 from source.traffic_parser.create_request_trees import create_trees
-from source.simulation_engine.test_page_server import start_testing_server, stop_testing_server
+from source.simulation_engine.simulation_server_setup import start_testing_server, stop_testing_server
 from source.file_manipulation import save_json, load_json
 from source.simulation_engine.visit_test_server import visit_test_server
 from source.analysis_engine.analysis import analyse_trees
@@ -36,7 +36,7 @@ from source.utils import squash_dns_records, squash_tree_resources
 from source.config import Config
 from source.simulation_engine.custom_dns_server.dns_repeater_server import DNSRepeater
 
-# Increase recursion limit because of the trees
+# Increase recursion limit because of the trees, should be more than enough
 sys.setrecursionlimit(3000)
 
 # Argument parsing
@@ -254,6 +254,7 @@ def start(options: Config=None, analysis_only: bool=False) -> None:
     print("Experiment data succesfully loaded...")
 
     if args.simulation_only:
+        input("Press any key to exit...")
         return
 
     # Analyze what would have happened to the request tree had a content-blocking tool been present

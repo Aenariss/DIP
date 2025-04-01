@@ -34,6 +34,7 @@ PAGES_FILE = "page_list.txt"
 USER_CONFIG_FILE = "./config.json"
 FPD_GROUPS_FILE = FPD_GROUP_FOLDER + "groups.json"
 FPD_WRAPPERS_FILE = FPD_GROUP_FOLDER + "wrappers.json"
+NAMED_CONF_FILE = DNS_CONFIGURATION_FOLDER + "named.conf"
 
 JSHELTER_FPD_PATH = CHROME_ADDONS_FOLDER + "jshelter_0_19_custom_fpd.crx"
 FIREFOX_RESOURCE_LOGGER = FIREFOX_ADDONS_FOLDER + "firefox_resource_logger.xpi"

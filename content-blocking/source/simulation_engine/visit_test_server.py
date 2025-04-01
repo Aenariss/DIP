@@ -31,25 +31,38 @@ from source.simulation_engine.custom_dns_server.dns_repeater_server import DNSRe
 
 TEST_SERVER_IP = "http://localhost:5000"
 
-# tbd: client configuration where will be specified: browser type (chrome/firefox),
-# browser path in case of tor/asb/brave, list of extensions to be loaded into the browser
+def check_all_resources_loaded(driver: webdriver.Chrome | webdriver.Firefox, total_requests: int):
+    """Function to be used as a callback to check if the page has fetched all resources
+    
+    Args:
+        driver: An instance of a webdriver which opened the test page
+        total_requests: Number of requests fetched on the testing page
+    """
+
+    # Get window object with the status and check if it loaded all
+    script_load_resources_status = "return window.total_fetch_count.completed == arguments[0]"
+    script_load_resources_status += " && "
+    script_load_resources_status += "window.total_fetch_count.pending == 0;"
+
+    return driver.execute_script(script_load_resources_status, total_requests)
 
 def visit_test_server(options: Config, requests: list, dns_repeater: DNSRepeater, args)\
       -> list[dict]:
-    """Function to simulate client visit to the test page with defined configuration"""
+    """Function to simulate client visit to the test page with defined configuration
+    
+    Args:
+        options: Valid instance of Config
+        requests: list of all requests in the request trees, 
+        the same which was used to initialize server
+        dns_repeater: Instance of DNSRepeater which repeats DNS responses
+        args: Arguments inputted by the client
+
+    Returns:
+        list[dict]: Simulation output, format depends on chosen browser
+    """
 
     # total number of all resources to check if selenium can leave the page
     total_requests = len(requests)
-
-    def check_all_resources_loaded(driver: webdriver.Chrome | webdriver.Firefox):
-        """Function to be used as a callback to check if the page has fetched all resources"""
-
-        # Get window object with the status and check if it loaded all
-        script_load_resources_status = "return window.total_fetch_count.completed == arguments[0]"
-        script_load_resources_status += " && "
-        script_load_resources_status += "window.total_fetch_count.pending == 0;"
-
-        return driver.execute_script(script_load_resources_status, total_requests)
 
     print("Testing blocked resources for all visited pages...")
 
@@ -74,7 +87,8 @@ def visit_test_server(options: Config, requests: list, dns_repeater: DNSRepeater
 
     # Wait until all resources load (total_requests). Timeout in 1 hour if still waiting
     # Resources still waiting for will be considered fetched
-    WebDriverWait(driver, 3600).until(check_all_resources_loaded)
+    WebDriverWait(driver, 3600).until(lambda driver:\
+                                check_all_resources_loaded(driver, total_requests))
 
     logs = None
 

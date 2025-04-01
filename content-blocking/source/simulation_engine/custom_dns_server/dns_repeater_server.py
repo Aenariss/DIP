@@ -26,14 +26,18 @@ import docker
 
 # Custom modules
 from source.constants import GENERAL_ERROR, DNS_CONTAINER_NAME, DNS_CONTAINER_IMAGE
-from source.constants import DNS_CONFIGURATION_FOLDER
+from source.constants import DNS_CONFIGURATION_FOLDER, NAMED_CONF_FILE
 from source.utils import print_progress
 
 class DNSRepeater:
     """Class representing the object used to manipulate DNS server running in docker"""
     def __init__(self, dns_records: dict) -> None:
         """Method to initialize the DNS server. Loads the DNS data 
-        from the given dict"""
+        from the given dict
+        
+        Args:
+            dns_records: All DNS records squashed together
+        """
 
         # Connect to docker (needs to be running!)
         try:
@@ -45,7 +49,7 @@ class DNSRepeater:
         # Initialize the container
         self.tar_file = "zones.tar"
         self.tar_path = DNS_CONFIGURATION_FOLDER + self.tar_file
-        self.container = self.__setup_container()
+        self.container = self._setup_container()
         self.original_config = None
 
         if not self.container:
@@ -66,20 +70,92 @@ class DNSRepeater:
             .format(tar_file=self.tar_file, container=DNS_CONTAINER_NAME)
         os.system(untar_command)
 
+    def copy_to_container(self, file_to_copy: str, file_location: str,\
+                            container: str=DNS_CONTAINER_NAME) -> None:
+        """Method to copy given file to a selected location in /etc/bind/...
+        in chosen container
+        
+        Args:
+            file_to_copy: Path to the file to be copied to docker
+            container: Name of the container to copy into
+            file_location:
+        """
+        cp_command = f"docker cp {file_to_copy} {container}:/etc/bind/{file_location}"
+        os.system(cp_command)
+
+    def create_zone_config(self, domain: str) -> str:
+        """Method to generate zone configuration to be put in named.conf
+        
+        Args:
+            domain: Name of the zone
+
+        Returns:
+            str: Prepared zone configuration as a string
+        """
+        zone_config_template = \
+            f"zone \"{domain}\" {{\n" +\
+             "       type master;\n" +\
+            f"       file \"/etc/bind/{domain}\";\n" +\
+             "};\n"
+        return zone_config_template
+
+    def generate_zonefile(self, domain: str, all_subdomains: dict) -> str:
+        """Method to generate zonfile for given domain
+        
+        Args:
+            domain: Name of the zonefile
+            all_subdomains: List of A and CNAME records in the zone file
+
+        Returns:
+            str: Zonefile generated as a string
+        """
+
+        zone_file = \
+         ";\n" +\
+         "$TTL    604800\n" +\
+        f"@       IN      SOA     ownnstoavoidcollisions48a.{domain}.   root.{domain}. (\n" +\
+         "                 2013012110         ; Serial\n" +\
+         "                     604800         ; Refresh\n" +\
+         "                      86400         ; Retry\n" +\
+         "                    2419200         ; Expire\n" +\
+         "                     604800 )       ; Negative Cache TTL\n" +\
+         ";\n" +\
+        f"@       IN      NS      ownnstoavoidcollisions48a.{domain}.\n" +\
+         "ownnstoavoidcollisions48a       IN      A      127.0.0.1\n"
+
+        # Iterate over all subdomains and edit zonefile accordingly
+        for (subdomain, record) in all_subdomains.items():
+
+            # If there is some CNAME-type record, only take the first and add record
+            if record.get("CNAME", []) != []:
+                first_cname = record["CNAME"][0]
+                zone_file += f"{subdomain}       IN      CNAME    {first_cname}.\n"
+
+                # If I added CNAME, continue (cant have same A and CNAME)
+                continue
+
+            # For A records, just write the first one
+            first_a = record.get("A", [])
+            if first_a:
+                first_a = first_a[0]
+                if domain == subdomain:
+                    zone_file += f"@       IN      A       {first_a}\n"
+                else:
+                    zone_file += f"{subdomain}       IN      A       {first_a}\n"
+
+        return zone_file
+
     def prepare_config(self, dns_records: dict) -> None:
         """Method to create zone files in the configuration folder
-           The files will later be uploaded to the DNS server"""
-        named_conf_file = DNS_CONFIGURATION_FOLDER + "named.conf"
-        with open(named_conf_file, 'r', encoding='utf-8') as f:
-            self.original_config = f.read()
+           The files will later be uploaded to the DNS server
+           
+        Args:
+            dns_records: All DNS records squashed together
+        """
 
-        # Template for adding new zones into named.cnf
-        zone_config_template = """
-zone "{domain}" {{
-        type master;
-        file "/etc/bind/{domain}";
-}};
-"""
+        # Preserve the original config
+        with open(NAMED_CONF_FILE, 'r', encoding='utf-8') as f:
+            self.original_config = f.read()
 
         tar = tarfile.open(self.tar_path, mode='w')
         already_present = {}
@@ -97,11 +173,10 @@ zone "{domain}" {{
                     f.write("\n")
 
                 # Include it in named.conf
-                with open(named_conf_file, 'a', encoding='utf-8', newline="") as f:
-
+                with open(NAMED_CONF_FILE, 'a', encoding='utf-8', newline="") as f:
                     if not already_present.get(key):
                         already_present[key] = True
-                        zone_config = zone_config_template.format(domain=key)
+                        zone_config = self.create_zone_config(domain=key)
                         f.write(zone_config)
                         f.write("\n")
 
@@ -113,75 +188,25 @@ zone "{domain}" {{
             for file in os.listdir(DNS_CONFIGURATION_FOLDER):
                 filename = DNS_CONFIGURATION_FOLDER + file
 
-                # Remove existing file except for the placeholder file
+                # Remove existing files except for the placeholder file
                 if os.path.isfile(filename) and file != ".empty" and file != "named.conf":
                     os.remove(filename)
 
-            # Restore original named.conf
-            named_conf_file = DNS_CONFIGURATION_FOLDER + "named.conf"
-            with open(named_conf_file, 'w', encoding='utf-8', newline="") as f:
+            with open(NAMED_CONF_FILE, 'w', encoding='utf-8', newline="") as f:
                 f.write(self.original_config)
 
         tar.close()
 
-        # Copy the file into the docker
-        cp_command = "docker cp {tar_file} {container}:/etc/bind/{file}"\
-            .format(tar_file=self.tar_path, file=self.tar_file, container=DNS_CONTAINER_NAME)
-        os.system(cp_command)
-
-
-        # Copy the named.conf into the docker
-        cp_command = "docker cp {named_conf_file} {container}:/etc/bind/{file}"\
-        .format(named_conf_file=named_conf_file, container=DNS_CONTAINER_NAME, file="named.conf")
-        os.system(cp_command)
-
-
-    def generate_zonefile(self, domain: str, all_subdomains: dict) -> str:
-        """Method to generate zonfile for given domain"""
-
-        # zonefile header
-        zone_file = f"""
-;
-$TTL    604800
-@       IN      SOA     ns.{domain}.   root.{domain}. (
-                 2013012110         ; Serial
-                     604800         ; Refresh
-                      86400         ; Retry
-                    2419200         ; Expire
-                     604800 )       ; Negative Cache TTL
-;
-@       IN      NS      ns.{domain}.
-ns       IN      A      127.0.0.1
-"""
-        # Iterate over all subdomains and edit zonefile accordingly
-        for (subdomain, record) in all_subdomains.items():
-
-            # Somehow, this has happened once. Skip all such subdomains.
-            if subdomain == "ns":
-                continue
-
-            # If there is some CNAME-type record, only take the first and add record
-            if record.get("CNAME", []) != []:
-                first_cname = record["CNAME"][0]
-                zone_file += f"{subdomain}       IN      CNAME    {first_cname}.\n"
-
-                # If I added CNAME, continue (cant have same A and CNAME)
-                continue
-
-            # For A records, just write the first one
-            first_a = record.get("A", [])
-            if first_a:
-                first_a = first_a[0]
-                #zone_file += f"ns       IN      A       {first_a}\n"
-                if domain == subdomain:
-                    zone_file += f"@       IN      A       {first_a}\n"
-                else:
-                    zone_file += f"{subdomain}       IN      A       {first_a}\n"
-
-        return zone_file
+        # Copy the tar and named.conf files into the docker
+        self.copy_to_container(self.tar_path, self.tar_file)
+        self.copy_to_container(NAMED_CONF_FILE, "named.conf")
 
     def find_container(self):
-        """Method to find the DNS container"""
+        """Method to find the DNS container
+        
+        Returns:
+            any: The container running the BIND server
+        """
         client = self.get_docker_client()
 
         all_containers = client.containers.list(all=True)
@@ -195,21 +220,27 @@ ns       IN      A      127.0.0.1
         return container
 
     def get_container(self):
+        """Method to return the container running the docker
+        
+        Returns:
+            any: Container running the server
+        """
         return self.container
 
-    def __setup_container(self) -> None:
-        """Method to get the container if it exists (even stopped), or create it if not"""
+    def _setup_container(self):
+        """Method to get the container if it exists (even stopped), or create it if not
+        
+        Returns:
+            any: Container running the server
+        """
 
         client = self.get_docker_client()
-
         container = self.find_container()
 
         if not container:
-
-        # If not, create it
+        # If not running, create it
         # docker run --name=bind9 --publish 53:53/udp --publish 53:53/tcp\
         # internetsystemsconsortium/bind9:9.20
-
             client.containers.run(image=DNS_CONTAINER_IMAGE,
                                 name=DNS_CONTAINER_NAME,
                                 detach=True,
@@ -223,7 +254,11 @@ ns       IN      A      127.0.0.1
         return self.find_container()
 
     def get_docker_client(self) -> docker.DockerClient:
-        """Methodd to return the docker client"""
+        """Method to return the docker client
+        
+        Returns:
+            docker.DockerClient: client for communication with docker
+        """
         return self.docker_client
 
     def start(self) -> None:
@@ -240,7 +275,6 @@ ns       IN      A      127.0.0.1
         container.start()
 
         self.untar_file()
-
         self.restart()
 
     def stop(self) -> None:
@@ -267,14 +301,11 @@ ns       IN      A      127.0.0.1
         os.system(rm_command)
 
         # Restore original named.conf
-        named_conf_file = DNS_CONFIGURATION_FOLDER + "named.conf"
-        with open(named_conf_file, 'w', encoding='utf-8', newline="") as f:
+        with open(NAMED_CONF_FILE, 'w', encoding='utf-8', newline="") as f:
             f.write(self.original_config)
 
         # Upload named.conf to docker
-        cp_command = "docker cp {named_conf_file} {container}:/etc/bind/{file}"\
-        .format(named_conf_file=named_conf_file, container=DNS_CONTAINER_NAME, file="named.conf")
-        os.system(cp_command)
+        self.copy_to_container(NAMED_CONF_FILE, "named.conf")
 
         container = self.get_container()
         container.stop()

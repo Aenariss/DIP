@@ -6,84 +6,67 @@
         let resources = {{ resources|tojson }};
         let total_resources = {{ n_of_resources }};
         total_resources = parseInt(total_resources);
-        let loaded = 0;
-        let blocked = 0;
-        const BATCH_SIZE = 50;  // Limit how many are handled at once
+        let parsed = 0;
+        const BATCH_SIZE = 50;  // Batch size to limit parallel processing
         const TIMEOUT = 2500;  // Timeout in milliseconds (2.5 seconds)
 
-        // Function to check if an error is related to a socket reset or similar network issues
-        function isSocketError(error) {
-            // Add additional checks here for socket-specific error messages or types if needed
-            return error.message.includes('ERR_SOCKET_NOT_CONNECTED');
-        }
-
         async function fetchResource(url) {
-            // need to repeat multiple times because Selenium keeps crashing and is overall absolutely terrible
-            const maxRetries = 1000;
-            let attempt = 0;
-            let success = false;
+            /**
+             * Function to actually fetch a given resource
+             * Uses timeout to abort in case it takes too long
+             */ 
+            let timeoutId = 0
+            try {
+                const controller = new AbortController();
+                const signal = controller.signal;
 
+                // abort in case it takes too long
+                timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
 
-            while (attempt <= maxRetries && !success) {
-                let timeoutId = 0
-                try {
-                    attempt++;
+                // set no-cors to make it work
+                let response = await fetch(url, { mode: 'no-cors', signal });
 
-                    // Create an AbortController and signal for timeout
-                    const controller = new AbortController();
-                    const signal = controller.signal;
+                // remove the timeout if it succeeded
+                clearTimeout(timeoutId);
 
-                    // Set timeout to abort the fetch request
-                    timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
-
-                    // Perform the fetch request with the timeout signal
-                    let response = await fetch(url, { mode: 'no-cors', signal });
-
-                    // Clear the timeout if fetch is successful
-                    clearTimeout(timeoutId);
-
-                    if (response.ok || response.type === 'opaque') {
-                        loaded++;
-                        updateResults();  // Update results for successful load
-                        success = true;
-                    } else {
-                        throw new Error();
-                    }
-
-                } catch (error) {
-                    clearTimeout(timeoutId); // Clear the timeout in case of an error
-
-                    if (isSocketError(error) && attempt <= maxRetries) {
-                        continue;
-                    } else if (error.name === 'AbortError') {
-                        console.error(error)
-                        updateResults();
-                        break;
-                    } else {
-                        blocked++;
-                        updateResults();  // Update results for blocked/failed request
-                        break;  // Stop retrying if it's not a socket error or timeout
-                    }
+                if (response.ok || response.type === 'opaque') {
+                    parsed++;
+                    updateResults();
+                } else {
+                    throw new Error();
                 }
+
+            } catch (error) {
+                clearTimeout(timeoutId);
+                parsed++;
+                updateResults();
             }
         }
 
-        // Async generator that yields batches of URLs
         async function* batchGenerator(array, batchSize) {
+            /**
+             *  Generator to split requests into multiple smaller batches
+             */
             for (let i = 0; i < array.length; i += batchSize) {
                 yield array.slice(i, i + batchSize);
             }
         }
-
+        
         async function testResourceLoading() {
+            /**
+             * Function to fetch all resources in batches
+             */
             for await (const batch of batchGenerator(resources, BATCH_SIZE)) {
-                await Promise.all(batch.map(url => fetchResource(url)));  // Fetch in parallel (limited)
+                await Promise.all(batch.map(url => fetchResource(url)));
             }
         }
 
         function updateResults() {
-            document.getElementById('loaded-count').innerText = loaded + blocked;
-            document.getElementById('waiting-count').innerText = total_resources - (loaded + blocked);
+            /**
+             * Function to update the displayed results
+             */
+            document.getElementById('loaded-count').innerText = parsed;
+            document.getElementById('waiting-count').innerText = total_resources - parsed;
         }
 
         function overrideFetch() {
@@ -116,15 +99,13 @@
         }
 
         overrideFetch();
-        
-        // start fetching after 1 seconds
-        setTimeout(testResourceLoading, 1000)
+        setTimeout(testResourceLoading, 1000);
 
     </script>
 </head>
 <body>
     <h1>Content Blocking Test</h1>
-    <p>Fetches waiting for:<span id="waiting-count">0</span></p>
-    <p>Finished resources:<span id="loaded-count">0</span></p>
+    <p>Fetches waiting for: <span id="waiting-count">0</span></p>
+    <p>Fetches processed: <span id="loaded-count">0</span></p>
 </body>
 </html>
