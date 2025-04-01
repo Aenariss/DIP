@@ -24,8 +24,8 @@ from source.file_manipulation import load_json
 from source.traffic_parser.create_request_trees import reconstruct_tree
 
 from source.analysis_engine.analysis import simulate_blocking, compute_sums_count_resources
-from source.analysis_engine.analysis import analyse_trees, compute_averages
-from source.analysis_engine.analysis import analyse_tree, parse_partial_results
+from source.analysis_engine.analysis import analyze_trees, compute_averages
+from source.analysis_engine.analysis import analyze_tree, parse_partial_results
 
 class TestAnalysis(unittest.TestCase):
     def setUp(self):
@@ -181,7 +181,7 @@ class TestAnalysis(unittest.TestCase):
     def test_analyse_tree(self):
         """Test analyse_tree"""
         client_blocked_pages = ["https://b.cz/asc.js"]
-        result = analyse_tree(self.request_tree, client_blocked_pages)
+        result = analyze_tree(self.request_tree, client_blocked_pages)
 
         self.assertEqual(result["requests_blocked_directly"], 1)
         self.assertEqual(result["requests_blocked_in_total"], 1)
@@ -197,7 +197,7 @@ class TestAnalysis(unittest.TestCase):
         class ConfigChrome:
             browser_type = "chrome"
 
-        results = analyse_trees(request_trees, console_output, ConfigFirefox())
-        results2 = analyse_trees(request_trees, console_output, ConfigChrome())
+        results = analyze_trees(request_trees, console_output, ConfigFirefox())
+        results2 = analyze_trees(request_trees, console_output, ConfigChrome())
         self.assertIsInstance(results, dict)
         self.assertIsInstance(results2, dict)

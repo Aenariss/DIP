@@ -24,8 +24,12 @@ from source.file_manipulation import get_traffic_files
 
 def print_progress(total: int, message: str, limiter=10) -> None:
     """Function utilizing closure mechanism to print progress during for loops
-    Total serves as the maximum progress
-    Limiter defines when the progress is printed by modulo -> 10 means 0%, 10%, 20%... so on"""
+
+    Args:
+        total: Maximum progress to which count
+        message: What to print with each message
+        limiter: How often to print (modulo limiter, so 10 means 10%, 20%...)
+    """
     progress_counter = 1
     previous_progress = -1
 
@@ -42,7 +46,11 @@ def print_progress(total: int, message: str, limiter=10) -> None:
     return show_progress
 
 def squash_dns_records() -> dict:
-    """Function to squash all observed DNS records into one list"""
+    """Function to squash all observed DNS records into one list. Loads the records from files.
+    
+    Returns:
+        dict: Dict containing DNS records from all observed files
+    """
 
     print("Squashing DNS records...")
     # Get all DNS files in the ./traffic/ folder
@@ -66,7 +74,14 @@ def squash_dns_records() -> dict:
     return squashed_records
 
 def squash_tree_resources(request_trees: dict) -> list[str]:
-    """Function to squash together resources from all observed request trees"""
+    """Function to squash together resources from all observed request trees
+    
+    Args:
+        request_trees: Trees to squash
+
+    Returns:
+        list[str]: All resources in the trees without duplicates
+    """
 
     print("Squashing all tree resources...")
     resources = []
@@ -79,25 +94,34 @@ def squash_tree_resources(request_trees: dict) -> list[str]:
     resources = list(dict.fromkeys(resources))
     return resources
 
-def add_substract_fp_attempts(callers1: dict, callers2: dict, add: bool=True) -> dict:
-    """Function to add together 2 dicts with observed FP attempts"""
+def add_substract_fp_attempts(callers_1: dict, callers_2: dict, add: bool=True) -> dict:
+    """Function to add together 2 dicts with observed FP attempts
+    
+    Args:
+        callers_1: First FP attempts dict
+        callers_2: Second FP attempts dict
+        add: Whether to add (True) or Substract (False)
+    
+    Returns:
+        dict: Result of the selected operation
+    """
     new_dict = {}
 
     # compatibility fix across analysis
-    if isinstance(callers1, int):
-        callers1 = {}
+    if isinstance(callers_1, int):
+        callers_1 = {}
 
-    if isinstance(callers2, int):
-        callers2 = {}
+    if isinstance(callers_2, int):
+        callers_2 = {}
 
     # Get the dict that is longer (one of them may be empty)
-    longer_callers = callers1 if len(callers1.items()) >= len(callers2.items()) else callers2
+    longer_callers = callers_1 if len(callers_1.items()) >= len(callers_2.items()) else callers_2
 
     # If one of the dicts is empty, return the other
-    if callers1 == {} or callers2 == {}:
+    if callers_1 == {} or callers_2 == {}:
         return longer_callers
 
-    other_caller = callers1 if longer_callers == callers2 else callers2
+    other_caller = callers_1 if longer_callers == callers_2 else callers_2
 
     # Else add them together (I assume both have correctly assigned values)
 

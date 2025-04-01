@@ -32,7 +32,14 @@ from source.constants import JSHELTER_FPD_PATH, FIREFOX_RESOURCE_LOGGER
 from source.config import Config
 
 def setup_driver(options: Config) -> webdriver.Chrome | webdriver.Firefox:
-    """Function to setup the driver depeneding on the specified browser"""
+    """Function to setup the driver depeneding on the specified browser
+    
+    Args:
+        options: Valid instance of Config
+    
+    Returns:
+        webdriver: Instance of created webdriver, depending on chosen browser
+    """
     browser_type = options.browser_type
     # Setting up for Chrome
     if browser_type == "chrome":
@@ -42,7 +49,14 @@ def setup_driver(options: Config) -> webdriver.Chrome | webdriver.Firefox:
     return setup_firefox(options)
 
 def setup_chrome(options: Config) -> webdriver.Chrome:
-    """Function to setup driver for chrome-based browser"""
+    """Function to setup driver for chrome-based browser
+    
+    Args:
+        options: Valid instance of Config
+
+    Returns:
+        webdriver.Chrome: Instance of configured Chrome browser
+    """
 
     # Check if we're using custom browser
     if options.using_custom_browser:
@@ -97,8 +111,15 @@ def setup_chrome(options: Config) -> webdriver.Chrome:
         driver = webdriver.Chrome(service=service, options=chrome_options)
         return driver
 
-def get_firefox_console_logs(driver):
-    """Function to get logs from Firefox console"""
+def get_firefox_console_logs(driver: webdriver.Firefox) -> dict:
+    """Function to get logs from Firefox console
+    
+    Args:
+        driver: Instance of firefox driver
+    
+    Returns:
+        dict: Loaded output from logging extension
+    """
 
     # Get performance entries
     resource_logs = driver.execute_script("""
@@ -109,7 +130,14 @@ def get_firefox_console_logs(driver):
     return json.loads(resource_logs)
 
 def setup_firefox(options: Config) -> webdriver.Firefox:
-    """Function to setup driver for firefox-based browser"""
+    """Function to setup driver for firefox-based browser
+    
+    Args:
+        options: Valid instance of Config
+    
+    Returns:
+        webdriver.Firefox: Driver with configured Firefox instance
+    """
 
     # Custom FF not supported
     if options.using_custom_browser:
@@ -151,6 +179,15 @@ def setup_firefox(options: Config) -> webdriver.Firefox:
         return driver
 
 def setup_chrome_for_traffic_logging(options: Config, download_path: str) -> webdriver.Chrome:
+    """Function to return chrome instance configured for logging
+    
+    Args:
+        options: Valid instance of Config
+        download_path: Absolute path where to save the downloaded FP reports
+    
+    Returns:
+        webdriver.Chrome: The driver configured to collect traffic logs
+    """
 
     # Set up Chrome options and enable DevTools Protocol
     chrome_options = ChromeOptions.Options()

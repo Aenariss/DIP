@@ -31,7 +31,7 @@ from source.simulation_engine.simulation_server_setup import start_testing_serve
 from source.simulation_engine.simulation_server_setup import stop_testing_server
 from source.file_manipulation import save_json, load_json
 from source.simulation_engine.visit_test_server import visit_test_server
-from source.analysis_engine.analysis import analyse_trees
+from source.analysis_engine.analysis import analyze_trees
 from source.simulation_engine.firewall import firewall_unblock_traffic, firewall_block_traffic
 from source.utils import squash_dns_records, squash_tree_resources
 from source.config import Config
@@ -60,11 +60,15 @@ parser.add_argument('-eb', '--early-blocking', action="store_true",
         help="Whether to setup firewall and DNS settings before driver setup")
 args = parser.parse_args()
 
-def initialize_folders():
-    """Function to prepare folderes to be used during evaluation"""
+def initialize_folders(arguments) -> None:
+    """Function to prepare folderes to be used during evaluation
+    
+    Args:
+        arguments: argparse arguments
+    """
 
     # If load or load-only was specified, prepare folders accordingly
-    if args.load or args.load_only:
+    if arguments.load or arguments.load_only:
         # (Re)create the traffic folder
         if not os.path.exists(TRAFFIC_FOLDER):
             print("Creating the traffic folder...")
@@ -93,31 +97,46 @@ def check_traffic_folder() -> None:
     else:
         # If the traffic folder is empty (only the .empty file), it needs to be loaded
         if len([file for file in os.listdir(TRAFFIC_FOLDER)
-                if os.path.isfile(TRAFFIC_FOLDER + file)]) == 1:
+                if os.path.isfile(TRAFFIC_FOLDER + file)]) <= 1:
             print("Couldn't find the folder with the observed traffic!\n" +
                 "Did you specify at least 1 page in the ``page_list.txt`` file? " +
                 "If so, run the program with '--load' argument first!")
             exit(GENERAL_ERROR)
 
-def obtain_data(options: Config) -> bool:
-    """Function to load traffic and save it in traffic folder"""
+def obtain_data(options: Config, arguments) -> bool:
+    """Function to load traffic and save it in traffic folder
+    
+    Args:
+        options: Valid instance of Config
+        arguments: argparse arguments
+
+    Returns:
+        bool: Whether load_only was specified
+    """
     # Check user arguments were correct
-    if args.load:
-        if args.load_only:
+    if arguments.load:
+        if arguments.load_only:
             print("You can only use one argument! Either '--load' or '--load-only'!")
             exit(GENERAL_ERROR)
 
     # If load or load-only was specified, go through the specified pages and observe traffic
-    if args.load or args.load_only:
-        load_traffic(options, args.compact)
+    if arguments.load or arguments.load_only:
+        load_traffic(options, arguments.compact)
 
         # if load-only was specified, don't do anything else and quit
-        if args.load_only:
+        if arguments.load_only:
             return True
     return False
 
 def parse_traffic(options: Config) -> dict:
-    """Function to parse the traffic logs and return request trees"""
+    """Function to parse the traffic logs and return request trees
+    
+    Args:
+        options: Valid instance of Config
+
+    Returns:
+        dict: Request trees created for each logged file
+    """
     # Check traffic folder is present and not empty
     check_traffic_folder()
 
@@ -130,7 +149,7 @@ def parse_traffic(options: Config) -> dict:
             valid_fp_attempts += 1
 
     print(f"FP Attempts succesfully collected for {valid_fp_attempts}\
-out of {len(fp_attempts.items())} logs.")
+ out of {len(fp_attempts.items())} logs.")
 
 
     # Create initiator tree-like chains from data in the ./traffic/ folder
@@ -138,7 +157,7 @@ out of {len(fp_attempts.items())} logs.")
 
     return request_trees
 
-def obtain_simulation_results(request_trees: dict, options: Config) -> list[dict]:
+def obtain_simulation_results(request_trees: dict, options: Config, arguments) -> dict:
     """Function to simulate what would happen had the tool been present during the visits.
 
     Creates a test server with all the logged resources and visits it to measure how many
@@ -147,7 +166,16 @@ def obtain_simulation_results(request_trees: dict, options: Config) -> list[dict
     Loads up custom DNS server running in docker. Temporarily changes network settings.
     
     Saves the result into results/experiment_name. In case results for this experiment are already
-    present (running an analysis on previously obtained results), loads it. Returns the result."""
+    present (running an analysis on previously obtained results), loads it. Returns the result.
+    
+    Args:
+        request_trees: Trees for all logged files
+        options: Valid instance of Config
+        arguments: argparse-obtained arguments
+
+    Returns:
+        dict: Simulation output of a given evaluation
+    """
 
     def save_console_log(console_output, experiment_name) -> None:
         """Function to save the console logs into results/ folder"""
@@ -163,23 +191,19 @@ def obtain_simulation_results(request_trees: dict, options: Config) -> list[dict
     resource_list = squash_tree_resources(request_trees)
 
     # Only do this if --analysis-only was not specified.
-    if not args.analysis_only:
+    if not arguments.analysis_only:
 
-        # Start the DNS server and set it as prefered to repeat responses
+        # Start the DNS server and testing server
         dns_repeater = DNSRepeater(dns_records)
-
-        # Start the testing server as another process for each logged page traffic
         server = start_testing_server(resource_list)
 
         try:
-            if args.early_blocking:
+            if arguments.early_blocking:
                 dns_repeater.start()
                 firewall_block_traffic()
                 time.sleep(3)
 
-            # Visit the server and log the console outputs
-            console_output = visit_test_server(options, resource_list, dns_repeater, args)
-
+            console_output = visit_test_server(options, resource_list, dns_repeater, arguments)
             save_console_log(console_output, options.experiment_name + "_log")
         except Exception as e:
             print(e)
@@ -191,7 +215,7 @@ def obtain_simulation_results(request_trees: dict, options: Config) -> list[dict
             dns_repeater.stop()
 
     # In case --simulation-only was specified, stop here
-    if args.simulation_only:
+    if arguments.simulation_only:
         return console_output
 
     # In case --analysis-only was specified, load the saved output.
@@ -200,18 +224,27 @@ def obtain_simulation_results(request_trees: dict, options: Config) -> list[dict
 
     return console_output
 
-def analyze_results(request_trees: dict, console_output: list[dict], options: Config) -> None:
+def analyze_results(request_trees: dict, console_output: dict, options: Config) -> None:
     """Function to analyze logged request trees based on obtained console output, logging
-    the results into a file in ./results/ folder."""
-
-    results = analyse_trees(request_trees, console_output, options)
+    the results into a file in ./results/ folder.
+    
+    Args:
+        request_trees: Trees for all logged data
+        console_output: Result of a simulation
+        options: Valid instance of Config
+    """
+    results = analyze_trees(request_trees, console_output, options)
     save_json(results, RESULTS_FOLDER + options.experiment_name + "_results.json")
 
 def start(options: Config=None, analysis_only: bool=False) -> None:
-    """Main driver function"""
+    """Main driver function
+    
+    Args:
+        options: Instance of Config, otherwise new one is created
+        analysis_only: Whether to only analyse, if not specified, argparse is used
+    """
 
-    # Initialize folder structure
-    initialize_folders()
+    initialize_folders(args)
 
     # Manually set analysis_only to work with analyse_all
     if analysis_only:
@@ -220,16 +253,14 @@ def start(options: Config=None, analysis_only: bool=False) -> None:
     # Load config only if none was provided
     if not options:
         options = Config()
-
-    # Validate options
     status = options.validate_settings()
 
     if not status:
         print("Invalid Configuration! Consult the original file!")
-        exit(1)
+        exit(GENERAL_ERROR)
 
-    # Generate traffic
-    obtain_only = obtain_data(options)
+    # Generate traffic if specified
+    obtain_only = obtain_data(options, args)
     if obtain_only:
         return
 
@@ -237,19 +268,13 @@ def start(options: Config=None, analysis_only: bool=False) -> None:
     request_trees = parse_traffic(options)
 
     print(f"Starting experiment {options.experiment_name}...")
-
-    # Obtain console output of experiment
-    console_output = obtain_simulation_results(request_trees, options)
-
+    console_output = obtain_simulation_results(request_trees, options, args)
     print("Experiment data succesfully loaded...")
 
     if args.simulation_only:
-        input("Press any key to exit...")
         return
 
-    # Analyze what would have happened to the request tree had a content-blocking tool been present
     analyze_results(request_trees, console_output, options)
-
     print(f"Finished experiment {options.experiment_name}...")
 
 if __name__ == "__main__":

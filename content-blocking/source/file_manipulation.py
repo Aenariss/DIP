@@ -25,7 +25,11 @@ import re
 from source.constants import FILE_ERROR, TRAFFIC_FOLDER, GENERAL_ERROR
 
 def load_pages() -> list[str]:
-    """Function to load the page_list.txt file and return its content"""
+    """Function to load the page_list.txt file and return its content
+    
+    Returns:
+        list[str]: List of pages from page_file.txt
+    """
     try:
         with open("page_list.txt", 'r', encoding='utf-8') as f:
             # strip newline characters at the end of each line
@@ -34,8 +38,15 @@ def load_pages() -> list[str]:
         print("Error reading the content of page_list.txt! Is the file present?")
         exit(FILE_ERROR)
 
-def load_json(path) -> dict:
-    """Function to load a given JSON file and return its content as dict"""
+def load_json(path: str) -> dict:
+    """Function to load a given JSON file and return its content as dict
+    
+    Args:
+        path: Path to the loaded json
+
+    Returns:
+        dict: Content of the loaded json
+    """
     try:
         with open(path, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -45,7 +56,12 @@ def load_json(path) -> dict:
         exit(FILE_ERROR)
 
 def save_json(json_file, path) -> None:
-    """Function to save a given JSON file"""
+    """Function to save a given JSON file
+    
+    Args:
+        json_file: Content of the JSON to save
+        path: Where to save the file
+    """
     try:
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(json_file, f, ensure_ascii=False, indent=4)
@@ -55,8 +71,12 @@ def save_json(json_file, path) -> None:
 
 def get_traffic_files(traffic_type: str) -> list:
     """Function to obtain filenames for given type of file from the ./traffic/ folder
+
+    Args:
+        traffic_type: Type of traffic to get - 'dns', 'fp', 'network'
     
-    Option needed, represents desired type of traffic files. Options are: 'dns', 'fp', 'network'.
+    Returns:
+        list: List of files matching the given filter
     """
 
     # Types of traffic files to ignore

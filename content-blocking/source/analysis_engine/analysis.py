@@ -209,7 +209,7 @@ def parse_partial_results(results: list[dict]) -> dict:
 
     return total_results
 
-def analyse_tree(request_tree: RequestTree, client_blocked_pages: list) -> dict:
+def analyze_tree(request_tree: RequestTree, client_blocked_pages: list) -> dict:
     """Function to calculate how many requests in a tree would be blocked 
     if given resources were blocked and how many fp attempts that would prevent
     
@@ -226,7 +226,7 @@ def analyse_tree(request_tree: RequestTree, client_blocked_pages: list) -> dict:
 
     return results
 
-def analyse_trees(request_trees: dict, console_output: list, options: Config) -> dict:
+def analyze_trees(request_trees: dict, console_output: list, options: Config) -> dict:
     """Function to launch analysis on each tree and calculate average values 
     of each observed property
     
@@ -252,7 +252,7 @@ def analyse_trees(request_trees: dict, console_output: list, options: Config) ->
 
     for (_, tree) in request_trees.items():
         progress_printer()
-        analysis_results = analyse_tree(tree, console_output)
+        analysis_results = analyze_tree(tree, console_output)
         all_results.append(analysis_results)
 
     all_results = parse_partial_results(all_results)
