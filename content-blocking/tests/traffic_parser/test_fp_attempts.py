@@ -27,7 +27,7 @@ from source.traffic_parser.fp_attempts import get_network_file, assign_property_
 from source.traffic_parser.fp_attempts import obtain_fp_groups, parse_property_logs
 from source.traffic_parser.fp_attempts import parse_fp
 
-class TestFingerprintingParser(unittest.TestCase):
+class TestFPAttempts(unittest.TestCase):
     def test_get_primary_groups(self):
         """Test primary groups are correctly obtained"""
         all_groups = {

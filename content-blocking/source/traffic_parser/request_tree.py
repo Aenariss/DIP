@@ -66,7 +66,7 @@ class RequestTree:
         return fpd_attempts
 
     def first_blocked_fpd_attempts(self, start: RequestNode=None) -> dict:
-        """Method to calculate number of FP attempts blocked at first blocked parent
+        """Method to calculate number of FP attempts stopeed at first blocked parent.
         Can be used to calculate FP attempts blocked directly since it does not count 
         transitively.
         

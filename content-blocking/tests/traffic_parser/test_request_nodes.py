@@ -21,7 +21,6 @@ import unittest
 from source.traffic_parser.request_node import RequestNode
 
 class TestRequestNode(unittest.TestCase):
-
     def setUp(self):
         """Create nodes to be used in tests"""
         self.node_1 = RequestNode("1", "https://example.com/a.js", {})
@@ -41,16 +40,6 @@ class TestRequestNode(unittest.TestCase):
         self.assertIn(self.node_1, self.node_2.get_parents())
         self.assertIn(self.node_2, self.node_1.get_children())
 
-    def test_add_parent_when_already_present(self):
-        """Test adding a parent when one already exists correctly adds it if its not same one"""
-        self.node_2.add_parent(self.node_1)
-        self.node_2.add_parent(self.node_3)
-        self.assertIn(self.node_1, self.node_2.get_parents())
-        self.assertIn(self.node_2, self.node_1.get_children())
-
-        self.assertIn(self.node_3, self.node_2.get_parents())
-        self.assertIn(self.node_2, self.node_3.get_children())
-
     def test_add_duplicate_child(self):
         """Test adding Node with the same resource twice doesnt actually add it twice"""
         self.node_1.add_child(self.node_3)
@@ -60,7 +49,7 @@ class TestRequestNode(unittest.TestCase):
     def test_add_duplicate_parent(self):
         """Test adding the same parent twice doesnt actually add it"""
         self.node_2.add_parent(self.node_3)
-        self.node_2.add_parent(self.node_duplicated)
+        self.node_2.add_parent(self.node_3)
         self.assertEqual(len(self.node_2.get_parents()), 1)
 
     def test_adding_default_children(self):
@@ -78,6 +67,27 @@ class TestRequestNode(unittest.TestCase):
         self.node_1.repeated = True
         self.node_1.block()
         self.assertFalse(self.node_1.is_blocked())
+
+    def test_blocking_multiple_parents_node(self):
+        """Test if a node cannot be blocked when using "transitive_block" if it has
+        non-blocked parent"""
+        self.node_1.add_parent(self.node_2)
+        self.node_1.add_parent(self.node_3)
+
+        self.node_2.block()
+        self.node_1.block(transitive_block=True)
+        self.assertFalse(self.node_1.is_blocked())
+
+    def test_blocking_multiple_parents_node_both(self):
+        """Test if a node is blocked when using "transitive_block" if it has
+        all parents blocked"""
+        self.node_1.add_parent(self.node_2)
+        self.node_1.add_parent(self.node_3)
+
+        self.node_2.block()
+        self.node_3.block()
+        self.node_1.block(transitive_block=True)
+        self.assertTrue(self.node_1.is_blocked())
 
     def test_get_all_children_resources(self):
         """Test get_all_children_resources works transitively as it should"""

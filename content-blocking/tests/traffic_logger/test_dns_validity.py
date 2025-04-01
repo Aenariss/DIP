@@ -22,7 +22,7 @@ import unittest
 # Custom modules
 from source.traffic_logger.traffic_loader import is_dns_valid, get_address
 
-class TestIsDnsValid(unittest.TestCase):
+class TestDNSValidity(unittest.TestCase):
 
     def test_get_address(self):
         """Test if get_address work as it should"""

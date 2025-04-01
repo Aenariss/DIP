@@ -55,9 +55,28 @@ class RequestNode:
     def is_blocked(self) -> bool:
         return self.blocked
 
-    def block(self) -> None:
-        """Method to mark Node as blocked"""
+    def block(self, transitive_block: bool=False) -> None:
+        """Method to mark Node as blocked
+        
+        Args:
+            transitive_block: Indicator that the block was result of transitive blocking.
+                              Serves to differentiate if a resource should be blocked if not all
+                              its parents are.
+        """
+
+        # Check if it has multiple parents - only block child if all of them are blocked
+        # only do this for transitive requests
+        if transitive_block:
+            should_be_blocked = True
+            for parent in self.get_parents():
+                if not parent.is_blocked():
+                    should_be_blocked = False
+            if not self.repeated and should_be_blocked:
+                self.blocked = True
+            return
+
         # Only block if it was not a repeated node (cant say for 100% such node would be blocked)
+        # Only do this if not self.transitive
         if not self.repeated:
             self.blocked = True
 
@@ -124,21 +143,6 @@ class RequestNode:
                 return True
         return False
 
-    def _parent_already_present(self, parent_node: "RequestNode") -> bool:
-        """Internal method to avoid parent duplicates
-        
-        Args:
-            parent_node: Node representing parent of this node
-
-        Returns:
-            bool: If given parent node is already set as a parent of this node
-        """
-        parents = self.get_parents()
-        for parent in parents:
-            if parent.get_resource() == parent_node.get_resource():
-                return True
-        return False
-
     def add_child(self, child_node: "RequestNode") -> None:
         """"Method to add child node to a parent node
         
@@ -158,15 +162,12 @@ class RequestNode:
         Args:
             parent_node: Node to be added as a parent of this Node
         """
-        if not self.get_parents():
-            self.parents.append(parent_node)
-            parent_node.add_child(self)
-        else:
-            # Check if the parent isn't alreaddy defined to avoid duplicates
-            if self._parent_already_present(parent_node):
-                return
-            self.parents.append(parent_node)
-            parent_node.add_child(self)
+        # Do not add the same node as parent multiple times
+        if parent_node in self.parents:
+            return
+
+        self.parents.append(parent_node)
+        parent_node.add_child(self)
 
     def get_all_children_resources(self) -> list[str]:
         """Method to return all children resources of the node -> even transitively.

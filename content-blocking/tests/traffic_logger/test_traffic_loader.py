@@ -24,7 +24,7 @@ from unittest.mock import patch, MagicMock
 from source.traffic_logger.traffic_loader import visit_page, save_traffic, delete_unsuccesfull_fpd
 from source.traffic_logger.traffic_loader import match_jshelter_fpd, get_page_logs, load_traffic
 
-class TestVisitPage(unittest.TestCase):
+class TestTrafficLoader(unittest.TestCase):
     @patch("source.traffic_logger.traffic_loader.get_page_network_traffic")
     def test_visit_page_success(self, mock_get_traffic):
         """Test visit_page with network traffic successfuly obtained"""

@@ -36,68 +36,6 @@ FIREFOX_RESULTS = [f for f in RESULT_FILES if f.startswith("firefox")]
 SUM = "sum"
 AVERAGE = "average"
 
-def plot_results(results, metric, metric_legend, value_in_bar, legend, output_file):
-    """Generates a grouped bar chart with a log-scaled y-axis and saves it as a PDF."""
-    
-    # Extract data directly into lists
-    tools = []
-    values = []
-    labels = []  # Corresponding metric labels
-
-    metric_values = obtain_results_of_metric(results, metric, SUM)
-
-    for tool, nested_values in metric_values.items():
-        if isinstance(nested_values, dict):  # If metric has sub-categories
-            for method, value in nested_values.items():
-                tools.append(tool)
-                values.append(value)
-                labels.append(method)
-        elif isinstance(nested_values, (int, float)):
-            tools.append(tool)
-            values.append(nested_values)
-            labels.append(metric_legend)
-
-    # Create the bar plot
-    plt.figure(figsize=(14, 10))
-    ax = sns.barplot(x=tools, y=values, hue=labels, palette="tab10")
-
-    # Set log scale for y-axis
-    plt.yscale('log')
-
-    # Format y-axis ticks to display regular numbers (1000 instead of 10^3)
-    def custom_log_formatter(x, pos):
-        return f'{int(x):,}'  # Format as integer with thousands separator
-
-    plt.gca().yaxis.set_major_locator(LogLocator(base=10, subs=(1, 3, 7), numticks=6))
-    plt.tick_params(axis='y', labelsize=18)  
-    plt.gca().yaxis.set_major_formatter(FuncFormatter(custom_log_formatter))
-
-    if value_in_bar:
-        # **Add value labels inside bars**
-        for p in ax.patches:
-            height = p.get_height()
-            if height > 0:  # Avoid placing text on zero-height bars
-                ax.text(
-                    x=p.get_x() + p.get_width() / 2,  # Center horizontally
-                    y=height * 0.9,  # Position inside the bar (90% of the height)
-                    s=f"{int(height):,}",  # Format with thousands separator
-                    ha="center", va="top", color="white", fontsize=8, fontweight="bold"
-                )
-
-    # Formatting
-    plt.xticks(rotation=45, ha="right", fontsize=18)
-    plt.ylabel(metric_legend, fontsize=18)
-    plt.title(f"{metric_legend}", fontsize=18)
-    if legend:
-        plt.legend(bbox_to_anchor=(1, 1), loc="upper left")
-    else:
-        ax.legend_.remove()
-    plt.tight_layout()
-
-    # Save the figure as a vector-based PDF
-    plt.savefig(output_file, format="pdf")
-    plt.show()
-
 def result_dict(result_files):
     """Function to create dict with the results"""
 
@@ -203,17 +141,11 @@ def main():
 
     subtree_data = ["blocked_subtrees_data"]
     subtree_submetrics = ["subtrees_fully_blocked", "subtrees_partially_blocked", "subtrees_not_blocked"]
+    root_node_submetric = ["trees_with_blocked_root_node"]
 
-    metric = "fpd_attempts_blocked_directly"
-    metric_legend = "FPD Attempts Blocked Directly"
-    value_in_bar = True
-    legend = True
-
-    #plot_results(results, metric, metric_legend, value_in_bar, legend, "requests_blocked_directly.pdf")
-
-    metrics = ["fpd_attempts_blocked_in_total"]
-    headers = ["Tool", "RBCR", "ARBL"]
-    submetrics = fpd_submetrics
+    metrics = ["blocked_subtrees_data"]
+    headers = ["Tool", "RBCR"]
+    submetrics = root_node_submetric
 
     first_key = list(results.keys())[0]
     total = results[first_key]["requests_observed"][SUM]

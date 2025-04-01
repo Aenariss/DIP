@@ -1,5 +1,5 @@
 # analyse_all.py
-# Very simple script to run --analysis-only for all logs in the results/ folder
+# Very simple helper script to run --analysis-only for all logs in the results/ folder
 
 # Copyright (C) 2025 Vojtěch Fiala
 #

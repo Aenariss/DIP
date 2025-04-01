@@ -26,7 +26,7 @@ from source.simulation_engine.simulation_server_setup import start_testing_serve
 from source.simulation_engine.simulation_server_setup import stop_testing_server
 from source.simulation_engine.simulation_server_setup import app
 
-class TestFlaskServer(unittest.TestCase):
+class TestWebserverSetup(unittest.TestCase):
 
     def setUp(self):
         """Method to initialize the offline client"""

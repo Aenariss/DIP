@@ -30,7 +30,7 @@ from scapy.packet import Packet
 # Custom modules
 from source.traffic_logger import dns_observer
 
-class TestDNSCallback(unittest.TestCase):
+class TestDNSSniffer(unittest.TestCase):
     def setUp(self):
         """Set up an instance of YourClass before each test"""
         self.dns_sniffer_class = dns_observer.DNSSniffer()

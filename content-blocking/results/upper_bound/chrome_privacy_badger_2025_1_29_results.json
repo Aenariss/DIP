@@ -2,53 +2,53 @@
     "fpd_attempts_observed": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 295421,
-            "AlgorithmicMethods": 215559,
-            "CrawlFpInspector": 6713
+            "BrowserProperties": 307226,
+            "AlgorithmicMethods": 216381,
+            "CrawlFpInspector": 7460
         },
         "average": {
-            "BrowserProperties": 315.2838847385272,
-            "AlgorithmicMethods": 230.05229455709713,
-            "CrawlFpInspector": 7.164354322305229
+            "BrowserProperties": 327.88260405549624,
+            "AlgorithmicMethods": 230.92956243329775,
+            "CrawlFpInspector": 7.9615795090715045
         }
     },
     "fpd_attempts_blocked_directly": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 36947,
-            "AlgorithmicMethods": 1332,
-            "CrawlFpInspector": 664
+            "BrowserProperties": 37480,
+            "AlgorithmicMethods": 1498,
+            "CrawlFpInspector": 666
         },
         "average": {
-            "BrowserProperties": 39.43116328708645,
-            "AlgorithmicMethods": 1.4215581643543223,
-            "CrawlFpInspector": 0.7086446104589115
+            "BrowserProperties": 40.0,
+            "AlgorithmicMethods": 1.5987193169690501,
+            "CrawlFpInspector": 0.7107790821771611
         }
     },
     "fpd_attempts_blocked_transitively": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 80568,
-            "AlgorithmicMethods": 10169,
-            "CrawlFpInspector": 1548
+            "BrowserProperties": 88486,
+            "AlgorithmicMethods": 10649,
+            "CrawlFpInspector": 1844
         },
         "average": {
-            "BrowserProperties": 85.98505869797225,
-            "AlgorithmicMethods": 10.852721451440768,
-            "CrawlFpInspector": 1.6520811099252934
+            "BrowserProperties": 94.43543223052295,
+            "AlgorithmicMethods": 11.364994663820704,
+            "CrawlFpInspector": 1.967982924226254
         }
     },
     "fpd_attempts_blocked_in_total": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 117515,
-            "AlgorithmicMethods": 11501,
-            "CrawlFpInspector": 2212
+            "BrowserProperties": 125966,
+            "AlgorithmicMethods": 12147,
+            "CrawlFpInspector": 2510
         },
         "average": {
-            "BrowserProperties": 125.4162219850587,
-            "AlgorithmicMethods": 12.274279615795091,
-            "CrawlFpInspector": 2.3607257203842047
+            "BrowserProperties": 134.43543223052293,
+            "AlgorithmicMethods": 12.963713980789754,
+            "CrawlFpInspector": 2.678762006403415
         }
     },
     "requests_observed": {
@@ -58,42 +58,42 @@
     },
     "requests_blocked_directly": {
         "n_of_results": 937,
-        "sum": 8483,
-        "average": 9.053361792956244
+        "sum": 8476,
+        "average": 9.04589114194237
     },
     "requests_blocked_in_total": {
         "n_of_results": 937,
-        "sum": 23002,
-        "average": 24.548559231590183
+        "sum": 22984,
+        "average": 24.529348986125935
     },
     "requests_blocked_transitively": {
         "n_of_results": 937,
-        "sum": 14519,
-        "average": 15.495197438633937
+        "sum": 14508,
+        "average": 15.483457844183565
     },
     "requests_blocked_that_have_child_requests": {
         "n_of_results": 937,
-        "sum": 1701,
-        "average": 1.8153681963713981
+        "sum": 1697,
+        "average": 1.8110992529348986
     },
     "average_request_block_level": {
         "n_of_results": 753,
-        "sum": 2693.968295448446,
-        "average": 3.5776471387097555
+        "sum": 2694.9580713588102,
+        "average": 3.578961582149814
     },
     "blocked_subtrees_data": {
         "n_of_results": 937,
         "sum": {
-            "subtrees_fully_blocked": 6721,
+            "subtrees_fully_blocked": 6717,
             "subtrees_partially_blocked": 1027,
-            "subtrees_not_blocked": 52869,
+            "subtrees_not_blocked": 52873,
             "subtrees_in_total": 60617,
             "trees_with_blocked_root_node": 31
         },
         "average": {
-            "subtrees_fully_blocked": 7.172892209178229,
+            "subtrees_fully_blocked": 7.168623265741729,
             "subtrees_partially_blocked": 1.096051227321238,
-            "subtrees_not_blocked": 56.42369263607257,
+            "subtrees_not_blocked": 56.42796157950907,
             "subtrees_in_total": 64.69263607257204,
             "trees_with_blocked_root_node": 0.033084311632870865
         }

@@ -26,14 +26,14 @@ def print_progress(total: int, message: str, limiter=10) -> None:
     """Function utilizing closure mechanism to print progress during for loops
     Total serves as the maximum progress
     Limiter defines when the progress is printed by modulo -> 10 means 0%, 10%, 20%... so on"""
-    progress_counter = 0
+    progress_counter = 1
     previous_progress = -1
 
     def show_progress():
         """Function to return as the closure"""
         nonlocal progress_counter, previous_progress
         progress_percent = round(progress_counter/total, 2) * 100
-        if progress_percent % limiter == 0 and previous_progress != progress_percent:
+        if (progress_percent % limiter == 0 and previous_progress != progress_percent):
             print(message, f"{progress_percent}%")
 
         previous_progress = progress_percent
@@ -56,7 +56,7 @@ def squash_dns_records() -> dict:
             dns_json = json.load(f)
             for (domain, value) in dns_json.items():
 
-                # Should a key be observed multiple times, append it overwrite it (should be cached)
+                # Should a key be observed multiple times, overwrite it (should be cached)
                 if not squashed_records.get(domain):
                     squashed_records[domain] = value
                 else:

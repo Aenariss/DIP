@@ -24,7 +24,7 @@ from unittest.mock import patch
 from source.simulation_engine.firewall import setup_block_rule, remove_block_rule
 from source.simulation_engine.firewall import firewall_block_traffic, firewall_unblock_traffic
 
-class TestFirewallFunctions(unittest.TestCase):
+class TestFirewall(unittest.TestCase):
 
     def test_setup_block_rule(self):
         """Test that setup_block_rule generates the correct firewall command"""

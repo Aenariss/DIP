@@ -72,7 +72,7 @@ class Config:
 
     # If using a custom Chromium-based browser, this is the path to its binary (.exe) file.
     # Should be in "normal" format ('/' instead of Windows's '\').
-    custom_browser_binary = "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
+    custom_browser_binary = "C:/Program Files/Avast Software/Browser/Application/AvastBrowser.exe"
 
     # If using a custom Chromium-based browser, some browser (such as Avast Secure Browser)
     # require you to use a valid profile.
@@ -88,20 +88,20 @@ class Config:
 
     # When using Firefox browser, whether to apply its default anti-tracking settings.
     # Can be used to test FF inherent content-blocking settings when no addons are specified.
-    use_firefox_default_protection = True
+    use_firefox_default_protection = False
 
     # List of addons to use during the simulation.
     # Addon must match the chosen browser_type, e.g. 'crx' for Chrome, 'xpi' for Firefox.
     # Evaluations described in Thesis were completed with only a single addon present
-    # which was the tested tool. However, for future-proofing should work with multiple.
-    tested_addons = ["adblock_plus_4_15_0.crx"]
+    # which was the tested tool. However, for future-proofing also works with multiple tools.
+    tested_addons = []
 
     # Experiment name to be used for the current evaluation. When launching --analysis-only,
     # it needs to correspond to one of the previous experiments.
     # The log file is saved in results/ folder and it's named experiment_name + _log.json
     # The analysis results are also saved in results/ folder, named experiment_name + _results.json
     # If using Avast Secure Browser, experiment name MUST start with "avast"!! Only then!
-    experiment_name = "chrome_adblock_plus_4_15_0_new"
+    experiment_name = "chrome_browser"
 
     # Time to wait after browser is launched before accessing the simulation page.
     # The time can be used to wait for tested extensions to properly load, or to manually
@@ -122,17 +122,14 @@ class Config:
                 str(self.max_repeat_log_attempts).isnumeric() or not\
                 str(self.time_until_timeout).isnumeric():
             status = False
+            return status
 
         # Page_wait_time must be > 5
-        if self.page_wait_time <= 5:
-            status = False
-
-        # Repeat log attempts must be >= 0
-        if self.max_repeat_log_attempts < 0:
+        if int(self.page_wait_time) <= 5:
             status = False
 
         # Timeout must be >= 1
-        if self.time_until_timeout < 1:
+        if int(self.time_until_timeout) < 1:
             status = False
 
         return status
@@ -162,6 +159,9 @@ class Config:
         if self.using_custom_browser:
             if self.browser_type == "firefox":
                 status = False
+
+        if not status:
+            return status
 
         status = self._validate_number_settings()
 

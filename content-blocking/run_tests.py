@@ -1,5 +1,5 @@
 # run_tests.py
-# Very simple file to run the tests
+# Very simple script to run the tests
 
 # Copyright (C) 2025 Vojtěch Fiala
 #

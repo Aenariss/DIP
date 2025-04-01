@@ -24,7 +24,7 @@ from unittest.mock import patch, MagicMock
 from source.simulation_engine.visit_test_server import visit_test_server
 from source.simulation_engine.visit_test_server import check_all_resources_loaded
 
-class TestVisitTestServer(unittest.TestCase):
+class TestWebServerVisit(unittest.TestCase):
 
     @patch("source.simulation_engine.visit_test_server.setup_driver")
     @patch("source.simulation_engine.visit_test_server.firewall_block_traffic")

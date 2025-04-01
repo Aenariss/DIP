@@ -1,5 +1,5 @@
 selenium
 scapy
 flask
-dnslib
 docker
+coverage

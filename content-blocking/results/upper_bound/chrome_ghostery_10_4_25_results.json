@@ -2,53 +2,53 @@
     "fpd_attempts_observed": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 295421,
-            "AlgorithmicMethods": 215559,
-            "CrawlFpInspector": 6713
+            "BrowserProperties": 307226,
+            "AlgorithmicMethods": 216381,
+            "CrawlFpInspector": 7460
         },
         "average": {
-            "BrowserProperties": 315.2838847385272,
-            "AlgorithmicMethods": 230.05229455709713,
-            "CrawlFpInspector": 7.164354322305229
+            "BrowserProperties": 327.88260405549624,
+            "AlgorithmicMethods": 230.92956243329775,
+            "CrawlFpInspector": 7.9615795090715045
         }
     },
     "fpd_attempts_blocked_directly": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 53940,
-            "AlgorithmicMethods": 1147,
-            "CrawlFpInspector": 761
+            "BrowserProperties": 54228,
+            "AlgorithmicMethods": 1184,
+            "CrawlFpInspector": 764
         },
         "average": {
-            "BrowserProperties": 57.5667022411953,
-            "AlgorithmicMethods": 1.224119530416222,
-            "CrawlFpInspector": 0.8121664887940235
+            "BrowserProperties": 57.874066168623266,
+            "AlgorithmicMethods": 1.2636072572038421,
+            "CrawlFpInspector": 0.8153681963713981
         }
     },
     "fpd_attempts_blocked_transitively": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 106887,
-            "AlgorithmicMethods": 2560,
-            "CrawlFpInspector": 1323
+            "BrowserProperties": 113912,
+            "AlgorithmicMethods": 3058,
+            "CrawlFpInspector": 1476
         },
         "average": {
-            "BrowserProperties": 114.07363927427961,
-            "AlgorithmicMethods": 2.7321237993596585,
-            "CrawlFpInspector": 1.4119530416221986
+            "BrowserProperties": 121.5709711846318,
+            "AlgorithmicMethods": 3.263607257203842,
+            "CrawlFpInspector": 1.575240128068303
         }
     },
     "fpd_attempts_blocked_in_total": {
         "n_of_results": 937,
         "sum": {
-            "BrowserProperties": 160827,
-            "AlgorithmicMethods": 3707,
-            "CrawlFpInspector": 2084
+            "BrowserProperties": 168140,
+            "AlgorithmicMethods": 4242,
+            "CrawlFpInspector": 2240
         },
         "average": {
-            "BrowserProperties": 171.64034151547492,
-            "AlgorithmicMethods": 3.9562433297758806,
-            "CrawlFpInspector": 2.224119530416222
+            "BrowserProperties": 179.44503735325506,
+            "AlgorithmicMethods": 4.527214514407684,
+            "CrawlFpInspector": 2.390608324439701
         }
     },
     "requests_observed": {
@@ -58,28 +58,28 @@
     },
     "requests_blocked_directly": {
         "n_of_results": 937,
-        "sum": 9322,
-        "average": 9.948772678762007
+        "sum": 9286,
+        "average": 9.910352187833512
     },
     "requests_blocked_in_total": {
         "n_of_results": 937,
-        "sum": 22935,
-        "average": 24.477054429028815
+        "sum": 22711,
+        "average": 24.237993596584847
     },
     "requests_blocked_transitively": {
         "n_of_results": 937,
-        "sum": 13613,
-        "average": 14.528281750266808
+        "sum": 13425,
+        "average": 14.327641408751335
     },
     "requests_blocked_that_have_child_requests": {
         "n_of_results": 937,
-        "sum": 1793,
-        "average": 1.9135538954108857
+        "sum": 1790,
+        "average": 1.9103521878335112
     },
     "average_request_block_level": {
         "n_of_results": 800,
-        "sum": 2746.4898287019273,
-        "average": 3.4331122858774092
+        "sum": 2746.1523397204887,
+        "average": 3.4326904246506107
     },
     "blocked_subtrees_data": {
         "n_of_results": 937,

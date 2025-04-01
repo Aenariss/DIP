@@ -306,7 +306,7 @@ class TestcreateRequestTrees(unittest.TestCase):
 
         # Test FP attempts are correct
         fp_attempts = tree_instance.total_fpd_attempts()
-        expected = {"BrowserProperties": 15, "AlgorithmicMethods": 0}
+        expected = {"BrowserProperties": 21, "AlgorithmicMethods": 0}
         self.assertEqual(fp_attempts, expected)
 
     @patch("source.traffic_parser.create_request_trees.load_network_traffic_files")

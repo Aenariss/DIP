@@ -17,7 +17,7 @@
 #
 
 import unittest
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import patch, MagicMock
 
 from source.simulation_engine.custom_dns_server.dns_repeater_server import DNSRepeater
 
@@ -266,8 +266,9 @@ class TestDNSRepeater(unittest.TestCase):
     @patch("os.remove")
     @patch("os.path.isfile")
     @patch.object(DNSRepeater, "copy_to_container")
-    def test_stop(self, mock_copy_to_container, mock_isfile, mock_os_remove, mock_os_listdir,\
-                    mock_get_container, mock_os_system):
+    @patch("builtins.open")
+    def test_stop(self, mock_open, mock_copy_to_container, mock_isfile, mock_os_remove,\
+                   mock_os_listdir, mock_get_container, mock_os_system):
         """Test the stop method"""
 
         mock_container = MagicMock()

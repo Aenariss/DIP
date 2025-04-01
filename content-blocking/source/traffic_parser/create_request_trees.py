@@ -260,11 +260,7 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
                                         node, current_root_node, fp_attempts, lower_bound_trees)
 
         else:
-            # Do not repeat FP attempts for nodes already in the tree -> the original node
-            # already has them all
             existing_nodes = tree.find_nodes(current_resource)
-            if existing_nodes:
-                node.set_fp_attempts({})
 
             # Solve LOWER-BOUND issue of A -> B,C -> A,C by limiting at msot one of all.
             if lower_bound_trees:

@@ -27,7 +27,8 @@ from source.constants import TRAFFIC_FOLDER, GENERAL_ERROR, RESULTS_FOLDER
 from source.traffic_logger.traffic_loader import load_traffic
 from source.traffic_parser.fp_attempts import parse_fp
 from source.traffic_parser.create_request_trees import create_trees
-from source.simulation_engine.simulation_server_setup import start_testing_server, stop_testing_server
+from source.simulation_engine.simulation_server_setup import start_testing_server
+from source.simulation_engine.simulation_server_setup import stop_testing_server
 from source.file_manipulation import save_json, load_json
 from source.simulation_engine.visit_test_server import visit_test_server
 from source.analysis_engine.analysis import analyse_trees
@@ -129,24 +130,13 @@ def parse_traffic(options: Config) -> dict:
             valid_fp_attempts += 1
 
     print(f"FP Attempts succesfully collected for {valid_fp_attempts}\
- out of {len(fp_attempts.items())} logs.")
+out of {len(fp_attempts.items())} logs.")
 
 
     # Create initiator tree-like chains from data in the ./traffic/ folder
     request_trees = create_trees(fp_attempts, options)
 
     return request_trees
-
-def delete_logs(network_log_name: str) -> None:
-    """Function to delete all corresponding log files to a given network logfile,
-    network logs included"""
-
-    basename = os.path.basename(network_log_name)
-    file_number = basename.split("_")[0]
-
-    os.remove(TRAFFIC_FOLDER + f"{file_number}_network.json")
-    os.remove(TRAFFIC_FOLDER + f"{file_number}_dns.json")
-    os.remove(TRAFFIC_FOLDER + f"{file_number}_fp.json")
 
 def obtain_simulation_results(request_trees: dict, options: Config) -> list[dict]:
     """Function to simulate what would happen had the tool been present during the visits.

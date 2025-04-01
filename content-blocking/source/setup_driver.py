@@ -67,7 +67,7 @@ def setup_chrome(options: Config) -> webdriver.Chrome:
             for extension in options.tested_addons:
                 chrome_options.add_extension(CHROME_ADDONS_FOLDER + extension)
         except Exception:
-            print(f"Error loading extension {extension}. Is it present in {CHROME_ADDONS_FOLDER}?")
+            print(f"Error loading extensions! Are they in {CHROME_ADDONS_FOLDER}?")
             exit(GENERAL_ERROR)
 
         chromedriver_path = options.chromedriver_path
@@ -87,7 +87,7 @@ def setup_chrome(options: Config) -> webdriver.Chrome:
             for extension in options.tested_addons:
                 chrome_options.add_extension(CHROME_ADDONS_FOLDER + extension)
         except Exception:
-            print(f"Error loading extension {extension}. Is it present in {CHROME_ADDONS_FOLDER}?")
+            print(f"Error loading extensions! Are they in {CHROME_ADDONS_FOLDER}?")
             exit(GENERAL_ERROR)
 
         # Set logging capabilities
@@ -111,9 +111,8 @@ def get_firefox_console_logs(driver):
 def setup_firefox(options: Config) -> webdriver.Firefox:
     """Function to setup driver for firefox-based browser"""
 
-    # Check if we're using custom browser
+    # Custom FF not supported
     if options.using_custom_browser:
-        # tbd
         return None
     else:
         firefox_options = FirefoxOptions.Options()
@@ -146,7 +145,7 @@ def setup_firefox(options: Config) -> webdriver.Firefox:
             for extension in options.tested_addons:
                 driver.install_addon(FIREFOX_ADDONS_FOLDER + extension, temporary=True)
         except Exception:
-            print(f"Error loading extension {extension}. Is it present in {FIREFOX_ADDONS_FOLDER}?")
+            print(f"Error loading extensions! Are they in {FIREFOX_ADDONS_FOLDER}?")
             exit(GENERAL_ERROR)
 
         return driver
