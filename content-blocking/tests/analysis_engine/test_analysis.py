@@ -186,7 +186,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertEqual(result["requests_blocked_directly"], 1)
         self.assertEqual(result["requests_blocked_in_total"], 1)
 
-    def test_analyse_trees_firefox(self):
+    def test_analyse_trees(self):
         """Test analyse_trees"""
         request_trees = {"1_network.json": self.request_tree}
         console_output = []
@@ -201,3 +201,24 @@ class TestAnalysis(unittest.TestCase):
         results2 = analyze_trees(request_trees, console_output, ConfigChrome())
         self.assertIsInstance(results, dict)
         self.assertIsInstance(results2, dict)
+
+    def test_analyse_trees_exception(self):
+        """Test analyse_trees throws an exception when using mismatched browser and logs type"""
+
+        request_trees = {"1_network.json": self.request_tree}
+
+        # Setup chrome logs
+        console_output = [{
+            "level": "SEVERE",
+            "message": "http://test.com - Some Error",
+            "source": "network",
+            "timestamp": 1
+        }]
+
+        # Setup Firefox Config
+        class ConfigFirefox:
+            browser_type = "firefox"
+
+        # Should throw an error cuz of mismatch
+        with self.assertRaises(SystemExit):
+            results = analyze_trees(request_trees, console_output, ConfigFirefox())

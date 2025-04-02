@@ -142,9 +142,9 @@ def main():
     subtree_submetrics = ["subtrees_fully_blocked", "subtrees_partially_blocked", "subtrees_not_blocked"]
     root_node_submetric = ["trees_with_blocked_root_node"]
 
-    metrics = ["fpd_attempts_blocked_in_total"]
+    metrics = request_metrics
     headers = ["Tool", "1", "2", "3"]
-    submetrics = fpd_submetrics
+    submetrics = root_node_submetric
 
     first_key = list(results.keys())[0]
     total = results[first_key]["requests_observed"][SUM]

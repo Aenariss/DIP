@@ -24,7 +24,7 @@ from time import sleep
 
 # Custom modules
 from source.constants import RESULTS_FOLDER
-from source.config import Config
+from config import Config
 from start import start
 
 def run_analyses():

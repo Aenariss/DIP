@@ -20,7 +20,7 @@
 import unittest
 
 # Custom modules
-from source.config import Config
+from config import Config
 
 class TestConfig(unittest.TestCase):
 

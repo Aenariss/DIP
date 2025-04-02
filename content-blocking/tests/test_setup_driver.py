@@ -22,9 +22,8 @@ from unittest.mock import patch, MagicMock
 import json
 
 # Custom modules
-from source.config import Config
-from source.setup_driver import setup_chrome, setup_chrome_for_traffic_logging
-from source.setup_driver import setup_firefox, get_firefox_console_logs, setup_driver
+from source.setup_driver import setup_chrome_for_traffic_logging
+from source.setup_driver import get_firefox_console_logs, setup_driver
 
 class TestSetupDriver(unittest.TestCase):
 

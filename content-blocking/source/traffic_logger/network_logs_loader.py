@@ -30,7 +30,7 @@ from selenium.webdriver.common.by import By
 # Custom modules
 from source.constants import TRAFFIC_FOLDER
 from source.setup_driver import setup_chrome_for_traffic_logging
-from source.config import Config
+from config import Config
 
 def enable_developer_mode(driver: webdriver.Chrome) -> None:
     """Function to enable developer mode inside Selenium-driven Chrome

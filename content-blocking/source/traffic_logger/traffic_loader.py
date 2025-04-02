@@ -25,9 +25,9 @@ import re
 # Custom modules
 from source.file_manipulation import load_pages
 from source.traffic_logger.network_logs_loader import get_page_network_traffic
-from source.config import Config
 from source.constants import TRAFFIC_FOLDER, FILE_ERROR, GENERAL_ERROR
 from source.traffic_logger.dns_observer import DNSSniffer
+from config import Config
 
 def get_address(resource: str) -> str:
     """Function to obtain only the domain from URL

@@ -17,9 +17,10 @@
 #
 
 # Custom modules
+from config import Config
 from source.traffic_parser.request_tree import RequestTree
 from source.utils import print_progress, add_substract_fp_attempts
-from source.config import Config
+from source.constants import GENERAL_ERROR
 
 from source.analysis_engine.experimental_analysis import add_subtrees, analyse_subtrees_blocking
 from source.analysis_engine.experimental_analysis import calculate_blocked_who_brings_children
@@ -241,10 +242,14 @@ def analyze_trees(request_trees: dict, console_output: list, options: Config) ->
 
     # If current experiment was done on firefox, console output contains all passed resources
     # So what we need to do is remove those logged from all logged => rest is blocked
-    if options.browser_type == "firefox":
-        console_output = process_firefox_console_output(request_trees, console_output)
-    else:
-        console_output = parse_console_logs_chrome(console_output)
+    try:
+        if options.browser_type == "firefox":
+            console_output = process_firefox_console_output(request_trees, console_output)
+        else:
+            console_output = parse_console_logs_chrome(console_output)
+    except Exception:
+        print("You probably mismatched browser and logs type! Or something more serious...")
+        exit(GENERAL_ERROR)
 
     # Analyse each tree
     progress_printer = print_progress(len(request_trees), "Analysing blocked pages...")

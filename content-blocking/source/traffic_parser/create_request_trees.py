@@ -21,9 +21,9 @@ import os
 import sys
 
 # Custom modules
+from config import Config
 from source.file_manipulation import load_json, get_traffic_files
 from source.utils import print_progress, add_substract_fp_attempts
-from source.config import Config
 from source.traffic_parser.request_node import RequestNode
 from source.traffic_parser.request_tree import RequestTree
 

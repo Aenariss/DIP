@@ -34,7 +34,7 @@ from source.simulation_engine.visit_test_server import visit_test_server
 from source.analysis_engine.analysis import analyze_trees
 from source.simulation_engine.firewall import firewall_unblock_traffic, firewall_block_traffic
 from source.utils import squash_dns_records, squash_tree_resources
-from source.config import Config
+from config import Config
 from source.simulation_engine.custom_dns_server.dns_repeater_server import DNSRepeater
 
 # Increase recursion limit because of the trees, should be more than enough

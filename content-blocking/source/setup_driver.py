@@ -29,7 +29,7 @@ import selenium.webdriver.firefox.service as FirefoxService
 # Custom modules
 from source.constants import CHROME_ADDONS_FOLDER, FIREFOX_ADDONS_FOLDER, GENERAL_ERROR
 from source.constants import JSHELTER_FPD_PATH, FIREFOX_RESOURCE_LOGGER
-from source.config import Config
+from config import Config
 
 def setup_driver(options: Config) -> webdriver.Chrome | webdriver.Firefox:
     """Function to setup the driver depeneding on the specified browser
