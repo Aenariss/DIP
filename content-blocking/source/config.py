@@ -60,7 +60,7 @@ class Config:
 
     # Base browser to be used during the simulation.
     # Only two valid options - "chrome" and "firefox".
-    browser_type = "chrome"
+    browser_type = "firefox"
 
     # If Google Chrome is used (and not a custom chromium-based browser),
     # this settings selects the version of Chrome to be used.
@@ -88,20 +88,20 @@ class Config:
 
     # When using Firefox browser, whether to apply its default anti-tracking settings.
     # Can be used to test FF inherent content-blocking settings when no addons are specified.
-    use_firefox_default_protection = True
+    use_firefox_default_protection = False
 
     # List of addons to use during the simulation.
     # Addon must match the chosen browser_type, e.g. 'crx' for Chrome, 'xpi' for Firefox.
     # Evaluations described in Thesis were completed with only a single addon present
     # which was the tested tool. However, for future-proofing also works with multiple tools.
-    tested_addons = []
+    tested_addons = ["ublock_origin_1_62_0.xpi"]
 
     # Experiment name to be used for the current evaluation. When launching --analysis-only,
     # it needs to correspond to one of the previous experiments.
     # The log file is saved in results/ folder and it's named experiment_name + _log.json
     # The analysis results are also saved in results/ folder, named experiment_name + _results.json
     # If using Avast Secure Browser, experiment name MUST start with "avast"!! Only then!
-    experiment_name = "chrome_ublock_origin_lite_2025_3_2_1298"
+    experiment_name = "firefox_privacy_badger_2025_1_29"
 
     # Time to wait after browser is launched before accessing the simulation page.
     # The time can be used to wait for tested extensions to properly load, or to manually
