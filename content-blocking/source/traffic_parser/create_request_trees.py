@@ -216,9 +216,47 @@ def assign_parent_from_callstack(current_resource: str, resource: dict, tree: Re
 
     # If all callframes were empty (dynamic), just set the last
     # global level as parent of the resource
-    if len(calls) == 1:
+    else:
         current_root_node.add_child(node)
 
+def is_root_node(resource) -> bool:
+    """Function to check if a given network log comes from a root node
+    
+    Args:
+        resource: Network.requestWillBeSent event representing the resource
+
+    Returns:
+        bool: True if it matches a root node, false if it does not
+    """
+    if resource["requested_for"] == resource["requested_resource"] and\
+       resource["initiator"]["type"] == "other":
+
+        # Also, no URL attribute can be present
+        if resource["initiator"].get("url", None) is None:
+            return True
+    return False
+
+def has_direct_initiator(resource) -> bool:
+    """Function to check if a given network log has a direct initiator (initiator.url) specified
+    
+    Args:
+        resource: Network.requestWillBeSent event representing the resource
+
+    Returns:
+        bool: True if node has direct initiator, false otherwise
+    """
+    return resource["initiator"].get("url", None) is not None
+
+def has_stack_specified(resource) -> bool:
+    """Function to check if a given network log has a JS stack specified
+    
+    Args:
+        resource: Network.requestWillBeSent event representing the resource
+
+    Returns:
+        bool: True if node has stack specified, false otherwise
+    """
+    return resource["initiator"].get("stack", None) is not None
 
 def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_trees: bool)\
       -> RequestTree:
@@ -251,13 +289,10 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
 
         # If requested_for matches requested_resource and initiator type is "other"
         # it's a new root node, parse it accordingly
-        if resource["requested_for"] == current_resource and\
-            resource["initiator"]["type"] == "other":
-
-            # Also, no URL attribute can be present
-            if resource["initiator"].get("url", {}) == {}:
-                tree, current_root_node = add_new_root_node(tree, resource_number,\
-                                        node, current_root_node, fp_attempts, lower_bound_trees)
+        if is_root_node(resource):
+            tree, current_root_node = add_new_root_node(tree, resource_number, node,\
+                                                        current_root_node, fp_attempts,\
+                                                        lower_bound_trees)
 
         else:
             existing_nodes = tree.find_nodes(current_resource)
@@ -273,18 +308,18 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
                     continue
 
             # Direct initiator
-            if resource["initiator"].get("url") is not None:
+            if has_direct_initiator(resource):
                 assign_direct_parent(resource, tree, current_root_node, node)
 
             # Else go through the stack and parents
             else:
                 # Stack exists
-                if resource["initiator"].get("stack") is not None:
+                if has_stack_specified(resource):
 
                     assign_parent_from_callstack(current_resource, resource, \
                                                  tree, current_root_node, node)
 
-                # Stack doesn't exist, just set last main page as the predecessor
+                # Stack doesn't exist, just set last root node as the predecessor
                 else:
                     current_root_node.add_child(node)
 

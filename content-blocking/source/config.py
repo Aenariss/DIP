@@ -88,7 +88,7 @@ class Config:
 
     # When using Firefox browser, whether to apply its default anti-tracking settings.
     # Can be used to test FF inherent content-blocking settings when no addons are specified.
-    use_firefox_default_protection = False
+    use_firefox_default_protection = True
 
     # List of addons to use during the simulation.
     # Addon must match the chosen browser_type, e.g. 'crx' for Chrome, 'xpi' for Firefox.
@@ -101,7 +101,7 @@ class Config:
     # The log file is saved in results/ folder and it's named experiment_name + _log.json
     # The analysis results are also saved in results/ folder, named experiment_name + _results.json
     # If using Avast Secure Browser, experiment name MUST start with "avast"!! Only then!
-    experiment_name = "chrome_browser"
+    experiment_name = "chrome_ublock_origin_lite_2025_3_2_1298"
 
     # Time to wait after browser is launched before accessing the simulation page.
     # The time can be used to wait for tested extensions to properly load, or to manually

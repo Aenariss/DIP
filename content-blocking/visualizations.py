@@ -103,7 +103,7 @@ def print_table(results, metrics, submetrics, headers, total, percentage):
     desired_order = ['Avast Secure Browser', 'Brave Browser', 'Firefox Browser', 'Chrome Adblock Plus', 'Firefox Adblock Plus',
                     'Chrome Ghostery', 'Firefox Ghostery', 'Chrome Privacy Badger', 'Firefox Privacy Badger', 
                     'Chrome uBlock Origin Lite', 'Firefox uBlock Origin']
-    
+
     all_metric_values = {key: all_metric_values[key] for key in desired_order}
 
     for (tool, values) in all_metric_values.items():
@@ -134,8 +134,7 @@ def main():
         "fpd_attempts_blocked_in_total"]
     fpd_submetrics = ["BrowserProperties", "AlgorithmicMethods", "CrawlFpInspector"]
 
-    request_metrics = ["requests_blocked_directly",
-        "requests_blocked_in_total", "requests_blocked_transitively"]
+    request_metrics = ["requests_blocked_directly", "requests_blocked_transitively", "requests_blocked_in_total"]
 
     experimental_metrics = ["requests_blocked_that_have_child_requests", "average_request_block_level"]
 
@@ -143,9 +142,9 @@ def main():
     subtree_submetrics = ["subtrees_fully_blocked", "subtrees_partially_blocked", "subtrees_not_blocked"]
     root_node_submetric = ["trees_with_blocked_root_node"]
 
-    metrics = ["blocked_subtrees_data"]
-    headers = ["Tool", "RBCR"]
-    submetrics = root_node_submetric
+    metrics = ["fpd_attempts_blocked_in_total"]
+    headers = ["Tool", "1", "2", "3"]
+    submetrics = fpd_submetrics
 
     first_key = list(results.keys())[0]
     total = results[first_key]["requests_observed"][SUM]

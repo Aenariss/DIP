@@ -27,6 +27,8 @@ from source.traffic_parser.create_request_trees import fix_missing_parent, join_
 from source.traffic_parser.create_request_trees import assign_parent_from_callstack
 from source.traffic_parser.create_request_trees import add_new_root_node, assign_direct_parent
 from source.traffic_parser.create_request_trees import create_trees, load_network_traffic_files
+from source.traffic_parser.create_request_trees import has_direct_initiator, has_stack_specified
+from source.traffic_parser.create_request_trees import is_root_node
 from source.file_manipulation import load_json
 
 class TestcreateRequestTrees(unittest.TestCase):
@@ -52,6 +54,74 @@ class TestcreateRequestTrees(unittest.TestCase):
             'https://b.cz/asc.js': {'BrowserProperties': 1, 'AlgorithmicMethods': 0},
             'https://example.com/script.js': {'BrowserProperties': 1, 'AlgorithmicMethods': 0},
             }}
+
+    def test_is_root_node_valid(self):
+        """Test if checker if node is a root-node works"""
+        root_resource = {
+            "requested_for": "https://test.com",
+            "requested_resource": "https://test.com",
+            "initiator": {
+                "type": "other"
+            }
+        }
+        self.assertTrue(is_root_node(root_resource))
+
+    def test_is_root_node_invalid(self):
+        """Test if checker if invalid node gets rejected as root"""
+        root_resource_invalid = {
+            "requested_for": "https://test.com",
+            "requested_resource": "https://test.com",
+            "initiator": {
+                "type": "other",
+                "url": "https://something.com"
+            }
+        }
+
+        regular_node = {
+            "requested_for": "https://test.com",
+            "requested_resource": "https://something-else.com",
+            "initiator": {
+                "type": "other",
+                "url": "https://something.com"
+            }
+        }
+        self.assertFalse(is_root_node(root_resource_invalid))
+        self.assertFalse(is_root_node(regular_node))
+
+    def test_has_direct_initiator(self):
+        """Test if checker if node has direct initiator works"""
+        resource_no_url = {
+            "requested_for": "https://test.com",
+            "requested_resource": "https://something-else.com",
+            "initiator": {
+                "type": "parser"
+            }
+        }
+        self.assertFalse(has_direct_initiator(resource_no_url))
+
+        # Assign it valid initiator.url, should now work
+        resource_no_url["initiator"]["url"] = "https://specified-parent.com"
+
+        self.assertTrue(has_direct_initiator(resource_no_url))
+
+    def test_has_stack_specified(self):
+        """Test if checker if node has stack specified works"""
+        resource_no_stack = {
+            "requested_for": "https://test.com",
+            "requested_resource": "https://something-else.com",
+            "initiator": {
+                "type": "script",
+            }
+        }
+        self.assertFalse(has_stack_specified(resource_no_stack))
+
+        # Assign it valid stack, should now work
+        resource_no_stack["initiator"]["stack"] = \
+            {"stack": {
+                "callFrames": [{"url": "https://b.cz/sc.js"}]
+                }
+            }
+        self.assertTrue(has_stack_specified(resource_no_stack))
 
     def test_fix_missing_parent(self):
         """Test fix_missing_parent correctly assigns node as child of root node"""

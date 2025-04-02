@@ -38,8 +38,6 @@ JShelter FPD sometimes has a race condition which causes fingerprinting to not w
 
 When saving the results, if a result with a given name already exists, it will be overwritten.
 
-In case of an error, a copy of your hosts file is preserved in this folder. If no error happened, it is removed automatically.
-
 Windows may not work with custom DNS server, it prefers ipv6 dns resolution -> disable ipv6 in adapter options: control panel -> Network -> View network status -> Change adapter settings -> Properties -> ipv6
 
 To get a list of pages to populate the page_list.txt, try Tranco (not ideal, contains CDNs, DNS servers...) or https://dataforseo.com/free-seo-stats/top-1000-websites
@@ -80,3 +78,5 @@ Tested addons needs whole name of the file
 Traffic logging requires valid page address (http(s)://my.example.com, does not work for localhost etc. Requires at least one dot. Unless config.ddebug is specified)
 
 Not everything in the config is validated since there are many possible options (which may even be expanded in the future), so please do not change what you do not understand to not break the program.
+
+If you get an error with analysis-only, check your specified browser type matches the experiment logs (firefox experiment can only work with firefox logs and chrome vice-versa)
