@@ -12,3 +12,4 @@ content-blocking/tests/traffic_parser/__pycache__/*
 content-blocking/tests/simulation_engine/__pycache__/*
 content-blocking/tests/analysis_engine/__pycache__/*
 content-blocking/.coverage
+content-blocking/tmp_custom_webserver/*
