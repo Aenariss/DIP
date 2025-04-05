@@ -71,13 +71,13 @@ class RequestNode:
             for parent in self.get_parents():
                 if not parent.is_blocked():
                     should_be_blocked = False
+
+            # Only block if it was not a repeated transitive child and all its parents are blocked
             if not self.repeated and should_be_blocked:
                 self.blocked = True
-            return
 
-        # Only block if it was not a repeated node (cant say for 100% such node would be blocked)
-        # Only do this if not self.transitive
-        if not self.repeated:
+        # If it was not a transitive node, just block it
+        else:
             self.blocked = True
 
     def set_fp_attempts(self, fp_attempts: dict) -> None:

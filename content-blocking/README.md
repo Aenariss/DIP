@@ -54,7 +54,7 @@ After stopping the custom DNS server, DNS settings are reset -> it is set to aut
 
 The workflow is as follows:
 
-1. Load all pages specified in ``pageList.txt``. Each line represents an URL to be visited.
+1. Load all pages specified in ``page_list.txt``. Each line represents an URL to be visited.
 2. The specified URLs are visited to obtain the resources downloaded for each page. For each resource, the request chain is replicated. During visitation, DNS sniffer is active and logs DNS traffic.
 3. For each observed resource, a new request will be simulated for which observed DNS replies will be repeated.
 4. The page with the simulated resource requests will be visited for each extension/browser specified in ``config.json``.
@@ -80,3 +80,5 @@ Traffic logging requires valid page address (http(s)://my.example.com, does not 
 Not everything in the config is validated since there are many possible options (which may even be expanded in the future), so please do not change what you do not understand to not break the program.
 
 If you get an error with analysis-only, check your specified browser type matches the experiment logs (firefox experiment can only work with firefox logs and chrome vice-versa)
+
+The addresses in page_list.txt need to have "http(s)://" prefix to correctly open in Selenium! 

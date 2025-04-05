@@ -47,6 +47,26 @@ class TestConfig(unittest.TestCase):
         self.config.custom_browser_binary = ""
         self.assertFalse(self.config.validate_settings())
 
+    def test_validate_lower_bound_trees(self):
+        """Test using invalid lower bound tres setting"""
+        self.config.lower_bound_trees = "What do I know"
+        self.assertFalse(self.config.validate_settings())
+
+    def test_validate_headless_logging(self):
+        """Test using invalid headless_logging setting"""
+        self.config.headless_logging = "What do I know"
+        self.assertFalse(self.config.validate_settings())
+
+    def test_validate_no_dns_validation_during_logging(self):
+        """Test using invalid no_dns_validation_during_logging setting"""
+        self.config.no_dns_validation_during_logging = "What do I know"
+        self.assertFalse(self.config.validate_settings())
+
+    def test_validate_use_firefox_default_protection(self):
+        """Test using invalid use_firefox_default_protection setting"""
+        self.config.use_firefox_default_protection = "What do I know"
+        self.assertFalse(self.config.validate_settings())
+
     def test_validate_custom_browser_wrong(self):
         """Custom FF browser are not supported"""
         self.config.using_custom_browser = True

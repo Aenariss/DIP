@@ -301,6 +301,9 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
             if lower_bound_trees:
                 if existing_nodes:
                     node = existing_nodes[0]
+
+                    # Mark node as repeated so that its child nodes can be marked as repeated
+                    # in the analysis
                     node.repeated = True
 
                     # Need to continue here because adding parents for lower bound breaks the logic

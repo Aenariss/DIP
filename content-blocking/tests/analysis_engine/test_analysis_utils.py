@@ -63,12 +63,19 @@ class TestAnalysisUtils(unittest.TestCase):
 
         # Mark blocked node as repeated
         blocked_requests = ["https://www.a.cz/"]
-        self.request_tree.find_nodes(blocked_requests[0])[0].repeated = True
+        blocked_node = self.request_tree.find_nodes(blocked_requests[0])[0]
+        blocked_node.repeated = True
         result_tree = get_transitively_blocked_tree(self.request_tree, blocked_requests)
 
-        # Since root node was repeated, nothing else should be blocked either
+        # Since root node was repeated, only that node should be blocked
+        self.assertTrue(blocked_node.is_blocked())
+
+        # Its children should not be blocked since they might have been assigned somewhere else
         for node in result_tree.get_root().get_all_children_nodes():
-            self.assertFalse(node.is_blocked())
+
+            # Assert all but the blocked node are not blocked
+            if node != blocked_node:
+                self.assertFalse(node.is_blocked())
 
     def test_parse_console_logs_chrome(self):
         """Test Chrome log parsing"""

@@ -57,16 +57,11 @@ class TestRequestNode(unittest.TestCase):
         node_4 = RequestNode("8", "https://example.com/d.js", {}, children=[self.node_3])
         self.assertIn(self.node_3, node_4.get_children())
 
-    def test_blocking_non_repeated_node(self):
+    def test_blocking(self):
         """Test if a node can be blocked"""
         self.node_1.block()
         self.assertTrue(self.node_1.is_blocked())
 
-    def test_blocking_repeated_node(self):
-        """Test if a node cannot be blocked when using "repeated" lower-bound settings"""
-        self.node_1.repeated = True
-        self.node_1.block()
-        self.assertFalse(self.node_1.is_blocked())
 
     def test_blocking_multiple_parents_node(self):
         """Test if a node cannot be blocked when using "transitive_block" if it has
@@ -88,6 +83,18 @@ class TestRequestNode(unittest.TestCase):
         self.node_3.block()
         self.node_1.block(transitive_block=True)
         self.assertTrue(self.node_1.is_blocked())
+
+    def test_blocking_multiple_parents_node_both_repeated(self):
+        """Test if a repeated node cannot be blocked when using "transitive_block", even if it has
+        all parents blocked"""
+        self.node_1.add_parent(self.node_2)
+        self.node_1.add_parent(self.node_3)
+        self.node_1.repeated = True
+
+        self.node_2.block()
+        self.node_3.block()
+        self.node_1.block(transitive_block=True)
+        self.assertFalse(self.node_1.is_blocked())
 
     def test_get_all_children_resources(self):
         """Test get_all_children_resources works transitively as it should"""

@@ -221,4 +221,4 @@ class TestAnalysis(unittest.TestCase):
 
         # Should throw an error cuz of mismatch
         with self.assertRaises(SystemExit):
-            results = analyze_trees(request_trees, console_output, ConfigFirefox())
+            _ = analyze_trees(request_trees, console_output, ConfigFirefox())

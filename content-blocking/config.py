@@ -52,7 +52,7 @@ class Config:
     # Whether the Request Trees should be created to capture lower-bound metrics results
     # Should not be enabled in standard situations, only for experimental purposes
     # such as measuring how many requests were duplicated compared to upper_bound (default)
-    lower_bound_trees = False
+    lower_bound_trees = True
 
     ##############################
     # Simulation Engine Settings #
@@ -146,8 +146,19 @@ class Config:
         if self.browser_type not in ["chrome", "firefox"]:
             status = False
 
-        # Using custom browser must either be true or false
         if self.using_custom_browser not in [True, False]:
+            status = False
+
+        if self.lower_bound_trees not in [True, False]:
+            status = False
+
+        if self.headless_logging not in [True, False]:
+            status = False
+
+        if self.no_dns_validation_during_logging not in [True, False]:
+            status = False
+
+        if self.use_firefox_default_protection not in [True, False]:
             status = False
 
         # If using custom browser, binary path must not be empty

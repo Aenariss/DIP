@@ -73,8 +73,8 @@ def get_transitively_blocked_tree(request_tree: RequestTree, blocked_resources: 
                 for node in child_nodes:
                     node.repeated = True
 
+            # Try to block all child nodes transitively
             for node in child_nodes:
-                # They are blocked transitively, mark it
                 node.block(transitive_block=True)
 
     return request_tree
