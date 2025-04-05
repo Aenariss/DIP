@@ -5,6 +5,7 @@ This program works only on **Microsoft Windows** because of some internal Window
 Please, read the **IMPORTANT** section in this file before launching anything.
 
 The files in this folder are used to measure the effectivity of given content-blocking tools.  
+Launch all files mentioned from inside the root folder only -> you should be in ./DIP/content-blocking!
 
 - ``./source/config.py`` -- user options for the evaluation, includes browsers/extensions to test
 - ``./results`` -- results of the evaluation, automatically created after starting the program
@@ -20,15 +21,16 @@ Requirements to run:
 - non-empty ``page_list.txt`` file -- needs to be populated with URL addresses in format protocol://page -> e.g. https://www.vut.cz/
 
 How to start in case of manual launch:
-- Launch all files mentioned from inside the root folder only -> you should be in ./DIP/content-blocking
 - Before launching anything, make sure all requirements are satisfied.
-- Launch python as admin:
+- Launch python as admin when running simulation:
     - You can allow "sudo" command in Windows settings => System > For Developers > Enable sudo
     - Afterwards, run all mentioned commands as ``sudo command``
 - In case you are launching for the first time, you need to setup docker (for custom DNS server): -> 
     - ``docker pull internetsystemsconsortium/bind9:9.20``
+- Disable IPv6 at the network adapter
 
 #### IMPORTANT
+
 When launching the file with any load options -- that is ``--load`` or ``--load-only``, **ALL RESULTS IN ./traffic/ FOLDER ARE DELETED**.
 
 Sometimes when launching selenium (usually when launching for the first time in PC session), it may take too long to load and thus
@@ -49,6 +51,7 @@ After stopping the custom DNS server, DNS settings are reset -> it is set to aut
     - use ``python ./start.py --load`` loads traffic on all pages specified in ``page_list.txt`` and afterwards uses it as a basis for evaluation.
     - use ``python ./start.py --load --compact`` (can also be used with --load-only) to lessen the space the traffic logs take.
     - use ``python ./start.py`` loads already logged traffic which is saved in ./traffic/ folder.
+    - use ``python ./utils/run_tests.py`` to run the tests
 
 
 

@@ -82,6 +82,7 @@ def setup_chrome(options: Config) -> webdriver.Chrome:
                 chrome_options.add_extension(CHROME_ADDONS_FOLDER + extension)
         except Exception:
             print(f"Error loading extensions! Are they in {CHROME_ADDONS_FOLDER}?")
+            print("Didn't you mistakenly select .xpi for chrome?")
             exit(GENERAL_ERROR)
 
         chromedriver_path = options.chromedriver_path
@@ -102,6 +103,7 @@ def setup_chrome(options: Config) -> webdriver.Chrome:
                 chrome_options.add_extension(CHROME_ADDONS_FOLDER + extension)
         except Exception:
             print(f"Error loading extensions! Are they in {CHROME_ADDONS_FOLDER}?")
+            print("Didn't you mistakenly select .xpi for chrome?")
             exit(GENERAL_ERROR)
 
         # Set logging capabilities
@@ -174,6 +176,7 @@ def setup_firefox(options: Config) -> webdriver.Firefox:
                 driver.install_addon(FIREFOX_ADDONS_FOLDER + extension, temporary=True)
         except Exception:
             print(f"Error loading extensions! Are they in {FIREFOX_ADDONS_FOLDER}?")
+            print("Didn't you mistakenly select .crx for firefox?")
             exit(GENERAL_ERROR)
 
         return driver

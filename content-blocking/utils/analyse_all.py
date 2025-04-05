@@ -21,6 +21,12 @@
 import os
 from multiprocessing import Process
 from time import sleep
+import sys
+
+# Add the parent directory (root folder) to sys path to allow
+# running as python ./utils/analyse_all.py
+parent_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, parent_directory)
 
 # Custom modules
 from source.constants import RESULTS_FOLDER

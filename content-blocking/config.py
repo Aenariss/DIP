@@ -52,7 +52,7 @@ class Config:
     # Whether the Request Trees should be created to capture lower-bound metrics results
     # Should not be enabled in standard situations, only for experimental purposes
     # such as measuring how many requests were duplicated compared to upper_bound (default)
-    lower_bound_trees = True
+    lower_bound_trees = False
 
     ##############################
     # Simulation Engine Settings #
@@ -84,7 +84,7 @@ class Config:
     # Use this setting to speicfy its path in '/' format.
     # Find Chromedriver download links here:
     # https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json
-    chromedriver_path = "./chromedriver_134.exe"
+    chromedriver_path = "./utils/webdrivers/chromedriver_134.exe"
 
     # When using Firefox browser, whether to apply its default anti-tracking settings.
     # Can be used to test FF inherent content-blocking settings when no addons are specified.
@@ -94,14 +94,14 @@ class Config:
     # Addon must match the chosen browser_type, e.g. 'crx' for Chrome, 'xpi' for Firefox.
     # Evaluations described in Thesis were completed with only a single addon present
     # which was the tested tool. However, for future-proofing also works with multiple tools.
-    tested_addons = ["ublock_origin_1_62_0.xpi"]
+    tested_addons = []
 
     # Experiment name to be used for the current evaluation. When launching --analysis-only,
     # it needs to correspond to one of the previous experiments.
     # The log file is saved in results/ folder and it's named experiment_name + _log.json
     # The analysis results are also saved in results/ folder, named experiment_name + _results.json
     # If using Avast Secure Browser, experiment name MUST start with "avast"!! Only then!
-    experiment_name = "chrome_ublock_origin_lite_2025_3_2_1298"
+    experiment_name = "chrome_test"
 
     # Time to wait after browser is launched before accessing the simulation page.
     # The time can be used to wait for tested extensions to properly load, or to manually

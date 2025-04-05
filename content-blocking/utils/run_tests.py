@@ -19,9 +19,17 @@
 
 # Built-in modules
 import unittest
+import sys
+import os
+
+# Add the parent directory (root folder) to sys path to allow
+# running as python ./utils/run_tests.py
+parent_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, parent_directory)
 
 def run_all_unittests():
     """Very simple function to run the unit tests specified in folder tests/"""
+
 
     # Discover and run all tests from the tests/ folder
     # Discover all classes that inherit from unittest.TestCase
