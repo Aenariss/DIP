@@ -64,7 +64,6 @@ def setup_chrome(options: Config) -> webdriver.Chrome:
         custom_browser_path = options.custom_browser_binary
 
         chrome_options = ChromeOptions.Options()
-        chrome_options.add_argument("--remote-debugging-port=9222")
         chrome_options.add_argument("--enable-javascript")
 
         # use custom binary
@@ -93,7 +92,6 @@ def setup_chrome(options: Config) -> webdriver.Chrome:
         return driver
     else:
         chrome_options = ChromeOptions.Options()
-        chrome_options.add_argument("--remote-debugging-port=9222")
         chrome_options.add_argument("--enable-javascript")
         chrome_options.browser_version = options.chrome_browser_version
 
@@ -151,7 +149,7 @@ def setup_firefox(options: Config) -> webdriver.Firefox:
         # Dont turn off extended protection
         if not options.use_firefox_default_protection:
 
-            # Turn off Firefox Extended Protection and DNS-over-HTTPS
+            # Turn off Firefox Extended Protection, check about:config in FF
             firefox_options.set_preference("privacy.trackingprotection.custom.enabled", False)
             firefox_options.set_preference("privacy.trackingprotection.enabled", False)
             firefox_options.set_preference("privacy.trackingprotection.pbmode.enabled", False)
@@ -162,6 +160,8 @@ def setup_firefox(options: Config) -> webdriver.Firefox:
             firefox_options.set_preference("privacy.trackingprotection.fingerprinting.enabled",\
                                             False)
 
+        # Turn off DNS-over-HTTPS
+        # https://wiki.mozilla.org/Trusted_Recursive_Resolver
         firefox_options.set_preference("network.trr.mode", 5)
 
         service = FirefoxService.Service()
@@ -194,7 +194,6 @@ def setup_chrome_for_traffic_logging(options: Config, download_path: str) -> web
 
     # Set up Chrome options and enable DevTools Protocol
     chrome_options = ChromeOptions.Options()
-    chrome_options.add_argument("--remote-debugging-port=9222")
     chrome_options.add_argument("--enable-javascript")
     chrome_options.add_argument('--enable-extensions')
     chrome_options.add_argument('--ignore-certificate-errors')
