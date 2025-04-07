@@ -122,7 +122,7 @@ def print_table(results_for_tools, metrics, submetrics, headers):
         else:
             row = [tool]
             for val in values:
-                formatted_number = f"{val:,.3f}".replace(',', ' ').rstrip('0').rstrip('.')
+                formatted_number = f"{val:,.3f}".rstrip('0').rstrip('.')
                 row.append(formatted_number)
 
         table_data.append(row)

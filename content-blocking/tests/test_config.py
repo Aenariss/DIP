@@ -41,6 +41,11 @@ class TestConfig(unittest.TestCase):
         self.config.using_custom_browser = "( ͡° ͜ʖ ͡°)"
         self.assertFalse(self.config.validate_settings())
 
+    def test_validate_custom_profile(self):
+        """Test using invalid custom profile setting"""
+        self.config.using_custom_profile = "( ͡° ͜ʖ ͡°)"
+        self.assertFalse(self.config.validate_settings())
+
     def test_validate_custom_browser_and_binary(self):
         """Test using invalid custom binary with custom browser setting"""
         self.config.using_custom_browser = True

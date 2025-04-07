@@ -70,6 +70,10 @@ class Config:
     # should be used.
     using_custom_browser = False
 
+    # If Chromium-based custom browser (such as Avast Secure Browser or Brave Browser)
+    # should use custom profile.
+    using_custom_profile = False
+
     # If using a custom Chromium-based browser, this is the path to its binary (.exe) file.
     # Should be in "normal" format ('/' instead of Windows's '\').
     custom_browser_binary = "C:/Program Files/Avast Software/Browser/Application/AvastBrowser.exe"
@@ -147,6 +151,9 @@ class Config:
             status = False
 
         if self.using_custom_browser not in [True, False]:
+            status = False
+
+        if self.using_custom_profile not in [True, False]:
             status = False
 
         if self.lower_bound_trees not in [True, False]:

@@ -34,6 +34,7 @@ class TestSetupDriver(unittest.TestCase):
         class ConfigChrome:
             browser_type = "chrome"
             using_custom_browser = False
+            using_custom_profile = False
             chrome_browser_version = "134"
             tested_addons = []
 
@@ -51,6 +52,7 @@ class TestSetupDriver(unittest.TestCase):
         class ConfigChrome:
             browser_type = "chrome"
             using_custom_browser = True
+            using_custom_profile = True
             chrome_browser_version = "134"
             tested_addons = []
             custom_browser_binary = "./path.exe"
@@ -72,6 +74,7 @@ class TestSetupDriver(unittest.TestCase):
         class ConfigChrome:
             browser_type = "chrome"
             using_custom_browser = True
+            using_custom_profile = True
             chrome_browser_version = "134"
             tested_addons = ["ext"]
             custom_browser_binary = "./path.exe"
@@ -93,6 +96,7 @@ class TestSetupDriver(unittest.TestCase):
         class ConfigChrome:
             browser_type = "chrome"
             using_custom_browser = False
+            using_custom_profile = False
             chrome_browser_version = "134"
             tested_addons = ["ext"]
             custom_browser_binary = "./path.exe"
@@ -179,6 +183,7 @@ class TestSetupDriver(unittest.TestCase):
             headless_logging = True
             logging_browser_version = "134"
             time_until_timeout = 30
+            using_custom_profile = True
 
         download_path = "/fake/path"
         mock_driver = mock_chrome.return_value

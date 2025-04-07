@@ -69,8 +69,8 @@ def setup_chrome(options: Config) -> webdriver.Chrome:
         # use custom binary
         chrome_options.binary_location = custom_browser_path
 
-        # Special case for ASB
-        if options.experiment_name.startswith("avast"):
+        # Special case for ASB, other tested tools do not need it
+        if options.using_custom_profile:
             profile = options.profile
             chrome_options.add_argument(f'user-data-dir={profile}')
 
