@@ -18,7 +18,7 @@
 
 let trackedTabId = null;
 
-// Only do anything if a message from content script on a testpage came
+// Only do anything if a message from content script on the testpage came
 browser.runtime.onMessage.addListener((message, sender) => {
     if (message.action === "startTracking") {
         trackedTabId = sender.tab.id;
@@ -27,8 +27,8 @@ browser.runtime.onMessage.addListener((message, sender) => {
 
 /* Adblockers should block at onBeforeRequest. onSendHeaders is two levels after
  * so if the request got here, it was not blocked. After this point, the request
- * can still be blocked because of network error (because of firewall rules :wink:)
- * which perfectly suits my purpose.
+ * can still be blocked because of network error (because of firewall rules)
+ * which perfectly suits my purposes.
  */
 browser.webRequest.onSendHeaders.addListener(
     (details) => {

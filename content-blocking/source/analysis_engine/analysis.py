@@ -92,7 +92,7 @@ def simulate_blocking(request_tree: RequestTree, blocked_resources: list[str]) -
         # Number of resources blocked transitively
         "requests_blocked_transitively": blocked_transitively,
         # N of blocked resources which brought kids
-        "requests_blocked_that_have_child_requests": blocked_with_children,
+        "blocked_requests_with_followup_requests": blocked_with_children,
         # Average level at which resource was blocked
         "average_request_block_level": average_block_level,
         # N of fully/partially/not blocked subtrees
@@ -200,7 +200,7 @@ def parse_partial_results(results: list[dict]) -> dict:
         "requests_blocked_directly": dict(sub_result),
         "requests_blocked_in_total": dict(sub_result),
         "requests_blocked_transitively": dict(sub_result),
-        "requests_blocked_that_have_child_requests": dict(sub_result),
+        "blocked_requests_with_followup_requests": dict(sub_result),
         "average_request_block_level": dict(sub_result),
         "blocked_subtrees_data": dict(sub_result_dicts)
     }

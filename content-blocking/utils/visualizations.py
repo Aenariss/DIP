@@ -33,7 +33,7 @@ from source.file_manipulation import load_json
 
 FOLDER_WITH_RESULTS = "./results/upper_bound/"
 RESULT_FILES = [f for f in os.listdir(FOLDER_WITH_RESULTS) if (f != ".empty" and not\
-                f.startswith("chrome_browser") and not f.startswith("firefox_pure"))]
+                f.startswith("chrome_browser") and not f.startswith("firefox_pure") and f.endswith("_results.json"))]
 CHROME_RESULTS = [f for f in RESULT_FILES if not f.startswith("firefox")]
 FIREFOX_RESULTS = [f for f in RESULT_FILES if f.startswith("firefox")]
 SUM = "sum"

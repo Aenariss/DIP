@@ -1,5 +1,6 @@
 # dns_repeater.py
-# Edits the /etc/hosts file so that the observed IP addresses are used for DNS answers
+# Creates zone files and uploads them to the custom DNS server in docker. Updates named.conf.
+# The named.conf file is restored back to the original version after the simulation concludes
 # Copyright (C) 2025 Vojtěch Fiala
 #
 # This program is free software: you can redistribute it and/or modify

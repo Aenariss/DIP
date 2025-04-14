@@ -71,7 +71,7 @@
         "sum": 12571,
         "average": 13.416221985058698
     },
-    "requests_blocked_that_have_child_requests": {
+    "blocked_requests_with_followup_requests": {
         "n_of_results": 937,
         "sum": 1649,
         "average": 1.759871931696905
