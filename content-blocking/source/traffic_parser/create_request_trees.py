@@ -284,7 +284,8 @@ def reconstruct_tree(observed_traffic: dict, fp_attempts: dict, lower_bound_tree
         # Either get number of observed FP attempts or 0 if none observed
         resource_fp_attempts = fp_attempts.get(current_resource, {})
 
-        # Create new Node object representing the resource. Creates duplicit requests!!
+        # Create new Node object representing the resource.
+        # If a request is already present, creates a duplicate which introduces issues later.
         node = RequestNode(time, current_resource, fp_attempts=resource_fp_attempts, children=[])
 
         # If requested_for matches requested_resource and initiator type is "other"
