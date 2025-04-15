@@ -65,7 +65,6 @@ def run_analyses():
 
         sleep(1)
 
-    # Optional: Wait for all subprocesses to finish
     for proc in processes:
         proc.join()
 
