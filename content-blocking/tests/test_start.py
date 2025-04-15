@@ -19,15 +19,25 @@
 # Built-in modules
 import unittest
 from unittest.mock import patch, MagicMock
-import sys
-import subprocess
+from os import remove
 
 # Custom modules
 from start import initialize_folders, check_traffic_folder, obtain_data, parse_traffic
 from start import obtain_simulation_results, analyze_results, start
+from source.constants import TRAFFIC_FOLDER
 
 class TestStart(unittest.TestCase):
-    
+
+    testfile_path = TRAFFIC_FOLDER + "./test.txt"
+
+    def setUp(self):
+        """Set up an instance of class before each test"""
+        with open(self.testfile_path, 'a', encoding='utf-8') as f:
+            pass
+
+    def tearDown(self):
+        remove(self.testfile_path)
+
     @patch("os.makedirs")
     @patch("os.path.exists")
     @patch("builtins.open")
@@ -41,6 +51,7 @@ class TestStart(unittest.TestCase):
         mock_exists.return_value = True
 
         initialize_folders(mock_args)
+
         mock_remove.assert_called()
 
     @patch("os.makedirs")

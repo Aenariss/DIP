@@ -32,7 +32,7 @@ from source.traffic_logger import dns_observer
 
 class TestDNSSniffer(unittest.TestCase):
     def setUp(self):
-        """Set up an instance of YourClass before each test"""
+        """Set up an instance of class before each test"""
         self.dns_sniffer_class = dns_observer.DNSSniffer()
 
         # Set-up parameters for fake DNS packets
