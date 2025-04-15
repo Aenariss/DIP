@@ -27,7 +27,7 @@ import docker
 
 # Custom modules
 from source.constants import GENERAL_ERROR, DNS_CONTAINER_NAME, DNS_CONTAINER_IMAGE
-from source.constants import DNS_CONFIGURATION_FOLDER, NAMED_CONF_FILE
+from source.constants import DNS_CONFIGURATION_FOLDER, NAMED_CONF_FILE, NETWORK_ADAPTER_NAME
 from source.utils import print_progress
 
 class DNSRepeater:
@@ -269,7 +269,7 @@ class DNSRepeater:
         # Set 127.0.0.1 as DNS server
         c = 'powershell -NoProfile -ExecutionPolicy Bypass -Command "'
         c += 'Set-DnsClientServerAddress -InterfaceAlias '
-        c += '\'Ethernet\' -ServerAddresses 127.0.0.1"'
+        c += f'\'{NETWORK_ADAPTER_NAME}\' -ServerAddresses 127.0.0.1"'
         os.system(c)
 
         container = self.get_container()
@@ -284,7 +284,7 @@ class DNSRepeater:
 
         # Set DHCP as default for DNS server IP
         c = 'powershell -NoProfile -ExecutionPolicy Bypass -Command "'
-        c += 'Set-DnsClientServerAddress -InterfaceAlias \"Ethernet\" -ResetServerAddresses"'
+        c += f'Set-DnsClientServerAddress -InterfaceAlias \"{NETWORK_ADAPTER_NAME}\" -ResetServerAddresses"'
         os.system(c)
 
         # Remove all zone files and tar from folder and docker

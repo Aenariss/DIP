@@ -23,6 +23,7 @@ How to setup an environment:
 - In case you are launching for the first time, you need to download the docker image (for custom DNS server): -> 
     - ``docker pull internetsystemsconsortium/bind9:9.20``
 - Disable IPv6 at the network adapter (Control panel -> Network -> View network status -> Change adapter settings -> Properties -> ipv6)
+- Make sure to correctly configure your network adapter name in ``./source/constants``, otherwise a DNS server cannot be assigned
 
 All examples that are started with ``sudo`` **MUST** be run with sudo since they use windows utilities that require admin privileges, such as Firewall and changing default DNS server.
 
@@ -39,12 +40,14 @@ Support scripts:
 - ``python ./utils/analyse_all.py`` -- support script to run the analysis of existing simulation results. Runs it for all existing files in the ./results/ folder that ends with ``_log.json``
 
 Tests:
+You should run tests with the obtained folder content, e.g. traffic/ folder exists etc.
 - ``python ./utils/run_tests.py`` -- run the tests
 - ``coverage run ./utils/run_tests.py`` -- if coverage module is installed, this command runs the tests and computes the coverage. Takes a few seconds to finish, do not be scared by the error outputs. A .coverage results file is stored in the root folder.
 - ``coverage report -m`` -- if coverage module is installed and ``coverage run`` was used, this command parses the results and outputs the logged coverage.
 
 #### IMPORTANT
 - When launching the file with any load options -- that is ``--load`` or ``--load-only``, **ALL RESULTS IN ./traffic/ FOLDER ARE DELETED**.
+- Make sure to always give tested addons enough time to load (at least 10 sec, ``config/`` the ``browser_initialization_time`` property)
 - Sometimes when launching selenium (may happen when launching for the first time in PC session, subsequent runs are fine), it may take too long to load and thus
 skip enabling devtools. In such cases, please restart the program and it should work as intended. 
 - JShelter FPD sometimes has a race condition which causes fingerprinting to not work on some pages. 
@@ -64,6 +67,7 @@ The example workflow is as follows:
 7. Wait for the analysis to conclude and check your results in the ``./results`` folder.
 
 Problems and Solutions:
+- MakError with DNS server configuration during simulation -- - Make sure to correctly configure your network adapter name in ``./source/constants``, otherwise a DNS server cannot be assigned.
 - DNS observation during traffic logging sometimes fails, caused by Scapy as it saves each packet real time. It may thus miss some. During traffic logging, it is recommended to not use the computer to avoid unnecessary DNS traffic.
 Can be partially solved by setting higher number of repeat attempts in config.
 - JShelter FPD sometimes has a race condition which causes fingerprinting to not work on some pages. 

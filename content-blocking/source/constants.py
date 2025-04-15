@@ -45,3 +45,6 @@ HOSTS_FILE = "C:/Windows/System32/drivers/etc/hosts"
 # DNS server docker container name
 DNS_CONTAINER_NAME = "bind9"
 DNS_CONTAINER_IMAGE = "internetsystemsconsortium/bind9:9.20"
+
+# Other stuff
+NETWORK_ADAPTER_NAME = "Ethernet"
