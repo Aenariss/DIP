@@ -57,7 +57,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertEqual(result["requests_blocked_directly"], 1)
         self.assertEqual(result["requests_blocked_in_total"], 3)
         self.assertEqual(result["requests_blocked_transitively"], 2)
-        self.assertEqual(result["requests_blocked_that_have_child_requests"], 1)
+        self.assertEqual(result["blocked_requests_with_followup_requests"], 1)
         self.assertEqual(result["average_request_block_level"], 3)
         self.assertEqual(result["blocked_subtrees_data"],\
             {"subtrees_fully_blocked": 1, "subtrees_partially_blocked": 0,
@@ -148,7 +148,7 @@ class TestAnalysis(unittest.TestCase):
             "requests_blocked_directly": 1,
             "requests_blocked_in_total": 2,
             "requests_blocked_transitively": 1,
-            "requests_blocked_that_have_child_requests": 0,
+            "blocked_requests_with_followup_requests": 0,
             "average_request_block_level": 3,
             "blocked_subtrees_data": {"subtrees_fully_blocked": 0, "subtrees_partially_blocked": 0,
             "subtrees_not_blocked": 0, "subtrees_in_total": 2, "trees_with_blocked_root_node": 0}
@@ -163,7 +163,7 @@ class TestAnalysis(unittest.TestCase):
             "requests_blocked_directly": 1,
             "requests_blocked_in_total": 1,
             "requests_blocked_transitively": 0,
-            "requests_blocked_that_have_child_requests": 0,
+            "blocked_requests_with_followup_requests": 0,
             "average_request_block_level": 5,
             "blocked_subtrees_data": {"subtrees_fully_blocked": 0, "subtrees_partially_blocked": 0,
             "subtrees_not_blocked": 0, "subtrees_in_total": 1, "trees_with_blocked_root_node": 0}
