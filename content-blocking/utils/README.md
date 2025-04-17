@@ -6,7 +6,7 @@ You should **NOT** run the scripts from within the folder. They should be run fr
 
 Subfolders:
 - ``./traffic_sources/`` -- Folder containing the dataset used for the evaluation described in the thesis, also contains a list of pages used
-- ``./webdrivers/`` -- Folder containing webdrivers to be used mainly with custom Chromium-based browsers. Currently contains only Chromedriver 134, as no other was used.
+- ``./webdrivers/`` -- Folder containing webdrivers to be used mainly with custom Chromium-based browsers. Also contains licenses to Chromedrivers
 
 Files:
 - ``./analyse_all.py`` -- Supporting script to run analysis for all results in the ``content-blocking/results/`` folder. Helpful when testing new metrics.

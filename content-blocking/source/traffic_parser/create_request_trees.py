@@ -152,6 +152,8 @@ def assign_direct_parent(resource: dict, tree: RequestTree, current_root_node: R
     """
 
     # Skip preflights since they will be loaded later anyway
+    # I empirically observed that all preflights have initiator.url set
+    # I tried adding this condition into the main loop, and results were the same
     if resource["initiator"]["type"] == "preflight":
         return
 

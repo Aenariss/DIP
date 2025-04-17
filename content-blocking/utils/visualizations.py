@@ -148,7 +148,7 @@ def main():
     request_metrics = ["requests_blocked_directly", "requests_blocked_transitively",\
                        "requests_blocked_in_total"]
 
-    experimental_metrics = ["requests_blocked_that_have_child_requests",\
+    experimental_metrics = ["blocked_requests_with_followup_requests",\
                             "average_request_block_level"]
 
     subtree_data = ["blocked_subtrees_data"]
@@ -156,7 +156,7 @@ def main():
                           "subtrees_not_blocked"]
     root_node_submetric = ["trees_with_blocked_root_node"]
 
-    metrics = request_metrics
+    metrics = experimental_metrics
     headers = ["Tool", "1", "2", "3"]
     submetrics = root_node_submetric
 

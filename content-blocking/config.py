@@ -88,7 +88,7 @@ class Config:
     # Use this setting to speicfy its path in '/' format.
     # Find Chromedriver download links here:
     # https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json
-    chromedriver_path = "./utils/webdrivers/chromedriver_134.exe"
+    chromedriver_path = "./utils/webdrivers/chromedriver_136.exe"
 
     # When using Firefox browser, whether to apply its default anti-tracking settings.
     # Can be used to test FF inherent content-blocking settings when no addons are specified.
@@ -105,7 +105,7 @@ class Config:
     # The log file is saved in results/ folder and it's named experiment_name + _log.json
     # The analysis results are also saved in results/ folder, named experiment_name + _results.json
     # If using Avast Secure Browser, experiment name MUST start with "avast"!! Only then!
-    experiment_name = "chrome_test"
+    experiment_name = "avast_secure_browser"
 
     # Time to wait after browser is launched before accessing the simulation page.
     # The time can be used to wait for tested extensions to properly load, or to manually
