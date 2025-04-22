@@ -8,4 +8,4 @@ The folder structure is as follows:
 - ``sep/`` -- contains first part of the thesis and presentation for semestral project
 
 To run in a virtual machine, you will need to use virtualization software that supports nested virtualization since the evaluation includes a DNS server that  uses docker (I tested it on Virtual Box, **DOES NOT WORK**).
-If you are using the included OVF image of virtual machine, use preferrably VMWare Workstation Pro, I tested that it works there. The default account is ``user`` with password ``user``.
+If you are using the included OVF image of virtual machine, use preferrably VMWare Workstation Pro 17, I tested that it works there. The default account is ``user`` with password ``user``.
