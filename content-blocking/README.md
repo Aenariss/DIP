@@ -39,7 +39,10 @@ The example workflow is as follows:
 1. Specify your desired pages in ``page_list.txt``. Each line represents an URL to be visited.
 2. Configure your ``./config.py`` file by following the instructions written inside. The default settings should suffice for most cases, you only need to change experiment name and tested extension/browser.
 3. Run ``python ./start.py --load-only``. By default, it runs in headless mode, so you should not be overly disrupted. On average, it takes 25 seconds per page. If you specified a lot of pages, this might take a while.
-4. Check again your ``./config.py`` that the desired extension or browser to test is specified properly. Also don't forget to write an experiment name. If you wish to calculate the lower-bound approach, set the ``lower_bound_trees`` option to True.
+4. Check again your ``./config.py`` that the desired extension or browser to test is specified properly. 
+    - Don't forget to write an experiment name. 
+    - If you wish to calculate the lower-bound approach, set the ``lower_bound_trees`` option to True.
+    - Start the Docker Desktop
 5. After traffic was succesfully collected, run ``python ./start.py --simulation-only``. Depending on the numbers of requests tested and the chosen browser, this may take a while.
 6. After your simulation results are saved in the ``./results/`` folder, run ``python ./start.py --analysis-only`` to obtain the results. Don't forget to use the same experiment name as for simulation!
 7. Wait for the analysis to conclude and check your results in the ``./results`` folder.
@@ -54,6 +57,7 @@ Tests (You should run tests with the obtained folder content, e.g. traffic/ fold
 - ``coverage report -m`` -- if coverage module is installed and ``coverage run`` was used, this command parses the results and outputs the logged coverage.
 
 #### IMPORTANT
+- Make sure Docker Desktop is running before launching simulation.
 - When launching the file with any load options, that is ``--load`` or ``--load-only``, **ALL RESULTS IN ./traffic/ FOLDER ARE DELETED**.
 - Make sure to always give tested addons enough time to load (at least 10 sec, ``config.py/`` the ``browser_initialization_time`` property)
 - Sometimes when launching selenium (may happen when launching for the first time in PC session, subsequent runs are fine), it may take too long to load and thus

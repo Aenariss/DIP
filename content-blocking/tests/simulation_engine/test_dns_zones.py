@@ -30,7 +30,8 @@ class TestDNSRepeater(unittest.TestCase):
         mock_init.return_value = None
 
         # Create repeater object without init
-        self.dns_repeater = DNSRepeater(None)
+        self.dns_repeater = DNSRepeater(None, None)
+        self.dns_repeater.NETWORK_ADAPTER_NAME = "Ethernet"
         self.dns_repeater.docker_client = MagicMock()
         self.dns_repeater.container = MagicMock()
         self.dns_repeater.original_config = "original_config"
@@ -51,9 +52,11 @@ class TestDNSRepeater(unittest.TestCase):
         """Test DNSRepeater init with mocks"""
 
         mock_docker_client = MagicMock()
+        mock_config = MagicMock()
+        mock_config.network_adapter_name = "Ethernet"
         mock_docker_from_env.return_value = mock_docker_client
         mock_setup_container.return_value = "container"
-        dns_repeater = DNSRepeater(self.dns_records)
+        dns_repeater = DNSRepeater(self.dns_records, mock_config)
 
         mock_docker_from_env.assert_called_once()
         self.assertEqual(dns_repeater.docker_client, mock_docker_client)
@@ -69,7 +72,9 @@ class TestDNSRepeater(unittest.TestCase):
 
         mock_docker_from_env.side_effect = Exception("docker.from_env exception test")
         mock_setup_container.return_value = None
-        self.assertRaises(BaseException, DNSRepeater(self.dns_records))
+        mock_config = MagicMock()
+        mock_config.network_adapter_name = "Ethernet"
+        self.assertRaises(BaseException, DNSRepeater(self.dns_records, mock_config))
 
         # One call try: except:, second for if not self.container
         self.assertEqual(mock_exit.call_count, 2)

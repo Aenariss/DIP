@@ -41,7 +41,7 @@ class DNSRepeater:
             dns_records: All DNS records squashed together
         """
 
-        self.NETWORK_ADAPTER_NAME = options.get("network_adapter_name")
+        self.NETWORK_ADAPTER_NAME = options.network_adapter_name
 
         # Connect to docker (needs to be running!)
         try:
