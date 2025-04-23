@@ -1,0 +1,191 @@
+\chapter{User Tracking and Countermeasures}
+\label{chapter-2}
+When a~person visits a~website, their activity is tracked for various reasons. These reasons can range from enhancing the~user experience by remembering display preferences (e.g., selecting white or dark display mode) to delivering personalized advertisements tailored to the~user's interests. The~pieces of code responsible for tracking user activity are referred to as \textit{trackers}~\cite{brave-trackers}. While the~internal mechanisms of each tracker may differ, their fundamental objective remains the~same: identifying the~user who accessed the~page.
+
+This chapter introduces several tracking methods. Each method is presented along with possible ways to mitigate them. Afterward, the~chapter explains general methods of tracking prevention and presents selected privacy-oriented web browsers and extensions.
+
+\section{Tracking Techniques}
+\label{specific-techniques}
+
+A wide variety of techniques exists to track users across the~Internet. These techniques typically operate without the~user's knowledge. They can be classified into two basic categories, namely \textit{stateful} and \textit{stateless}, according to how they work \cite{fingerprinting-survey}.
+
+Stateful tracking techniques are methods that store information, such as user identification, on the~user's computer for the~specific purpose of tracking. Upon subsequent visits to the~page, the~identification is sent to the~server, allowing the~page, for instance, to recall that the~user is already logged in. 
+
+On the~other hand, stateless techniques attempt to uniquely identify the~user without explicitly storing any data on the~user's computer. The~identification is based solely on the~user's computer and browser properties, which are unintentionally shared with the~remote server. This section presents specific techniques used to identify users. Furthermore, it explains how to counter these techniques and how the~usage of countermeasures might affect the~functionality of web pages.
+
+
+\subsection{Cookies}
+\label{cookies-section}
+
+\textit{Cookies} \cite{cookies-rfc} are small data units stored on the~user's device to provide the~stateless Hypertext Transfer Protocol (\textit{HTTP}) with a~method to retain information across multiple visits. Only the~originating site can access data stored in its cookies. Cookies can be classified as either \textit{persistent} or \textit{session-based}. Persistent cookies remain stored on the~device even after the~browser is closed and expire after a~predefined period. In contrast, session-based cookies are only stored until the~browser or website is closed.
+
+Cookies can enhance user experience by storing user preferences, eliminating the~need for manual adjustments to the~page on each visit. Another potential application is maintaining user authentication status, preventing users from having to re-enter credentials on every page visit. The~use cases mentioned above represent the~intended functionality of cookies. However, cookies can also be misused for tracking users by storing a~unique identifier that serves no other purpose beyond user recognition. This identifier is provided to the~page each time the~user revisits it.
+
+\subsubsection{First and Third-Party Cookies}
+Cookies can be classified into two categories -- those originating from a~\textit{first-party} and those originating from a~\textit{third-party} \cite{first-third-party-cookies, cookies-use-iframe}. When a~user accesses a~domain that employs cookies, the~cookies set by that particular domain are called first-party cookies. However, a~page may also contain resources originating from third parties. Suppose a~page incorporates elements with third-party content originating from another page with a~different domain name, which sets its own cookies. In that case, these cookies are designated as third-party cookies. Many elements may be used to load third-party content. Two example elements that can utilize third-party content are the~\textit{img}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img}} element, which can show remotely-hosted images, and the~\textit{iframe}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe}} element, which allows a~page to contain another page \cite{ad-trackers, cookies-use-iframe}.
+
+\subsubsection{Cookie Blocking}
+Many browsers block all third-party cookies by default \cite{cookies-use-iframe}, as they are primarily employed to track user activity across multiple websites to offer more precise targeted advertising. Nevertheless, trackers can overcome this issue by utilizing first-party cookies \cite{cookies-use-iframe}. 
+For example, a~page may share its first-party cookie with a~third party by appending the~identifier as a~part of an~HTTP request sent to a~third-party tracker. However, linking arbitrary identifiers to a~single user would be difficult. Identifiers such as the~user's email address handle this problem. Users provide their email address to a~web page to log in, and later, when they log in using the~same email on another site, both sites may share the~email address with a~third-party tracker, which allows the~tracker to recognize that the~user has visited both sites.
+
+One way to prevent first-party cookie tracking is to block all cookies entirely. However, this approach may severely limit the~functionality of many websites. Alternatively, it would be possible to permit the~usage of cookies but to delete them each time the~browser is closed. However, this approach might not work for users who rarely close their browsers.
+
+\subsection{Evercookies}
+\label{supercookies}
+
+\textit{Evercookies} \cite{supercookies} function differently from conventional cookies. Upon removing a~conventional cookie, it cannot be recovered unless the~originating site sets it again. Removing evercookies is significantly more challenging since they use unconventional storage mechanisms. If one instance is deleted, as long as at least one other instance remains, it may restore itself to all the~storage mechanisms from which it was deleted.
+
+Evercookies exploit browser mechanisms to store themselves that were not designed for such purposes. Consequently, it becomes more challenging for users to remove the~tracking data, as they may not be aware that it is being stored through such mechanisms. These mechanisms may include classic HTTP cookies, browser local storage, DOM properties, or browser cache. Historically, these storage methods included Flash cookies or Silverlight \cite{supercookies}. Removing data from all possible storage locations or limiting access to specific storage mechanisms is necessary to mitigate the~evercookies issue.
+
+\subsection{Browser Fingerprinting}
+\label{browser-fingerprinting}
+Browser fingerprinting involves collecting data from the~user's browser or the~HTTP communication \cite{fingerprinting-survey}. Contemporary fingerprinting techniques rely heavily on browser APIs to extract distinctive information, which is then employed to identify the~user accurately. The~final fingerprint is derived from the~collective data obtained through this process. To prevent fingerprinting, three distinct approaches \cite{jshelter} may be employed: 
+
+\begin{itemize}
+    \item Creating homogenous fingerprints: All generated fingerprints are identical, and no individual can be considered distinctive, thus thwarting any potential for tracking.
+    \item Modifying fingerprints on each visit: All fingerprints are modified (e.g., by randomization) to be different on every visited domain, preventing trackers from linking the~fingerprints to a~single user.
+    \item Blocking fingerprinting attempts: Properties commonly utilized for fingerprinting are monitored, and should they be utilized by a~tracker, network communication with such tracker is blocked. Another method is pre-emptively blocking all communication with known trackers.
+\end{itemize}
+
+Fingerprinting techniques can be divided into two categories \cite{jshelter}: \textit{passive fingerprinting}, which relies on the~extraction of information from the~HTTP headers or the~communication between a~user and a~server, and \textit{active fingerprinting}, which extracts information from various browser APIs by using JavaScript or other technologies.
+
+\subsection*{Passive Fingerprinting}
+The term \emph{passive fingerprinting} is derived from the~fact that the~fingerprinting process does not require the~utilization of any additional means of data collection. Upon accessing a~website via a~web browser, the~user initiates an~HTTP request, which is then sent to the~server. However, an~HTTP packet also contains other data, such as the~user's IP address. The~HTTP and other protocol data are transmitted each time the~user connects to a~site, regardless of the~user's intention. Without this data, the~user would be unable to access the~site. A~passive fingerprint may, for example, be comprised of the~following elements \cite{fingerprinting-survey, fingerprinting-survey-2}:
+
+\begin{itemize}
+    \item IP Address: Used to identify a~device in the~network layer of TCP/IP model.
+    \item User-Agent\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent}}: HTTP header used to identify client's browser, operating system, and other information for compatibility purposes.
+    \item Accept\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept}}: HTTP header to indicate what content the~client can process.
+    \item Accept-Language\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language}}: HTTP header to indicate the~client's preferred language settings.
+\end{itemize}
+
+
+In real-world applications, trackers collect a~greater quantity of such data. Given that all of this data originates from the~client, it is relatively straightforward to render them unusable, should the~possible consequences be disregarded, by simply modifying them to another value. Such consequences may arise, for example, from modifying the~IP address. If a~client were to alter their IP address when sending a~packet, simply changing it without implementing any additional modifications would break the~routing protocols used to determine the~destination for each packet, leading to communication failure. 
+
+To alter the~IP address, tools such as Virtual Private Networks (\textit{VPNs}) \cite{avast-vpn-working} can be utilized. Rather than communicating directly with the~website (or any other entity), all data is redirected to a~VPN provider. This provider then effectively acts as an~intermediary, directing each packet to its intended destination, thereby preventing third parties from discerning the~original IP address, which the~VPN provider's IP address would instead replace.
+
+It can be reasonably assumed that correctly modifying an~IP address will not significantly change a~site's functionality. However, modifying HTTP headers may have a~more pronounced impact on the~behavior of a~site. For instance, modifying the~Accept-Language header, should the~site support it, may result in the~site being displayed in a~different language. 
+
+\subsection*{Active Fingerprinting}
+
+Unlike passive fingerprinting, active fingerprinting involves executing code within the~user's browser. Actively acquiring browser data involves misusing various technologies provided by web browsers to create a~fingerprint. One example is using the~JavaScript \textit{navigator}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/Navigator}} interface to collect information about the~device. This section will present several technologies that can be employed in the~fingerprinting process.
+
+\subsubsection{Canvas Fingerprinting}
+A canvas element\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/HTML/Element/canvas}} is a~programmable area that can be populated with graphics or text by the~programmer. However, the~same graphics drawn onto the~element may appear differently, depending on the~user's system configuration, such as the~installed Graphical Processing Unit (\emph{GPU}). This slight difference is the~basis of canvas fingerprinting \cite{canvas}. The~canvas element also provides programmers with multiple API methods that can be employed in the~process of fingerprint creation. These include \texttt{getImageData()}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getImageData}}, which returns information about each pixel of the~image, and \texttt{toDataURL()}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toDataURL}}, which returns an~encoded representation of the~canvas content. Extracting these data provides a~strong and consistent fingerprint independent of other fingerprinting techniques.
+
+The canvas fingerprinting methods work with WebFonts\footnote{\url{https://developer.mozilla.org/en-US/docs/Learn/CSS/Styling\_text/Web\_fonts}}, which provide web pages with a~simple method to include fonts \cite{canvas}. Even when using the~same browser and operating system on multiple machines, the~results of rendering text on the~canvas can vary due to minor differences in rendering engines. These subtle variations are what contribute to the~generation of unique fingerprints. Acar et al. \cite{web-never-forgets} revealed that this method could be extended even further by, for example, incorporating an~additional graphic element or overlaying another text on the~original. 
+
+Regarding countermeasures, the~most straightforward approach with the~most significant drawbacks is to disable the~element, or even JavaScript itself, entirely. However, the~canvas element's missing support may be an~identifiable event. If the~user wishes to retain the~canvas functionality, they would need to utilize more sophisticated techniques to modify the~results returned by the~methods associated with the~canvas element. These techniques, for instance, involve making minor random alterations to the~RGB values of chosen pixels, which, in the~ideal scenario, should not even be perceptible to the~user \cite{vut-farbling}.
+
+\subsubsection{WebGL Fingerprinting}
+
+%https://hovav.net/ucsd/dist/canvas.pdf
+%{https://www.ndss-symposium.org/wp-content/uploads/2017/09/ndss2017\_02B-3\_Cao\_paper.pdf}
+
+WebGL\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/WebGL\_API}} technology allows users to render three-dimensional images. Fingerprinting based on this technology is similar to the~Canvas fingerprinting described above, as it also employs the~canvas element, thus enabling the~same techniques to be utilized for fingerprint calculation \cite{canvas}.
+
+Yinzhi et al.  \cite{webgl-features} have demonstrated that a~significant proportion of WebGL rendering features can enhance fingerprint quality. Additionally, WebGL itself provides a~method\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/WEBGL\_debug\_renderer\_info}} for retrieving data about the~user's GPU, which may potentially constitute an~additional component of the~fingerprint. The~techniques for preventing WebGL fingerprinting and their impact on the~user experience remain the~same as those employed for canvas fingerprinting. Additionally, some WebGL methods could be prevented from functioning, such as making it impossible for the~page to acquire additional information about the~user's system, such as the~mentioned GPU.
+
+\subsubsection{Font Fingerprinting}
+Fifield and Egelman \cite{font-fingerprint} have demonstrated that individual letters or symbols utilizing the~same font may be rendered differently depending on the~browser used. Even when using the~same browser and operating system, discrepancies can be observed depending on the~system configuration. This method involves increasing the~size of fonts drawn in the~background and taking measurements of individual symbols. While it is less accurate than previous fingerprinting methods, it can still be used as a~part of the~final fingerprint. Mitigation may include randomizing the~reported properties of shown symbols \cite{font-fingerprint}. Another method would be disabling JavaScript, which is used for measurements or obtaining the~list of fonts, and complete disabling of Cascading Style Sheets  (\textit{CSS}).
+
+Another way to fingerprint users based on fonts is by obtaining the~list of fonts installed on the~user's system. Eckersley \cite{eckersley} has shown that the~installed fonts can be extracted using JavaScript and present a~highly identifiable metric. It can be mitigated by forcing the~web browser to work only with a~predefined set of fonts shipped with the~browser, thus limiting variability. 
+
+The mitigation methods may impact the~user experience. For example, disabling both JavaScript and CSS would result in a~significant change in the~visual appearance of the~majority of websites while also limiting their functionality. Similarly, using a~predefined set of fonts may adversely affect the~visual appearance of certain pages designed with a~specific font in mind.
+
+
+\subsubsection{Cascading Style Sheets Fingerprinting}
+CSS can be utilized to recognize the~browser the~user is using. Takei et al.~\cite{css-fingerprint} have demonstrated that by employing CSS in conjunction with remotely hosted content, it is feasible to find distinctive properties that are specific to different browsers. This method defines CSS properties, such as \texttt{background-image\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/CSS/background-image}}}, with data hosted remotely -- an~URL of an~image in this case. Because the~implementation of CSS may differ across browsers, some CSS properties may not be supported. Different browsers will then send the~server requests for different combinations of supported elements. The~server that hosts these data can then analyze received requests and determine which browser they came from.
+
+An alternative approach is the~utilization of media queries, which specify the~width of the~user's device and send requests to the~server based on the~user's screen size. This serves as an~additional method for identifying the~user \cite{css-fingerprint}. Another potential strategy is the~usage of distinct fonts for the~rendering of text. Initially, the~font would try to be sourced locally. If this were not feasible because the~font was absent, a~request to the~server would be initiated, which could serve as an~additional identification method by differentiating the~fonts the~user has installed.
+
+In contrast to earlier techniques, the~deactivation of JavaScript will not impact the~viability of this fingerprinting approach. The~previously mentioned method of limiting supported fonts described in the~Font Fingerprinting subsection may diminish the~accuracy of this fingerprinting technique. However, it will only render it somewhat ineffective. The~sole option would be to prevent the~execution of CSS  entirely. However, this would inevitably result in the~disruption of the~majority of web pages' functionality and severely impact user experience.
+
+
+\subsubsection{AudioContext Fingerprinting}
+
+AudioContext\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/AudioContext}} is part of the~Web Audio API\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API}}. This API controls audio within the~web browser, for example, by selecting audio sources or modifying audio properties. AudioContext is used as a~graph representation of multiple audio sources and offers methods for manipulating the~audio processing.
+
+The methods provided by AudioContext can be utilized to create a~unique fingerprint of a~given device \cite{audio-muni}. This fingerprinting method is possible because each browser has a~distinct implementation of AudioContext. A~potential fingerprinting method may be based, for instance, on measuring the~latency between the~output of AudioContext being passed to the~system audio.
+
+The most straightforward method for preventing this fingerprinting is entirely disabling the~Web Audio API. However, this may break some websites that rely on this API for functionality. An~alternative approach is similar to the~previously described method for mitigating canvas fingerprinting and involves introducing random noise into the~output \cite{audio-fingerprint-protection}.
+
+
+\subsubsection{Extension Fingerprinting}
+%% if (original_html != new_html) { extension_present = true }
+The presence of browser extensions can be used as another fingerprinting method. Several methods can be employed to confirm whether or not an~extension is present. Many browser extensions modify the~visited page, for instance, by removing unwanted advertisements or tracking elements. Starov et al. \cite{dom-fingerprinting} have demonstrated that such alterations can be used as a~fingerprint. If an~extension removes a~Hypertext Markup Language (\textit{HTML}) element, the~Document Object Model (\textit{DOM}) is altered. The~same is true should an~extension add a~new element into the~DOM to, for example, provide additional functionality. This fingerprinting method is based on the~analysis of the~DOM. As different users employ different extensions, the~changes they introduce to the~DOM may serve as a~fingerprint, providing further information towards the~final identification of the~user.
+
+A method of preventing this fingerprinting technique would be introducing random, artificial changes to the~DOM structure \cite{dom-fingerprinting}, making it difficult to distinguish whether the~changes are caused by a~specific extension or only artificially mimicked. A~downside is that it could result in a~decline in user experience.
+
+
+\section{Pre-Emptive Tracking Prevention}
+\label{broad-techniques}
+There are multiple methods for blocking tracker functionality. Some of them were already presented in the~previous Section~\ref{specific-techniques}. The~methods described in this section work not by blocking specific user identification methods, which were explained in the~previous section, but rather by preventing trackers from launching in the~first place. Due to their broad approach, however, they may occasionally block more than just trackers, or fail to block some entirely.
+
+One common strategy involves identifying the~domains that host trackers and blocking any outgoing HTTP requests to them. Another method focuses on disabling JavaScript, dynamic browser functionality, or specific HTML elements to limit how trackers can operate.
+
+
+\subsection{Content Blocking}
+\label{domain-blocking}
+%{https://arxiv.org/pdf/1912.06176}
+%{https://www.doc.ic.ac.uk/~livshits/papers/pdf/sigmetrics20.pdf}
+Before code embedded in a~web page can execute, it must first be downloaded. This begins with an~HTTP request to the~server hosting the~content. The~server responds by sending the~web page along with all of its resources, including scripts and other executable code.
+
+Content blocking works by filtering potentially malicious outgoing HTTP requests. If a~request is identified as targeting a~a Uniform Resource Locator \textit{URL} known to host tracking elements, it is blocked~\cite{domain-blocking}. This prevents scripts and other resources from being loaded, often without noticeably affecting the~core functionality of the~website. However, results may vary. If a~page component includes both useful content and a~tracking mechanism, blocking that component can break the~page. Likewise, if a~site relies heavily on third-party resources and those are blocked, it may become unusable.
+
+This technique is valued for its simplicity. It allows users to block content from known trackers and is also used by ad blockers to prevent the~display of unwanted advertisements. Since many ads include tracking components~\cite{ad-trackers}, even basic ad blockers, those not specifically designed to enhance privacy, can indirectly offer enhanced user privacy by preventing trackers from loading.
+
+The decision to block or allow requests typically depends on predefined lists. While a~\emph{whitelist} approach of only allowing traffic to approved sites is technically possible, it is not practical for everyday use. Instead, \emph{blacklists} are used, which contain patterns or rules used to detect and block unwanted traffic.
+
+\subsubsection{Existing Blacklists}
+\label{existing-blacklists}
+
+Given the~considerable number of trackers and other unwanted content, capturing them in a~single list is not feasible -- not only would it affect performance, but maintaining such a~list would be impractical. Consequently, multiple blacklists exist, often maintained by individuals who usually use their intuition or experience rather than a~systematic approach~\cite{domain-blocking}. This means that what one person considers unwanted, another might view as harmless.
+
+Some blacklists are focused on a~specific subset of unwanted domains, for example, domains from particular countries, while others take a~more general approach. Examples of general blacklists include \textit{EasyList}\footnote{\label{easylistnote}\url{https://easylist.to/}} and \textit{EasyPrivacy}\footnoteref{easylistnote}. While \textit{EasyList} is targeted towards blocking advertisements and other such unwanted content, \textit{EasyPrivacy} is explicitly oriented towards blocking trackers. These lists can become quite extensive -- as of October 2024, \textit{EasyList} had over \textit{71,000} entries.
+
+Nevertheless, the~implementation of address filtering has its own set of challenges. To best utilize content blocking, it is essential to have a~comprehensive understanding of the~specific pages and domains that should be blocked. Otherwise, even valid non-tracking content might be blocked. However, it is impossible to create a~blacklist of all addresses that contain undesirable content. Consequently, if a~page contains a~tracker but is not included in the~blacklist, it will not be blocked. Because of that, it is essential to update the~blacklists regularly. Furthermore, the~blacklists must be updated if a~tracker or other unwanted content changes its address.
+
+\subsection{Element and JavaScript Blocking}
+\label{element-blocking}
+Even if a~page contains no trackers, they may still be present because of elements such as \textit{iframes} or others. This third-party tracking can be mitigated by blocking such HTML elements, thus preventing any code inside them from executing. Trackers also use JavaScript and other dynamic browser functionalities, as described in Subsection~\ref{browser-fingerprinting}. However, differentiating between a~tracker and a~legitimate code is complicated. One way to solve this problem is to block all JavaScript \cite{domain-blocking} and other such dynamic browser functionality. Blocking all JavaScript could, however, pose a~problem because according to a~survey\footnote{\url{https://w3techs.com/technologies/details/cp-javascript}}, as of October 2024, \textit{98.8\%} of all pages available on the~Internet use JavaScript in some way. Thus, blocking all JavaScript code would probably impact the~functionality of many sites, rendering them unusable.
+
+\section{Anti-Tracking Tools}
+\label{Section-Anti-tracking}
+This section presents a~selection of existing tools that can be used to block fingerprinting methods described in previous Sections~\ref{specific-techniques} and~\ref{broad-techniques}. These tools are in the~form of both browser extensions and browsers with natively implemented anti-fingerprinting measures. 
+
+\subsection{Browsers}
+The presented browsers all offer a~variety of privacy-enhancing measures by default. Consequently, installing additional privacy-oriented extensions is not as crucial as in different browsers that lack native anti-tracking measures. All the~presented browsers are free of charge, meaning there is no cost associated with using them. However, some may offer additional functionality for a~payment.
+
+\subsubsection{Brave}
+\textit{Brave}\footnote{\url{https://brave.com/}} is a~privacy-oriented browser that natively provides various anti-tracking and ad-blocking techniques. The~browser is developed by Brave Software Inc., a~privately held company. \textit{Brave} is open-source and based on the~Chromium\footnote{\url{https://www.chromium.org/}} browser, which is itself open-source. While Brave is free by default, it also offers a~paid built-in VPN. The~browser's default settings block trackers, third-party cookies, and fingerprinting techniques. Additionally, the~browser can be configured to block JavaScript, upgrade HTTP connections to HTTPS when available, or block all cookies.
+
+To prevent the~display of advertisements and the~tracking of user activity, \textit{Brave} employs a~content-blocking method described in Subsection~\ref{domain-blocking}. Furthermore, \textit{Brave} randomizes browser API calls to prevent the~functioning of specific API-based fingerprinting techniques, such as canvas fingerprinting or WebGL fingerprinting, as discussed in Section~\ref{specific-techniques}. 
+
+\subsubsection{Avast Secure Browser}
+\textit{Avast Secure Browser}\footnote{\url{https://www.avast.com/secure-browser}} is a~browser that prioritizes the~protection of user privacy and security. It is a~proprietary product developed by Gen Digital Inc., utilizing the~Chromium browser as its core. \textit{Avast Secure Browser} is provided free of charge, while a~paid \textit{Avast Secure Browser Pro} version is also available, offering improved functionality such as a~built-in VPN. It incorporates content-blocking and anti-tracking capabilities and includes an~extension guard, preventing the~installation of untrusted extensions. One of the~filtering lists used is \textit{EasyList}. Furthermore, it performs randomization and generalization of API responses for elements such as canvas or the~navigator interface.
+
+\subsubsection{Mozilla Firefox}
+Mozilla Corporation, a~subsidiary of the~non-profit Mozilla Foundation, is responsible for the~development of the~\textit{Firefox}\footnote{\url{https://www.mozilla.org/firefox/}} browser. The~software is open-source, with the~code available online. It is based on the~Gecko engine, which the~Mozilla Foundation also develops. It offers third-party cookie blocking, crypto-mining software blocking, and fingerprinting protection by default. The~fingerprinting protection is based on blocking requests to third parties and may be configured further to alter specific browser APIs. 
+
+\subsection{Extensions}
+Many privacy-oriented extensions are currently available for download. For this thesis, a~selection of them has been chosen for comparison. As of \DTMdisplaydate{2024}{10}{12}{-1}, all selected extensions are available for download from the~Chrome Web Store and the~Mozilla Addons page. All the~described extensions are free to download, although some may offer paid upgrades.
+
+\subsubsection{uBlock Origin}
+\label{ublock-description}
+\textit{uBlock Origin}\footnote{\url{https://ublockorigin.com/}}, developed by Raymond Hill, is a~content-blocking extension. It is an~open-source software. It employs the~content-blocking method with numerous pre-configured filter lists, including \textit{EasyList} and \textit{EasyPrivacy}. Consequently, it can block advertisements, trackers, pop-ups, and other undesired content. 
+
+It will soon be removed from the~Chrome Web Store and cease to be functional on Chromium-based browsers due to its failure to comply with the~latest Manifest v3\footnote{\url{https://github.com/uBlockOrigin/uBlock-issues/wiki/About-Google-Chrome's-\%22This-extension-may-soon-no-longer-be-supported\%22}} rules as set out by Google. A~Manifest v3-compliant version, \textit{uBlock Origin Lite}, is a~replacement with limited functionality. However, the~original will remain available on Firefox.
+
+\subsubsection{Privacy Badger}
+\textit{Privacy Badger}\footnote{\url{https://privacybadger.org/}} is designed to block third-party trackers. It is open-source software developed by the~non-profit organization Electronic Frontier Foundation. The~software is primarily designed to block trackers and does not interfere with advertisements unless they contain trackers. The~software is provided with a~set of pre-existing lists of trackers, which will be blocked by default. This list can be extended algorithmically through the~analysis of trackers, and only when a~tracker is identified as such will it be blocked.
+
+\subsubsection{Adblock Plus}
+\textit{Adblock Plus}\footnote{\url{https://adblockplus.org/}}'s primary function is to facilitate the~blocking of advertisements. A~premium version is available for purchase and offers additional features. It is open-source and developed by Eyeo GmbH. It employs the~content-blocking method, which may offer limited tracker-blocking functionality as was described in Section~\ref{domain-blocking}, thus partially enhancing the~user's privacy. However, \textit{Adblock Plus} does not block all ads. By default, the~developers have chosen some \textit{acceptable} ads that are allowed.
+
+\subsubsection{Ghostery}
+\textit{Ghostery}\footnote{\url{https://www.ghostery.com/}} is an~extension designed to prevent tracking and block advertisements. Ghostery GmbH develops the~software. The~code is open-source. \textit{Ghostery} can block advertisements, cookies, trackers, and other content, including various pop-ups.
+
+\subsubsection{JShelter}
+\label{jshelter-introduction}
+\textit{JShelter}\footnote{\url{https://jshelter.org/}} is a~privacy-oriented extension developed by Libor Polčák and Giorgio Maone. By default, \textit{JShelter} provides anti-fingerprinting methods, such as randomizing the~canvas fingerprint. Additionally, the~software employs a~heuristic monitoring system to detect the~use of browser APIs commonly associated with fingerprinting techniques. Upon detecting such fingerprinting activity on a~given website, a~notification is generated and displayed on the~user's computer. \textit{JShelter} can be configured to prevent further HTTP requests to such websites. However, Manifest v3 restricts its functionality on Chromium-based browsers.

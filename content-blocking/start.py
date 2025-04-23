@@ -194,7 +194,7 @@ def obtain_simulation_results(request_trees: dict, options: Config, arguments) -
     if not arguments.analysis_only:
 
         # Start the DNS server and testing server
-        dns_repeater = DNSRepeater(dns_records)
+        dns_repeater = DNSRepeater(dns_records, options)
         server = start_testing_server(resource_list)
 
         try:

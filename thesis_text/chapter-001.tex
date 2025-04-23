@@ -1,0 +1,13 @@
+\chapter{Introduction}
+\label{chapter-1}
+Today, tracking is widespread across the~web. Over 90~\% of websites incorporate some form of user tracking~\cite{90-percent-track}. Among the~10,000~most popular websites, more than 2,000~include 10~or more trackers\footnote{\url{https://www.ghostery.com/whotracksme}}. This pervasive presence of tracking raises valid privacy concerns, as users may not want third parties to monitor their browsing habits.
+
+Website owners are highly motivated to track user activity online to understand better who visits their pages. Advertisers, in particular, rely on tracking to identify who sees their ads, allowing them to serve more targeted content and increase the~likelihood of a~purchase being made by the~viewer~\cite{behind-the-mirror}.
+
+A variety of privacy-enhancing tools has been developed to combat the~tracking issue. These tools include browser extensions and specialized browsers designed to reduce or prevent tracking. Many of these tools block outgoing HTTP requests to known tracking domains, enhancing privacy and slightly improving page load times and data usage~\cite{content-blocking-saves-time, petranova-bit}.
+
+However, because these tools are developed independently, they vary significantly in their effectiveness. As a~result, users must choose between different tools, often without clear guidance on which is most suitable for their needs. This thesis aims to help with that decision by focusing on content-blocking tools that block requests to potentially privacy-invasive trackers and comparing their performance.
+
+This thesis introduces a~deterministic, repeatable testing environment to ensure a~fair and reliable comparison. It accounts for the~structure of websites, recognizing that a~single request may lead to several others. Since blocking one request can indirectly block others, the~thesis models these relations using directed trees to maintain the~underlying request structure.
+
+Chapter~\ref{chapter-2} provides background on tracking techniques and methods used to counter them. Chapter~\ref{chapter-3} reviews existing evaluation tools and comparison strategies. New evaluation methods are proposed in Chapter~\ref{chapter-4} based on the~existing approaches. The~implementation of the~proposed evaluations is described in Chapter~\ref{chapter-5}. Chapter~\ref{chapter-6} presents and analyzes the~evaluation results. Finally, Chapter~\ref{limitations-chapter} outlines the~limitations of the~proposed approach and discusses possible directions for future work.

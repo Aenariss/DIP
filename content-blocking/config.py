@@ -112,6 +112,11 @@ class Config:
     # configure them (such as enabling Ghostery or Avast Secure Browser).
     browser_initialization_time = 10
 
+    # Name of your network adapter, they are listed in Control Panel -> Network and Internet
+    # -> Network and Sharing Center -> Change Adapter Settings.
+    network_adapter_name = "Ethernet"
+
+
     def _validate_number_settings(self) -> bool:
         """Internal method to check whether number values are correct
         

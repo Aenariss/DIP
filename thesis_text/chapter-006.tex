@@ -1,0 +1,307 @@
+
+\chapter{Results of the~Evaluation and Comparison of Selected Tools}
+\label{chapter-6}
+This chapter presents the~results of the~evaluation process described in Chapter~\ref{chapter-5}. The~results are displayed in tables and discussed. The~evaluated tools are described in Section~\ref{Section-Anti-tracking}, except for JShelter, which is not evaluated as it is not a~content-blocking tool but is used only for dataset creation. The~evaluation uses the~metrics presented in Subsections~\ref{metrics-section} and~\ref{metrics-fpd-section}. All tools were tested in their default state. The~only manual interaction involved enabling the~Ghostery extension, activating the~content-blocking functionality of Avast Secure Browser after it was installed, and deactivating its \emph{Web Shield} functionality that interfered with the~test page.
+
+The implementation was validated through unit testing using the~\textit{unittest}\footnote{\url{https://docs.python.org/3/library/unittest.html}} Python module. Code coverage analysis, performed with the~\textit{coverage}\footnote{\url{https://coverage.readthedocs.io/en/7.8.0/}} module, reported that $100$ \%\footnote{The coverage configuration excluded the~\texttt{if \_\_name\_\_ == ''\_\_main\_\_''} block, which only runs when the~script is executed directly (e.g., with \texttt{python start.py}). This block only launches the~initial start function, which was tested separately. If this block were included, overall coverage would be only $99$ \%.} of the~code was executed during testing.
+
+Logging times were recorded across a~sample of 100 web pages using the~\emph{Measure-Command}\footnote{\url{https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/measure-command}} utility to assess the~performance of the~data collection process. The~measurement was performed on a~system with an~8-core \emph{Ryzen 9800X3D} CPU and \emph{32 GB} RAM. The~traffic logger was configured to remain on a~page for $7$ seconds, with a~timeout set to $10$ seconds. Of the~$100$ pages tested, $99$ loaded successfully, and the~entire collection process took 2,574 seconds. This corresponds to an~average of 25.74 seconds per page to complete all data collection, including overhead from browser automation and traffic capture.
+
+The dataset was collected on \DTMdisplaydate{2025}{03}{18}{-1} and consists of 937 pages, with fingerprinting statistics successfully gathered from 833 of them. The~dataset is based on pages obtained from the~\textit{Top 1000 Websites -- DataForSEO}\footnote{\url{https://dataforseo.com/free-seo-stats/top-1000-websites}} list for Czechia.
+The evaluated browsers (i.e., browsers with content-blocking capabilities and no additional content-blocking extensions present) are:
+
+\begin{itemize}
+\setlength\itemsep{0em}
+\item \textbf{Avast Secure Browser}, version 136.0.29662.17. The~development version was used due to compatibility issues with Selenium. Chromedriver 136 was used for automation.
+\item \textbf{Brave browser}, version 1.76.82. Chromedriver 134 was used for automation.
+\item \textbf{Mozilla Firefox}, version 136.0.3.
+\end{itemize}
+
+All extensions were tested in both Firefox and Google Chrome, the~only exception being uBlock Origin, which is not available in Google Chrome anymore due to its lack of Manifest 3 support. uBlock Origin Lite was used instead. The~extensions evaluated in Google Chrome are:
+
+\begin{itemize}
+\setlength\itemsep{0em}
+\item \textbf{Adblock Plus}, version 4.15.0.
+\item \textbf{Ghostery}, version 10.4.25.
+\item \textbf{Privacy Badger}, version 2025.1.29.
+\item \textbf{uBlock Origin Lite}, version 2025.3.2.1298.
+\end{itemize}
+
+For Firefox, the~evaluated extensions are:
+
+\begin{itemize}
+\setlength\itemsep{0em}
+\item \textbf{Adblock Plus}, version 4.15.0.
+\item \textbf{Ghostery}, version 10.4.25.
+\item \textbf{Privacy Badger}, version 2025.1.29.
+\item \textbf{uBlock Origin}, version 1.62.0.
+\end{itemize}
+
+\section{Effectiveness in Blocking Requests}
+\label{blocking-effectiveness}
+This section presents the~results of the~request-blocking evaluation. The~metrics used for analyzing requests are detailed in Subsection~\ref{metrics-section}. A~total of \textit{100,753} requests were analyzed. Blocked requests serve as a~metric for evaluating the~effectiveness of content-blocking tools, as it reflects their capability to prevent the~loading of third-party content, tracking scripts, and other potentially unwanted resources. However, a~higher number of blocked requests does not necessarily indicate better performance, as some of the~blocked content may not have been considered undesirable by all users. Additionally, the~results do not take into consideration the~reaction of the~page to blocking the~requests, as described in Section \ref{page-behavior-unknown}.
+
+The analysis of the~results begins with statistics on blocked root nodes, as this metric highlights an~important limitation of the~evaluation method. Root nodes are described in Subsection~\ref{root-nodes}. The~evaluation is designed to work correctly with tools that rely on static filter lists. However, if a~tool uses another method, such as heuristic-based blocking, the~results may not be entirely accurate due to how the~simulation is designed. The~issue is further discussed in the~next chapter, in Subsection~\ref{simulation_limits}.
+
+\subsection{Trees With Blocked Root Node}
+\label{root-results-blocking}
+Avast Secure Browser, Brave browser, and the~Privacy Badger extension blocked some pages at the~root level. However, manual verification showed that these pages loaded properly in an~actual browser visit. This suggests that these tools use internal heuristics or dynamic filtering rules that triggered the~blocking behavior based on how the~simulation loaded resources. Privacy Badger, for example, explicitly states that it uses an~algorithmic approach, which aligns with this behavior. The~issue might be present even with other tools, however, it is not apparent from the~results.
+
+Due to the~abovementioned issue, this metric is \emph{not reliable} for these tools. Furthermore, when these tools blocked root pages in the~simulation, the~analysis engine subsequently marked all requests within the~corresponding request trees as blocked, which distorted the~results of all subsequent comparison. Removing the~problematic pages from the~dataset would not fix the~issue, as the~tools may have also blocked other requests they normally would not, or conversely, they may have missed requests they otherwise would have blocked -- the~results would remain distorted. Consequently, all evaluation results for these tools, particularly for Privacy Badger, are unreliable. Due to this distortion, the~results of Privacy Badger are excluded from the~comparison and are not commented on, but they are included in the~tables for completeness. Avast Secure Browser and Brave are still included, as their result distortion might not be as serious. Table~\ref{blocked_root_nodes_table} shows the~number of root nodes blocked by each tool. Apart from the~three mentioned, no other tools blocked any root nodes.
+
+\renewcommand{\arraystretch}{1.125}
+\begin{table}[ht!]
+    \centering
+    \begin{tabular}{p{11.7em}|>{\raggedleft\arraybackslash}p{9em}}
+        \hline
+        \multirow{1}{*}{\centering{Tool}} &
+        \multicolumn{1}{>{\centering\arraybackslash}p{17em}}{{Trees With Blocked Root Node}} \\
+        \hline
+ Avast Secure Browser      &   3 \\
+ Brave browser             &   1 \\
+ Firefox browser           &   0 \\
+ \hline
+ Chrome Adblock Plus       &   0 \\
+ Firefox Adblock Plus      &   0 \\
+ \hline
+ Chrome Ghostery           &   0 \\
+ Firefox Ghostery          &   0 \\
+ \hline
+ Chrome Privacy Badger     &  31 \\
+ Firefox Privacy Badger    &  31 \\
+ \hline
+ Chrome uBlock Origin Lite &   0 \\
+ Firefox uBlock Origin     &   0 \\
+        \hline
+    \end{tabular}
+\caption[Results of the~evaluation of the~number of request trees with blocked root node per tool.]{Results of the~evaluation of the~number of trees with blocked root node per tool. The~results of Privacy Badger are unreliable as the~tool uses algorithmic approach to block requests. Similarly, Avast Secure Browser and Brave browser blocked several root nodes incorrectly, as manual verification showed that in regular browsing session, those pages are not blocked.}
+\label{blocked_root_nodes_table}
+\end{table}
+
+\subsection{Directly and Transitively Blocked Requests}
+Table~\ref{direct_blocked_req_table} summarizes the~number of requests blocked directly, transitively, and in total. Firefox's content-blocking functionality has blocked the~fewest requests overall by a~significant margin, suggesting much weaker default performance. This is caused by tracking content not being blocked by default in Firefox\footnote{\url{https://support.mozilla.org/en-US/kb/enhanced-tracking-protection-firefox-desktop\#w\_what-enhanced-tracking-protection-blocks}}. 
+All tested tools blocked more requests transitively than directly, except for the~Firefox browser. In terms of transitive blocking, all extensions in Firefox blocked the~same number or more requests than their Chrome counterparts.
+
+Interestingly, Adblock Plus performed identically in Chrome and Firefox throughout the~evaluation. Other extensions also showed similar performance. Another notable result is that uBlock Origin Lite blocked more requests in total than uBlock Origin. In practice, the~more requests a~tool blocks, the~less time the~page should spend loading the~necessary components, as the~blocked requests are not downloaded. Consequently, the~used network bandwidth should also decrease with a~higher number of blocked requests.
+
+\begin{table}[ht!]
+    \centering
+    \begin{tabular}{p{11.7em}|>{\raggedleft\arraybackslash}p{5.1em}|>{\raggedleft\arraybackslash}p{5.1em}|>{\raggedleft\arraybackslash}p{5.2em}}
+        \hline
+        \multirow{2}{*}{\centering{Tool}} &
+        \multicolumn{1}{>{\centering\arraybackslash}p{7.7em}|}{{Requests Blocked Directly}} & 
+        \multicolumn{1}{>{\centering\arraybackslash}p{7.7em}|}{{Requests Blocked Transitively}} & 
+        \multicolumn{1}{>{\centering\arraybackslash}p{7.7em}}{{Requests Blocked in Total}} \\
+        \hline
+ Avast Secure Browser      & 4,484 & 8,375  & 12,859 \\
+ Brave browser             & 9,513 & 13,908 & 23,421 \\
+ Firefox browser           & 147   & 17     & 164    \\
+ \hline
+ Chrome Adblock Plus       & 4,132 & 6,011  & 10,143 \\
+ Firefox Adblock Plus      & 4,132 & 6,011  & 10,143 \\
+ \hline
+ Chrome Ghostery           & 9,286 & 13,425 & 22,711 \\
+ Firefox Ghostery          & 9,133 & 15,596 & 24,729 \\
+ \hline
+ Chrome Privacy Badger     & 8,476 & 14,519 & 22,995 \\
+ Firefox Privacy Badger    & 8,491 & 14,520 & 23,011 \\
+ \hline
+ Chrome uBlock Origin Lite & 9,238 & 15,070 & 24,308 \\
+ Firefox uBlock Origin     & 9,202 & 15,085 & 24,287 \\
+        \hline
+    \end{tabular}
+    \caption[Results of the~evaluation of requests blocked directly, transitively, and in total]{Results of the~evaluation of requests blocked directly, transitively, and in total. The~low Firefox results are caused by it not blocking tracking content by default.}
+    \label{direct_blocked_req_table}
+\end{table}
+
+\subsection{Blocked Requests with Follow-Up Requests}
+\label{blocked_requests_with_follow_up}
+Table~\ref{average_level_table} describes how many blocked requests were responsible for at least one follow-up request. Firefox browser shows the~weakest results, which is consistent with the~previous results. Ghostery, Brave, and uBlock Origin blocked the~most requests that caused other requests. On the~other hand, Avast Secure Browser and Adblock Plus blocked fewer parent requests, suggesting a~more conservative approach, which is supported by comparing their blocking behavior. As can be inferred from Table~\ref{direct_blocked_req_table}, Adblock Plus blocked \textit{41}~\% of the~total requests that Firefox Ghostery blocked. However, it blocked only \textit{31.7}~\% of parent requests compared to Ghostery for Firefox. Similarly, Avast Secure Browser blocked \textit{52}~\% of Firefox Ghostery's total blocked requests, but only \textit{38.1}~\% of parent requests. In practice, this means that Adblock Plus and Avast Secure Browser are less aggressive at stopping initiating requests, i.e., requests that trigger follow-up requests, which suggests that more unwanted content may remain partially loaded.
+
+
+\subsection{Average Request Block Level}
+Besides blocked requests with follow-up requests that were covered in Subsection \ref{blocked_requests_with_follow_up}, Table~\ref{average_level_table} also presents the~average request block levels. As previously mentioned, Firefox blocked the~fewest requests. The~average block level provides additional insight, showing that its blocked requests were often deep within the~request tree. However, Firefox blocked at least one request in only \textit{81}~trees out of \textit{937}~trees collected, making this metric less statistically significant for the~tool.
+
+The tool with the~lowest average block level, which indicates it blocked requests 
+closest to the~tree's root, was Firefox Ghostery, followed closely by both versions of uBlock Origin. The~Firefox version indicates more aggressive blocking, as it not only blocked more parent requests but they were also closer to the~root of the~tree. Blocking requests closer to the~root of the~request tree is more effective, as it can prevent entire chains of unwanted content from loading. Additionally, when a~request is blocked early, its follow-up requests are never made, eliminating the~need to check them against blocking lists. This potentially improves privacy by transitively blocking more requests and enhances performance by reducing the~tool’s processing overhead.
+
+
+\begin{table}[ht!]
+    \centering
+    \begin{tabular}{p{11.7em}|>{\raggedleft\arraybackslash}p{7.2em}|>{\raggedleft\arraybackslash}p{6.6em}}
+        \hline
+        \multirow{2}{*}{\centering{Tool}} &
+        \multicolumn{1}{>{\centering\arraybackslash}p{13.2em}|}{{Blocked Requests with Follow-Up Requests}} & 
+        \multicolumn{1}{>{\centering\arraybackslash}p{11em}}{{Average Request Block Level}} \\
+        \hline
+ Avast Secure Browser      & 750   & 3.548 \\
+ Brave browser             & 1,872 & 3.454 \\
+ Firefox browser           & 5     & 4.131 \\
+ \hline
+ Chrome Adblock Plus       & 626   & 3.735 \\
+ Firefox Adblock Plus      & 626   & 3.735 \\
+ \hline
+ Chrome Ghostery           & 1,790 & 3.433 \\
+ Firefox Ghostery          & 1,972 & 3.283 \\
+ \hline
+ Chrome Privacy Badger     & 1,697 & 3.579 \\
+ Firefox Privacy Badger    & 1,698 & 3.577 \\
+ \hline
+ Chrome uBlock Origin Lite & 1,843 & 3.298 \\
+ Firefox uBlock Origin     & 1,853 & 3.301 \\
+        \hline
+    \end{tabular}
+    \caption[Results of the~evaluation of blocked requests with follow-up requests and average block level]{Results of the~evaluation of blocked requests with follow-up requests and average block level.}
+\label{average_level_table}
+\end{table}
+
+\subsection{Subtree Blocking}
+Table~\ref{subtree_blocking_table} shows how many subtrees were fully or partially blocked.
+ In total, \textit{60,837}~subtrees were observed in the~dataset. Firefox Ghostery and both versions of uBlock Origin fully blocked the~most subtrees, indicating more aggressive blocking behavior than other tools. Brave and Avast Secure Browser's fully blocked subtrees results are distorted, as they blocked pages at the~root level, which resulted in all subtrees on those pages counted as fully blocked. Nevertheless, Brave partially blocked the~most subtrees. Interestingly, Ghostery for Chrome partially blocked much more subtrees compared to Ghostery for Firefox. Practically, aggressive subtree blocking can enhance privacy and reduce page load times by preventing large sections of content from loading, as the~subtrees are blocked at the~root. 
+
+\begin{table}[ht!]
+    \centering
+    \begin{tabular}{p{11.7em}|>{\raggedleft\arraybackslash}p{5.2em}|>{\raggedleft\arraybackslash}p{4.9em}|>{\raggedleft\arraybackslash}p{5.2em}}
+        \hline
+        \multirow{2}{*}{\centering{Tool}} &
+        \multicolumn{1}{>{\centering\arraybackslash}p{7.5em}|}{{Subtrees Fully Blocked}} & 
+        \multicolumn{1}{>{\centering\arraybackslash}p{8em}|}{{Subtrees Partially Blocked}} & 
+        \multicolumn{1}{>{\centering\arraybackslash}p{7.5em}}{{Subtrees Not Blocked}} \\
+        \hline
+ Avast Secure Browser      & 2,716 & 561   & 57,560 \\
+ Brave browser             & 5,949 & 1,014 & 53,874 \\
+ Firefox browser           & 42    & 52    & 60,743 \\
+ \hline
+ Chrome Adblock Plus       & 1,814 & 528   & 58,495 \\
+ Firefox Adblock Plus      & 1,814 & 528   & 58,495 \\
+ \hline
+ Chrome Ghostery           & 5,851 & 944   & 54,042 \\
+ Firefox Ghostery          & 6,447 & 636   & 53,754 \\
+ \hline
+ Chrome Privacy Badger     & 6,727 & 1,027 & 53,083 \\
+ Firefox Privacy Badger    & 6,733 & 1,028 & 53,076 \\
+ \hline
+ Chrome uBlock Origin Lite & 6,487 & 673   & 53,677 \\
+ Firefox uBlock Origin     & 6,454 & 671   & 53,712 \\
+        \hline
+    \end{tabular}
+\caption[Results of the~evaluation of subtrees blocking]{Results of the~evaluation of subtrees blocking.}
+\label{subtree_blocking_table}
+\end{table}
+
+\section{Anti-Tracking Performance}
+This section presents the~results of the~evaluation of blocked API calls misused for fingerprinting. However, each individual call may not necessarily represent an~actual attempt to compute a~user's fingerprint. Blocking potential fingerprinting API calls is essential for preserving user privacy, as these techniques can uniquely identify and track users across sites. In practical terms, the~more potential fingerprinting API calls a~tool blocks, the~more likely it is to prevent actual tracking, making these tools more reliable choices for privacy-oriented users. 
+
+As discussed in Subsection~\ref{jshelter-custom-section}, JShelter occasionally fails to log fingerprinting API calls correctly. The~issue was observed on \emph{11.1}~\% of the~visited pages. While this could indicate that no fingerprinting API calls were present on those pages, manual testing confirmed that fingerprinting did occur on the~tested pages, and JShelter failed to log it. 
+
+The metrics used to analyze fingerprinting API calls are described in Subsection~\ref{metrics-fpd-section}. Privacy Badger is again excluded from the~commentary due to its distorted results, although it is left in the~results for completeness. Brave's anti-tracking results are also slightly distorted since it blocked three root nodes, indirectly blocking all fingerprinting API calls on those pages. The~total fingerprinting API calls observed per category across the~dataset are:
+
+\begin{itemize}
+\setlength\itemsep{0em}
+    \item \textit{Browser Properties}: \textit{307,226}
+    \item \textit{Algorithmic Methods}: \textit{216,381}
+    \item \textit{Crawl Fp Inspector}: \textit{7,460}
+\end{itemize}
+
+
+\subsection{Directly Blocked Calls To APIs Misused For Fingerprinting}
+Table~\ref{fpd_direct_blocked_results} shows the~number of potential fingerprinting attempts each tool blocked directly. Firefox version of Ghostery blocked the~most API calls that utilize \textit{Browser Properties}, closely followed by both versions of uBlock Origin. The~results are similar for fingerprinting API calls utilizing \textit{Algorithmic Methods}, except this time, both uBlock Origin versions slightly outperformed Firefox Ghostery. However, Brave seems the~most effective if we consider only the~probable fingerprinting attempts in the~category of \textit{Crawl Fp Inspector}, which might be caused by the~result distortion issue described in Subsection \ref{root-results-blocking}.
+
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{p{11.7em}|>{\raggedleft\arraybackslash}p{5.2em}|>{\raggedleft\arraybackslash}p{4.8em}|>{\raggedleft\arraybackslash}p{4.8em}}
+        \hline
+        \multirow{2}{*}{\centering{Tool}} &
+        \multicolumn{1}{>{\centering\arraybackslash}p{7.7em}|}{{Browser Properties}} & 
+        \multicolumn{1}{>{\centering\arraybackslash}p{7.7em}|}{{Algorithmic Methods}} & 
+        \multicolumn{1}{>{\centering\arraybackslash}p{7.7em}}{{Crawl Fp Inspector}} \\
+        \hline
+ Avast Secure Browser      & 29,556 & 877   & 635   \\
+ Brave browser             & 55,453 & 1,183 & 1,175 \\
+ Firefox browser           & 136    & 25    & 36    \\
+ \hline
+ Chrome Adblock Plus       & 22,723 & 621   & 640   \\
+ Firefox Adblock Plus      & 22,723 & 621   & 640   \\
+ \hline
+ Chrome Ghostery           & 54,228 & 1,184 & 764   \\
+ Firefox Ghostery          & 65,235 & 1,273 & 711   \\
+ \hline
+ Chrome Privacy Badger     & 37,480 & 1,498 & 666   \\
+ Firefox Privacy Badger    & 37,499 & 1,498 & 666   \\
+ \hline
+ Chrome uBlock Origin Lite & 64,717 & 1,276 & 708   \\
+ Firefox uBlock Origin     & 64,972 & 1,276 & 707   \\
+        \hline
+    \end{tabular}
+\caption[Results of the~evaluation of directly blocked calls to APIs potentially usable for fingerprinting]{Results of the~evaluation of directly blocked calls to APIs potentially usable for fingerprinting.}
+\label{fpd_direct_blocked_results}
+\end{table}
+
+
+\subsection{Transitively Blocked Calls To APIs Misused For Fingerprinting}
+Table~\ref{fpd_attempts_blocked_transitively} presents the~results of transitively blocked fingerprinting API calls. Again, Ghost\-ery for Firefox prevented the~most fingerprinting API calls in the~\textit{Brower Properties} category, closely followed by both versions of uBlock Origin. For \textit{Algorithmic Methods}, Brave blocked the~most fingerprinting API calls, closely followed by Firefox Ghostery and both versions of uBlock Origin, which performed very similarly. Brave is again at the~top in the~transitively blocked \textit{Crawl Fp Inspector} category.
+
+\begin{table}[ht!]
+    \centering
+    \begin{tabular}{p{11.7em}|>{\raggedleft\arraybackslash}p{5.4em}|>{\raggedleft\arraybackslash}p{5.1em}|>{\raggedleft\arraybackslash}p{4.8em}}
+        \hline
+        \multirow{2}{*}{\centering{Tool}} &
+        \multicolumn{1}{>{\centering\arraybackslash}p{7.7em}|}{{Browser Properties}} & 
+        \multicolumn{1}{>{\centering\arraybackslash}p{7.7em}|}{{Algorithmic Methods}} & 
+        \multicolumn{1}{>{\centering\arraybackslash}p{7.7em}}{{Crawl Fp Inspector}} \\
+        \hline
+Avast Secure Browser      & 51,025  & 1,997  & 812   \\
+ Brave browser             & 114,959 & 5,179  & 1,840 \\
+ Firefox browser           & 7       & 0      & 0     \\
+ \hline
+ Chrome Adblock Plus       & 39,832  & 1,597  & 468   \\
+ Firefox Adblock Plus      & 39,832  & 1,597  & 468   \\
+ \hline
+ Chrome Ghostery           & 113,912 & 3,058  & 1,476 \\
+ Firefox Ghostery          & 139,537 & 5,010  & 1,490 \\
+ \hline
+ Chrome Privacy Badger     & 88,486  & 10,649 & 1,844 \\
+ Firefox Privacy Badger    & 88,487  & 10,649 & 1,844 \\
+ \hline
+ Chrome uBlock Origin Lite & 136,687 & 4,985  & 1,332 \\
+ Firefox uBlock Origin     & 136,691 & 4,985  & 1,332 \\
+        \hline
+    \end{tabular}
+\caption[Results of the~evaluation of transitively blocked calls to APIs potentially usable for fingerprinting]{Results of the~evaluation of transitively blocked calls to APIs potentially usable for fingerprinting.}
+\label{fpd_attempts_blocked_transitively}
+\end{table}
+
+
+\subsection{Total Blocked Calls To APIs Misused For Fingerprinting}
+The final metric merges directly and transitively prevented fingerprinting API calls; results are shown in Table~\ref{fpd_total_blocked_table}. For \textit{Browser Properties}, most fingerprinting API calls were thwarted by Ghostery for Firefox, outperforming its Chrome counterpart. uBlock Origin in both its versions performed similarly to Ghostery for Firefox. For \textit{Algorithmic Methods}, Brave blocked the~most fingerprinting API calls, though, as discussed, the~root blocking may have inflated its results. Excluding Brave, Ghostery for Firefox and both uBlock Origin versions perform very similarly. Finally, Brave blocked the~most API calls in the~\textit{Crawl Fp Inspector} category, followed by Ghostery in both versions. In this category, Ghostery for Chrome outperformed its Firefox counterpart. Both versions of uBlock Origin also performed very similarly. Interestingly, while Ghostery for Firefox blocked \emph{24.5}~\% of all network requests, blocking them decreased API calls of \emph{Browser Properties} by \emph{66.6}~\%. However, it blocked only \emph{2.9}~\% of \emph{Algorithmic Methods} calls. Ghostery for Firefox also blocked \emph{29.5}~\% of \emph{Crawl Fp Inspector} calls, which is closest to its percentage of blocked requests. Similar gaps are also present in the~results of other content blockers, indicating that the~blocked requests were responsible for the~majority of \emph{Browser Properties} API calls and only the~minority of \emph{Algorithmic Methods} calls.
+
+\begin{table}[ht!]
+    \centering
+    \begin{tabular}{p{11.7em}|>{\raggedleft\arraybackslash}p{5.2em}|>{\raggedleft\arraybackslash}p{4.9em}|>{\raggedleft\arraybackslash}p{5.1em}}
+        \hline
+        \multirow{2}{*}{\centering{Tool}} &
+        \multicolumn{1}{>{\centering\arraybackslash}p{7.7em}|}{{Browser Properties}} & 
+        \multicolumn{1}{>{\centering\arraybackslash}p{7.7em}|}{{Algorithmic Methods}} & 
+        \multicolumn{1}{>{\centering\arraybackslash}p{7.7em}}{{Crawl Fp Inspector}} \\
+        \hline
+ Avast Secure Browser      & 80,581  & 2,874  & 1,447 \\
+ Brave browser             & 170,412 & 6,362  & 3,015 \\
+ Firefox browser           & 143     & 25     & 36    \\
+ \hline
+ Chrome Adblock Plus       & 62,555  & 2,218  & 1,108 \\
+ Firefox Adblock Plus      & 62,555  & 2,218  & 1,108 \\
+ \hline
+ Chrome Ghostery           & 168,140 & 4,242  & 2,240 \\
+ Firefox Ghostery          & 204,772 & 6,283  & 2,201 \\
+ \hline
+ Chrome Privacy Badger     & 125,966 & 12,147 & 2,510 \\
+ Firefox Privacy Badger    & 125,986 & 12,147 & 2,510 \\
+ \hline
+ Chrome uBlock Origin Lite & 201,404 & 6,261  & 2,040 \\
+ Firefox uBlock Origin     & 201,663 & 6,261  & 2,039 \\
+        \hline
+    \end{tabular}
+\caption[Results of the~evaluation of total blocked calls to APIs potentially usable for fingerprinting]{Results of the~evaluation of total blocked calls to APIs potentially usable for fingerprinting.}
+\label{fpd_total_blocked_table}
+\end{table}

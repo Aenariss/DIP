@@ -1,0 +1,57 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" version="26.2.12">
+  <diagram name="Page-1" id="XCaH4zl7F8hC8Ie3S0V2">
+    <mxGraphModel dx="1426" dy="615" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="840" pageHeight="150" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="gqgxEVc_aOktJg1fSFeK-1" value="Visited Page&lt;div&gt;&lt;b&gt;&lt;i&gt;A&lt;/i&gt;&lt;/b&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" parent="1" vertex="1">
+          <mxGeometry x="90" y="150" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="gqgxEVc_aOktJg1fSFeK-2" value="Page&lt;div&gt;&lt;b&gt;&lt;i&gt;B&lt;/i&gt;&lt;/b&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" parent="1" vertex="1">
+          <mxGeometry x="90" y="280" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="gqgxEVc_aOktJg1fSFeK-4" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="gqgxEVc_aOktJg1fSFeK-1" target="gqgxEVc_aOktJg1fSFeK-2" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="180" y="310" as="sourcePoint" />
+            <mxPoint x="230" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gqgxEVc_aOktJg1fSFeK-5" value="Contacts" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="gqgxEVc_aOktJg1fSFeK-4" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint x="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gqgxEVc_aOktJg1fSFeK-20" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="gqgxEVc_aOktJg1fSFeK-2" target="gqgxEVc_aOktJg1fSFeK-32" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-80" y="480" as="sourcePoint" />
+            <mxPoint x="-50" y="410" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gqgxEVc_aOktJg1fSFeK-21" value="Contacts" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="gqgxEVc_aOktJg1fSFeK-20" vertex="1" connectable="0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gqgxEVc_aOktJg1fSFeK-32" value="&lt;div&gt;Page&lt;/div&gt;&lt;div&gt;&lt;i style=&quot;font-weight: bold;&quot;&gt;C&lt;/i&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" parent="1" vertex="1">
+          <mxGeometry x="10" y="410" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="Gvn31q_1ZphAgQieKma4-4" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="gqgxEVc_aOktJg1fSFeK-2" target="Gvn31q_1ZphAgQieKma4-6" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="130" y="360" as="sourcePoint" />
+            <mxPoint x="40" y="410" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Gvn31q_1ZphAgQieKma4-5" value="Contacts" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="Gvn31q_1ZphAgQieKma4-4" vertex="1" connectable="0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Gvn31q_1ZphAgQieKma4-6" value="&lt;div&gt;Page&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;i&gt;D&lt;/i&gt;&lt;/b&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" parent="1" vertex="1">
+          <mxGeometry x="170" y="410" width="80" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

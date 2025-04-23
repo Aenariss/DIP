@@ -27,18 +27,21 @@ import docker
 
 # Custom modules
 from source.constants import GENERAL_ERROR, DNS_CONTAINER_NAME, DNS_CONTAINER_IMAGE
-from source.constants import DNS_CONFIGURATION_FOLDER, NAMED_CONF_FILE, NETWORK_ADAPTER_NAME
+from source.constants import DNS_CONFIGURATION_FOLDER, NAMED_CONF_FILE
 from source.utils import print_progress
+from config import Config
 
 class DNSRepeater:
     """Class representing the object used to manipulate DNS server running in docker"""
-    def __init__(self, dns_records: dict) -> None:
+    def __init__(self, dns_records: dict, options: Config) -> None:
         """Method to initialize the DNS server. Loads the DNS data 
         from the given dict
         
         Args:
             dns_records: All DNS records squashed together
         """
+
+        self.NETWORK_ADAPTER_NAME = options.get("network_adapter_name")
 
         # Connect to docker (needs to be running!)
         try:
@@ -269,7 +272,7 @@ class DNSRepeater:
         # Set 127.0.0.1 as DNS server
         c = 'powershell -NoProfile -ExecutionPolicy Bypass -Command "'
         c += 'Set-DnsClientServerAddress -InterfaceAlias '
-        c += f'\'{NETWORK_ADAPTER_NAME}\' -ServerAddresses 127.0.0.1"'
+        c += f'\'{self.NETWORK_ADAPTER_NAME}\' -ServerAddresses 127.0.0.1"'
         os.system(c)
 
         container = self.get_container()
@@ -284,7 +287,7 @@ class DNSRepeater:
 
         # Set DHCP as default for DNS server IP
         c = 'powershell -NoProfile -ExecutionPolicy Bypass -Command "'
-        c += f'Set-DnsClientServerAddress -InterfaceAlias \"{NETWORK_ADAPTER_NAME}\" -ResetServerAddresses"'
+        c += f'Set-DnsClientServerAddress -InterfaceAlias \"{self.NETWORK_ADAPTER_NAME}\" -ResetServerAddresses"'
         os.system(c)
 
         # Remove all zone files and tar from folder and docker

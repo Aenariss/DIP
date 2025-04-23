@@ -1,0 +1,73 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" version="26.2.10">
+  <diagram name="Page-1" id="bhhI8VqofapiGttr2wm3">
+    <mxGraphModel dx="2068" dy="1109" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="840" pageHeight="150" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="i3CzYanhqYXmJmCRUoR_-24" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bac8d3;strokeColor=#23445d;strokeWidth=0;" parent="1" vertex="1">
+          <mxGeometry width="670" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="i3CzYanhqYXmJmCRUoR_-1" value="Traffic Logger" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="30" y="30" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="i3CzYanhqYXmJmCRUoR_-3" value="Traffic Parser" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="200" y="30" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="i3CzYanhqYXmJmCRUoR_-6" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="i3CzYanhqYXmJmCRUoR_-3" target="i3CzYanhqYXmJmCRUoR_-8" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="54.760000000000005" as="sourcePoint" />
+            <mxPoint x="470" y="55" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="i3CzYanhqYXmJmCRUoR_-7" value="Request&lt;div&gt;Trees&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#BAC8D3;textShadow=0;fontColor=#000000;" parent="i3CzYanhqYXmJmCRUoR_-6" vertex="1" connectable="0">
+          <mxGeometry x="-0.109" y="-1" relative="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="i3CzYanhqYXmJmCRUoR_-8" value="Simulator Engine" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="370" y="30" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="i3CzYanhqYXmJmCRUoR_-13" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="i3CzYanhqYXmJmCRUoR_-1" target="i3CzYanhqYXmJmCRUoR_-3" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="150" y="54.760000000000005" as="sourcePoint" />
+            <mxPoint x="230" y="55" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="i3CzYanhqYXmJmCRUoR_-14" value="Logged&lt;div&gt;Traffic&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#BAC8D3;textShadow=0;" parent="i3CzYanhqYXmJmCRUoR_-13" vertex="1" connectable="0">
+          <mxGeometry x="-0.109" y="-1" relative="1" as="geometry">
+            <mxPoint x="-1" y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="i3CzYanhqYXmJmCRUoR_-18" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="i3CzYanhqYXmJmCRUoR_-8" target="i3CzYanhqYXmJmCRUoR_-20" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="590" y="54.760000000000005" as="sourcePoint" />
+            <mxPoint x="690" y="54.760000000000005" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="i3CzYanhqYXmJmCRUoR_-19" value="Blocked&lt;div&gt;Requests&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#BAC8D3;textShadow=0;fontColor=default;" parent="i3CzYanhqYXmJmCRUoR_-18" vertex="1" connectable="0">
+          <mxGeometry x="-0.109" y="-1" relative="1" as="geometry">
+            <mxPoint x="-1" y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="i3CzYanhqYXmJmCRUoR_-20" value="&lt;span&gt;Analysis Engine&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="540" y="30" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="i3CzYanhqYXmJmCRUoR_-22" value="" style="endArrow=classic;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="i3CzYanhqYXmJmCRUoR_-3" target="i3CzYanhqYXmJmCRUoR_-20" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="290" y="80" as="sourcePoint" />
+            <mxPoint x="750" y="110" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="290" y="110" />
+              <mxPoint x="690" y="110" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="i3CzYanhqYXmJmCRUoR_-23" value="Request&lt;br&gt;Trees" style="edgeLabel;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#BAC8D3;html=1;fontColor=default;labelBorderColor=none;textShadow=0;" parent="i3CzYanhqYXmJmCRUoR_-22" vertex="1" connectable="0">
+          <mxGeometry x="-0.109" y="-1" relative="1" as="geometry">
+            <mxPoint x="20" y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
