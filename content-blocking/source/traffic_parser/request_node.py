@@ -150,23 +150,29 @@ class RequestNode:
             child_node: Node to be added as a child of this Node
         """
         # If the child node is already there, do not repeat
+        # Chromium Initiator Chains also do not repeat them, therefore I will not either
         if self._child_already_present(child_node):
             return
 
         self.children.append(child_node)
-        child_node.add_parent(self)
+        child_node.add_parent(self, child_already_added=True)
 
-    def add_parent(self, parent_node: "RequestNode") -> None:
+    def add_parent(self, parent_node: "RequestNode", child_already_added: bool=False) -> None:
         """Method to add parent to a child node
         
         Args:
             parent_node: Node to be added as a parent of this Node
+            child_already_added: Bool to check if parent already has child added as a child
         """
         # Do not add the same node as parent multiple times
         if parent_node in self.parents:
             return
 
         self.parents.append(parent_node)
+
+        if child_already_added:
+            return
+
         parent_node.add_child(self)
 
     def get_all_children_resources(self) -> list[str]:
