@@ -154,6 +154,13 @@ def parse_property_logs(primary_group: list, property_logs: dict, fp_logs: dict,
 
         # Skip parsing empty callers, just add the total to <anonymous>
         if not callers:
+            
+            # I have decided NOT to log these
+            # As logging them increases the number of calls almost 14x in my dataset
+            # That is mainly because properties such as CSSStyleDeclaration.prototype.fontFamily
+            # report thousands of accesses but no callers. Such calls are not blocked since
+            # they belong to the root page, which none of the tools block
+            continue
             total = int(property_log_data.get("total", 0))
 
             # Check if anonymous caller is present already or not

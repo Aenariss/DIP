@@ -156,9 +156,9 @@ def main():
                           "subtrees_not_blocked"]
     root_node_submetric = ["trees_with_blocked_root_node"]
 
-    metrics = experimental_metrics
+    metrics = ["fpd_attempts_blocked_in_total"]
     headers = ["Tool", "1", "2", "3"]
-    submetrics = root_node_submetric
+    submetrics = fpd_submetrics
 
     print_table(results_for_tools, metrics, submetrics, headers)
 

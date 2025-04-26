@@ -156,14 +156,12 @@ class TestFPAttempts(unittest.TestCase):
                         expected_output)
 
     def test_parse_property_logs_empty_callers(self):
-        """Test empty callers are assigned correctly to anonymous"""
+        """Test empty callers are correctly skipped"""
         property_logs = {"set":{"args":{"":18},"total":18,"callers":{}}}
         fp_logs = {}
         primary_group = ["BrowserProperties"]
         all_primary_groups = ["BrowserProperties", "AlgorithmicMethods"]
-        expected_output = {
-            "<anonymous>": {"BrowserProperties": 18, "AlgorithmicMethods": 0}
-        }
+        expected_output = {}
         fp_logs = parse_property_logs(primary_group, property_logs, fp_logs, all_primary_groups)
         self.assertEqual(expected_output, fp_logs)
 
@@ -173,16 +171,12 @@ class TestFPAttempts(unittest.TestCase):
         fp_logs = {}
         primary_group = ["BrowserProperties"]
         all_primary_groups = ["BrowserProperties", "AlgorithmicMethods"]
-        expected_output = {
-            "<anonymous>": {"BrowserProperties": 18, "AlgorithmicMethods": 0}
-        }
+        expected_output = {}
         fp_logs = parse_property_logs(primary_group, property_logs, fp_logs, all_primary_groups)
         self.assertEqual(expected_output, fp_logs)
 
         property_logs = {"set":{"args":{"":1},"total":1,"callers":{}}}
-        expected_output = {
-            "<anonymous>": {"BrowserProperties": 19, "AlgorithmicMethods": 0}
-        }
+        expected_output = {}
         fp_logs = parse_property_logs(primary_group, property_logs, fp_logs, all_primary_groups)
         self.assertEqual(expected_output, fp_logs)
 

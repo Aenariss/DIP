@@ -134,7 +134,8 @@ As mentioned, each wrapped API belongs to a~specific group. The~APIs are defined
 The configuration for both groups and wrapped APIs was obtained directly from \linebreak the~JShelter project\footnote{\url{https://pagure.io/JShelter/webextension/blob/main/f/common/fp_config/}}. This ensures that future updates to JShelter FPD can be easily integrated by replacing the~configuration files. 
 
 \subsection{Associating Fingerprinting API Calls to a~Resource}
-For each fingerprinting API call, the~complete call stack is logged. However, only the~\emph{final caller} in the~call stack is used to associate a~call with a~resource. For example, if script \emph{A} calls script \emph{B}, which then calls script \emph{C}, and \emph{C} uses a~potentially fingerprintable API, this call is attributed to script \emph{C}.
+\label{associating-fp-attempts}
+For each fingerprinting API call, the~complete call stack is logged. However, only the~\emph{final caller} in the~call stack is used to associate a~call with a~resource. For example, if script \emph{A} calls script \emph{B}, which then calls script \emph{C}, and \emph{C} uses a~potentially fingerprintable API, this call is attributed to script \emph{C}. If the callers of an API are not listed, the calls are skipped. Such calls have been observed to come mainly from the~property \texttt{CSSStyleDeclaration.prototype.fontFamily}, which often reports thousands of calls but no callers.
 
 \subsection{Request Trees}
 \label{req-tree-sub1}

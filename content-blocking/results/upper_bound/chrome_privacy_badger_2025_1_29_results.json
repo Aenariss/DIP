@@ -3,12 +3,12 @@
         "n_of_results": 937,
         "sum": {
             "BrowserProperties": 307226,
-            "AlgorithmicMethods": 216381,
+            "AlgorithmicMethods": 16011,
             "CrawlFpInspector": 7460
         },
         "average": {
             "BrowserProperties": 327.88260405549624,
-            "AlgorithmicMethods": 230.92956243329775,
+            "AlgorithmicMethods": 17.08751334044824,
             "CrawlFpInspector": 7.9615795090715045
         }
     },
@@ -16,12 +16,12 @@
         "n_of_results": 937,
         "sum": {
             "BrowserProperties": 37480,
-            "AlgorithmicMethods": 1498,
+            "AlgorithmicMethods": 1266,
             "CrawlFpInspector": 666
         },
         "average": {
             "BrowserProperties": 40.0,
-            "AlgorithmicMethods": 1.5987193169690501,
+            "AlgorithmicMethods": 1.351120597652081,
             "CrawlFpInspector": 0.7107790821771611
         }
     },
@@ -29,12 +29,12 @@
         "n_of_results": 937,
         "sum": {
             "BrowserProperties": 88486,
-            "AlgorithmicMethods": 10649,
+            "AlgorithmicMethods": 4811,
             "CrawlFpInspector": 1844
         },
         "average": {
             "BrowserProperties": 94.43543223052295,
-            "AlgorithmicMethods": 11.364994663820704,
+            "AlgorithmicMethods": 5.134471718249733,
             "CrawlFpInspector": 1.967982924226254
         }
     },
@@ -42,12 +42,12 @@
         "n_of_results": 937,
         "sum": {
             "BrowserProperties": 125966,
-            "AlgorithmicMethods": 12147,
+            "AlgorithmicMethods": 6077,
             "CrawlFpInspector": 2510
         },
         "average": {
             "BrowserProperties": 134.43543223052293,
-            "AlgorithmicMethods": 12.963713980789754,
+            "AlgorithmicMethods": 6.4855923159018145,
             "CrawlFpInspector": 2.678762006403415
         }
     },

@@ -3,12 +3,12 @@
         "n_of_results": 937,
         "sum": {
             "BrowserProperties": 307226,
-            "AlgorithmicMethods": 216381,
+            "AlgorithmicMethods": 16011,
             "CrawlFpInspector": 7460
         },
         "average": {
             "BrowserProperties": 327.88260405549624,
-            "AlgorithmicMethods": 230.92956243329775,
+            "AlgorithmicMethods": 17.08751334044824,
             "CrawlFpInspector": 7.9615795090715045
         }
     },

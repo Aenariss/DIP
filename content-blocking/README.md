@@ -96,5 +96,6 @@ Subfolders:
 
 Files:
 - ``./config.py`` -- user options for the evaluation, includes browsers/extensions to test
-- ``./starts.py`` -- The main script which is used to run almost everything else
+- ``./start.py`` -- The main script which is used to run almost everything else
 - ``./page_list.txt`` -- The file containing the pages to be visited during the traffic logging process to create a dataset. The format has to be one address per line. The addresses MUST start with http(s)://
+- ``./.coveragerc`` -- Rule for the ``coverage`` to not include the if ``__name__ == "__main__"`` block

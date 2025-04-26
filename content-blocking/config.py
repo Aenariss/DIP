@@ -81,7 +81,7 @@ class Config:
     # If using a custom Chromium-based browser, some browser (such as Avast Secure Browser)
     # require you to use a valid profile.
     # Use this setting to manually specify the correct existing profile, in '/' format.
-    profile = "C:/Users/Noxx/AppData/Local/AVAST Software/Browser/User Data"
+    profile = "C:/Users/user/AppData/Local/AVAST Software/Browser/User Data"
 
     # If using a custom Chromium-based browser, you must use your own Chromedriver since
     # Selenium Manager was observed to not work correctly.
@@ -98,14 +98,14 @@ class Config:
     # Addon must match the chosen browser_type, e.g. 'crx' for Chrome, 'xpi' for Firefox.
     # Evaluations described in Thesis were completed with only a single addon present
     # which was the tested tool. However, for future-proofing also works with multiple tools.
-    tested_addons = []
+    tested_addons = ["adblock_plus_4_15_0.crx"]
 
     # Experiment name to be used for the current evaluation. When launching --analysis-only,
     # it needs to correspond to one of the previous experiments.
     # The log file is saved in results/ folder and it's named experiment_name + _log.json
     # The analysis results are also saved in results/ folder, named experiment_name + _results.json
     # If using Avast Secure Browser, experiment name MUST start with "avast"!! Only then!
-    experiment_name = "avast_secure_browser"
+    experiment_name = "default_experiment"
 
     # Time to wait after browser is launched before accessing the simulation page.
     # The time can be used to wait for tested extensions to properly load, or to manually
