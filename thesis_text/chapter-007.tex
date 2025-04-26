@@ -33,7 +33,7 @@ Cycle such as $B \rightarrow A~\rightarrow B$ may execute $1$ to $n$ times, depe
 
 \subsection{Duplicating Nodes to Ensure Tree Structure}
 
-The proposed evaluation method transforms the~structure into a~tree by introducing duplicate nodes to handle the~loop scenario depicted in Figure~\ref{request_tree_cycle}. This strategy, referred to as \emph{upper bound} approach, overestimates the~number of requests, fingerprinting API calls, and possible blocking results. Each valid event in the~logs results in a~new node, even if it is a~duplicate of an~already existing node.
+The proposed evaluation method transforms the~structure into a~tree by introducing duplicate nodes to handle the~loop scenario depicted in Figure~\ref{request_tree_cycle}. This strategy, referred to as the \emph{upper bound} approach, was used to evaluate and compare the selected tools as presented in Chapter \ref{chapter-6}. However, it overestimates the~number of requests, fingerprinting API calls, and possible blocking results. Each valid event in the~logs results in a~new node, even if it is a~duplicate of an~already existing node\footnote{As mentioned in Subsection \ref{req-tree-sub1}, the~exceptions are duplicate follow-up requests loaded by the~same parent (i.e., when page \emph{Z} loads the resource \emph{Y} \emph{n} times, only one copy of \emph{Y} is preserved). These requests are not included in the~\emph{upper bound} approach as keeping them would further worsen the~issues described in this Section.}.
 
 For example, in the~situation described in the~list at the~beginning of this section and captured in Figure~\ref{request_tree_cycle}, script \emph{A} appears twice. Once as a~direct child of the~page and once as a~child of script \emph{B}. Similarly, script \emph{B} also appears twice, as a~direct child of the~page and as a~child of script \emph{A}. Suppose the~script \emph{B} calls a~function from script \emph{A} that leads to requesting script \emph{C}. Script \emph{C} appears only once in the~logs, but it is assigned two parents -- both instances of script \emph{A}, as both were already present in the~tree and the~current approach does not differentiate between them. Figure~\ref{request_tree_cycle_solved} shows the~graph transformed to tree.
 
@@ -73,7 +73,7 @@ Additional limitation of the~\emph{lower bound} approach is, that it discards va
 
 
 \subsection{Summary and Comparison}
-Table~\ref{upper_lower_table} compares the~results of both the~\emph{lower} and the~\emph{upper bound} approaches in terms of observed requests and Fingerprinting API calls. The~actual numbers should lie somewhere between the~two. Solving the~described problems would require using a~different internal request model that correctly captures all relations between requests without creating duplicates or endless cycles.
+Table~\ref{upper_lower_table} compares the~results of both the~\emph{lower} and the~\emph{upper bound} approaches in terms of observed requests and Fingerprinting API calls. Solving the~described problems would require using a~different internal request model that correctly captures all relations between requests without creating duplicates or endless cycles.
 
 \begin{table}[H]
     \centering

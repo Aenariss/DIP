@@ -150,7 +150,7 @@ class RequestNode:
             child_node: Node to be added as a child of this Node
         """
         # If the child node is already there, do not repeat
-        # Chromium Initiator Chains also do not repeat them, therefore I will not either
+        # Repeating distorts the results as the limitations are pronounced much more on some pages
         if self._child_already_present(child_node):
             return
 
