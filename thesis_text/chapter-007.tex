@@ -109,7 +109,7 @@ In the~case of \textit{blob} scheme, the~issue is that such resources can only b
 
 The \textit{data} scheme presents another issue, as these requests do not generate actual network requests to the~Internet. Therefore, they do not trigger the~\texttt{onSendHeaders} event either, and the~custom Firefox logging extension always considers them blocked, even though that may not be the~case, same as the~\textit{blob} requests.
 
-To solve the~described issues, the~current approach in Firefox skips the~\emph{blob} and \emph{data} requests during evaluation, i.e., they are always considered successfully loaded. While this partially solves the~problem, it does not capture the~situation where a~content-blocking tool would have blocked these requests. Firefox logging would need to be improved to handle these situations correctly. The~\textit{blob} scheme problem is unsolvable with the~current approach since these requests will always fail as they cannot be loaded from different domains.
+To solve the~described issues, the~current approach in Firefox skips the~\emph{blob} and \emph{data} requests during evaluation, i.e., they are always considered successfully loaded. While this partially solves the~problem, it does not capture the~situation where a~content-blocking tool would have blocked these requests. Firefox logging would need to be improved to handle these situations correctly. The~\textit{blob} scheme problem is unsolvable with the~current approach since these requests always fail as they cannot be loaded from different domains.
 
 \subsection{Resource Fetching}
 \label{simulation_limits}
