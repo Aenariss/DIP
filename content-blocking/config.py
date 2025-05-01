@@ -31,7 +31,7 @@ class Config:
     time_until_timeout = 10
 
     # If logging fails (e.g. due to invalid DNS logs), how many times should the traffic logger
-    # attempt to repeat the visit. Should be at least 1 or 2, since DNS logging often fails.
+    # attempt to repeat the visit. I recommend using > 0.
     max_repeat_log_attempts = 3
 
     # Chrome version that should be used for traffic logging
@@ -104,7 +104,6 @@ class Config:
     # it needs to correspond to one of the previous experiments.
     # The log file is saved in results/ folder and it's named experiment_name + _log.json
     # The analysis results are also saved in results/ folder, named experiment_name + _results.json
-    # If using Avast Secure Browser, experiment name MUST start with "avast"!! Only then!
     experiment_name = "default_experiment"
 
     # Time to wait after browser is launched before accessing the simulation page.

@@ -7,3 +7,5 @@ Afterward, just specify the correct path to the desired webdriver in ``content-b
 
 Files:
 - ``chromedriver_134.exe`` -- Chromedriver 134, downloaded from https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json
+- ``chromedriver_136.exe`` -- Chromedriver 136, downloaded from https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json
+- License Files -- Chromedriver licenses

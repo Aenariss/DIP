@@ -20,11 +20,11 @@
 %\documentclass[]{fitthesis} % bez zadání - pro začátek práce, aby nebyl problém s překladem
 %\documentclass[english]{fitthesis} % without assignment - for the work start to avoid compilation problem
 %\documentclass[zadani]{fitthesis} % odevzdani do IS VUT a/nebo tisk s barevnými odkazy - odkazy jsou barevné
-\documentclass[english,zadani]{fitthesis} % for submission to the IS VUT and/or print with color links - links are color
+%\documentclass[english,zadani]{fitthesis} % for submission to the IS VUT and/or print with color links - links are color
 %\documentclass[zadani,print]{fitthesis} % pro černobílý tisk - odkazy jsou černé
 %\documentclass[english,zadani,print]{fitthesis} % for the black and white print - links are black
 %\documentclass[zadani,cprint]{fitthesis} % pro barevný tisk - odkazy jsou černé, znak VUT barevný
-%\documentclass[english,zadani,cprint]{fitthesis} % for the print - links are black, logo is color
+\documentclass[english,zadani,cprint]{fitthesis} % for the print - links are black, logo is color
 % * Je-li práce psaná v anglickém jazyce, je zapotřebí u třídy použít 
 %   parametr english následovně:
 %   If thesis is written in English, it is necessary to use 
@@ -184,9 +184,9 @@ Tato diplomová práce se zaměřuje na zmíněné blokátory obsahu a~klade si 
 
 Různé požadavky jsou různě důležité. To znamená, že jeden požadavek může tranzitivně vyvolat další požadavky, zatímco jiný požadavek nevyvolá žádnou další komunikaci. Tato diplomová práce umožní srovnávat nástroje i~z hlediska tranzitivně zablokovaných požadavků zachováváním návaznosti mezi těmito požadavky. Návaznost je replikována s~využitím orientovaných stromů, které reprezentují strukturu požadavků.
 
-Navržený systém pro porovnání blokátorů obsahu a~vyhodnocení jejich efektivity je složen ze čtyř částí. Úkolem první části je vytvořit dataset, který je použit pro pozdější analýzu chování blokátorů. Nástroj prochází webové stránky a~na nich sbírá tři druhy dat -- síťové požadavky, DNS odpovědi na tyto požadavky a~volání webových API potenciálně zneužitelných pro sledování uživatele s~využitím nástroje JShelter Fingerprint Detector. V~rámci druhé části systém vytváří orientované stromy, které reprezentují strukturu, kterou požadavky na navštívených stránkách měly. Přiřazuje k~jednotlivým požadavkům také zaznamenaná volání webových API. 
+Navržený systém pro porovnání blokátorů obsahu a~vyhodnocení jejich efektivity je složen ze čtyř částí. Úkolem první části je vytvořit dataset, který je použit pro pozdější analýzu chování blokátorů. Nástroj prochází webové stránky a~na nich sbírá tři druhy dat -- síťové požadavky, DNS odpovědi na tyto požadavky a~volání webových API potenciálně zneužitelných pro sledování uživatele s~využitím nástroje \emph{JShelter Fingerprint Detector}. V~rámci druhé části systém vytváří orientované stromy, které reprezentují strukturu, kterou požadavky na navštívených stránkách měly. Přiřazuje k~jednotlivým požadavkům také zaznamenaná volání webových API. 
 
-Třetí část systému simuluje blokování požadavků. Nástroj nainstaluje do simulovaného prohlížeče vybraný blokátor obsahu a~navštíví vlastní webový server, který zopakuje všechny zaznamenané požadavky. Na každý požadavek je zopakována zaznamenaná DNS odpověď, kterou poskytuje vlastní \emph{BIND 9} DNS server. Následně systém extrahuje z~prohlížeče informace o~tom, které stránky byly zablokovány. Je podporován prohlížeč Google Chrome, libovolné prohlížeče založené na Chromiu a~také prohlížeč Mozilla Firefox a~libovolné jejich rozšíření ve formátu \emph{.crx} pro Chromium a~\emph{.xpi} pro Firefox.
+Třetí část systému simuluje blokování požadavků. Nástroj nainstaluje do simulovaného prohlížeče vybraný blokátor obsahu a~navštíví vlastní webový server, který zopakuje všechny zaznamenané požadavky. Na každý požadavek je zopakována zaznamenaná DNS odpověď, kterou poskytuje vlastní \emph{BIND 9} DNS server. Následně systém extrahuje z~prohlížeče informace o~tom, které stránky byly zablokovány. Je podporován prohlížeč \emph{Google Chrome}, libovolné prohlížeče založené na \emph{Chromiu} a~také prohlížeč \emph{Mozilla Firefox} a~libovolné jejich rozšíření ve formátu \emph{.crx} pro Chromium a~\emph{.xpi} pro Firefox.
 
 V rámci poslední části systém zpracuje výsledky simulace a~zaznamenané blokace aplikuje do vygenerovaných stromů požadavků. Tyto stromy jsou následně analyzovány a~jsou spočítány metriky popisující přímé i~tranzitivní vlastnosti testovaného blokátoru.
 
