@@ -162,23 +162,23 @@ The request trees are constructed using three attributes from network logs -- \t
     \label{root_regular_nodes}
 \end{figure}
 
-\subsubsection{Root nodes}
+\subsection{Root nodes}
 \label{root-nodes}
 The \textit{root} nodes are characterized by the~\texttt{requested\_for} and \texttt{requested\_resource} attributes being identical and the~\texttt{initiator.type} being \textit{other}. \texttt{initiator.url} must also not exist. These nodes represent main pages loaded in the~browser (e.g., pages with URL shown in the~address bar), including any redirects leading to the~final page (i.e., the~page URL of which is shown in the~address bar). The~last node in the~sequence of root nodes is used as the~parent node of all \textit{anonymous} nodes (i.e., the~nodes with no known parent). All unidentifiable fingerprinting API calls are also assigned to the~last root node. 
 
 Root nodes have the~previous root node set as their parent.
 If no previous root node exists, it was the~very first root node observed -- in such case, the~node has no parent and represents the~root of the~whole tree. When one of the~root nodes is loaded multiple times, i.e., two \texttt{Network.RequestWillBeSent} events have the~exact attributes \texttt{requested\_for}, \texttt{requested\_resource} and \texttt{initiator.type}, the~second such event is added as a~child of the~current root node as a~\textit{regular} node. The~duplicate node has its associated fingerprinting API calls set to zero since they are already associated with the~primary node.
 
-\subsubsection{Regular Nodes}
-Any node that does not match the~specific characteristics of a~\textit{root} node is classified as a~\textit{regular} node. The~root nodes have special parentage rules described above. The~traffic parser uses three methods to determine the~parentage of the~regular nodes. However, since the~trees may contain duplicate nodes, child nodes may be assigned to multiple parents, leading to redundant parent-child relations, which affect the subsequent analysis. The~methods to determine the~parentage are as follows:
+\subsection{Regular Nodes}
+Any node that does not match the~specific characteristics of a~\textit{root} node is classified as a~\textit{regular} node. The~root nodes have special parentage rules described above. The~traffic parser uses three methods to determine the~parentage of the~regular nodes. However, since the~trees may contain duplicate nodes, child nodes may be assigned to multiple parents, leading to redundant parent-child relations, which affect the subsequent analysis. The~methods to determine the~regular nodes parentage are described in the following subsections.
 
 \subsubsection{Initiator URL}
 When the~attribute \texttt{initiator.url} is available, the~tree is searched for matching parent nodes (i.e., nodes with the~\texttt{resource} attribute matching this \texttt{initiator.url}).
 
 \subsubsection{Initiator Call Stack}
-When \texttt{initiator.url} is not available, the~final record of the~\textit{JavaScript} \textit{call stack} is utilized. Each record in the~call stack has \textit{url} specified, which represents the~URL of the~resource that caused the~event. Nodes representing this URL are selected as parents.
+When \texttt{initiator.url} is not available, the~final record of the~\textit{JavaScript} \textit{call stack} is utilized. Each record in the~call stack has \texttt{url} specified, which represents the~URL of the~resource that caused the~event. Nodes representing this URL are selected as parents.
 
-This approach has another limitation in addition to the~one described above. The~limitation is that calls may have come from a~dynamically generated code, such as from \textit{eval}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval}}, which would show the~\textit{url} attribute as an~empty string. This situation is illustrated in Listing~\ref{empty_url_init}. It was caused by calling \textit{eval} as shown in Listing~\ref{eval_example_call}. In this case, the~call stack is traversed until a~valid URL is obtained. This URL is then set as the~parent, even though it may not reflect the~actual parent. The~current root node is selected as the~parent if no valid URL exists.
+This approach has another limitation in addition to the~one described above. The~limitation is that calls may have come from a~dynamically generated code, such as from \texttt{eval}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval}}, which would show the~\texttt{url} attribute as an~empty string. This situation is illustrated in Listing~\ref{empty_url_init}. It was caused by calling \texttt{eval} as shown in Listing~\ref{eval_example_call}. In this case, the~call stack is traversed until a~valid URL is obtained. This URL is then set as the~parent, even though it may not reflect the~actual parent. The~current root node is selected as the~parent if no valid URL exists.
 
 \renewcommand{\thelstlisting}{\thechapter.\arabic{lstlisting}}
 \renewcommand{\thelisting}{\thechapter.\arabic{listing}} 
@@ -212,7 +212,7 @@ eval("const script2 = document.createElement('script'); script2.src = '/script2.
     "type": "script"
 }
     \end{minted}
-    \caption{Example of empty \textit{url} attribute in the~call stack caused by the~use of \textit{eval}, which was called by \emph{script1.js}, but the~\empty{url} attribute of the~record does not reflect it. The~first record in the~list of call frames represents the~final call. This~presented call stack is edited and does not contain all logged attributes.}
+    \caption{Example of empty \texttt{url} attribute in the~call stack caused by the~use of \texttt{eval}, which was called by \emph{script1.js}, but the~empty \texttt{url} attribute of the~record does not reflect it. The~first record in the~list of call frames represents the~final call. This~presented call stack is edited and does not contain all logged attributes.}
     \label{empty_url_init}
 \end{listing}
 
@@ -239,7 +239,7 @@ Each of these steps is described in greater detail in the~following subsections.
 A custom DNS server is utilized to resolve DNS requests as they were observed to reproduce the~conditions present during the~initial visit. It allows the~tested tools to block requests depending on the~IP address to which they were resolved.
 As mentioned in Subsection~\ref{cname-cloaking-implementation}, this step also allows the~tested tools to use methods allowing them to block requests utilizing CNAME cloaking. However, CNAME cloaking can only be prevented in Firefox since Chromium does not provide the~necessary API. 
 
-I chose \textit{BIND 9\footnote{\url{https://www.isc.org/bind/}}} server for this purpose. It runs inside a~Docker container, built using an~existing image\footnote{\url{https://hub.docker.com/r/internetsystemsconsortium/bind9}}. To configure the~system to use the~custom DNS server as its default, the~\textit{Set-DnsClientServerAddress}\footnote{\url{https://learn.microsoft.com/en-us/powershell/module/dnsclient/set-dnsclientserveraddress}} Powershell command is executed from within the~program. After the~simulation ends, the~same command is used to reset Windows settings back to the~default state, using the~DNS server address provided by Dynamic Host Configuration Protocol \textit{(DHCP)} -- however, any custom configuration used before the~simulation launch is lost in the~process.
+I chose \textit{BIND 9\footnote{\url{https://www.isc.org/bind/}}} server for this purpose. It runs inside a~Docker container, built using an~existing image\footnote{\url{https://hub.docker.com/r/internetsystemsconsortium/bind9}}. To configure the~system to use the~custom DNS server as its default, the~\texttt{Set-DnsClientServerAddress}\footnote{\url{https://learn.microsoft.com/en-us/powershell/module/dnsclient/set-dnsclientserveraddress}} Powershell command is executed from within the~program. After the~simulation ends, the~same command is used to reset Windows settings back to the~default state, using the~DNS server address provided by Dynamic Host Configuration Protocol \textit{(DHCP)} -- however, any custom configuration used before the~simulation launch is lost in the~process.
 
 \subsubsection{Zone Files}
 \textit{Zone}\footnote{\url{https://datatracker.ietf.org/doc/html/rfc1035}} files are used to define how domain names should be resolved. A~separate zone file is created for each observed second-level domain\footnote{e.g., for observed address \texttt{tracker.example.com}, zone file \texttt{example.com} is created, containing a~record for \texttt{tracker}. The~record can either be a~CNAME pointing to another domain or an~A record specifying an~IPv4 address.}. 
@@ -253,11 +253,11 @@ After all the~zone files are created and included in the~\texttt{named.conf}, th
 
 
 \subsection{Custom Web Server}
-The custom web server is responsible for repeating the~requests for all resources observed during dataset creation. \textit{Flask}\footnote{\url{https://flask.palletsprojects.com/en/stable/}} is used to build a~simple locally hosted webpage that dynamically loads recorded resources using JavaScript \texttt{fetch()}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/Fetch\_API}}.
+The custom web server is responsible for repeating the~requests for all resources observed during dataset creation. \textit{Flask}\footnote{\url{https://flask.palletsprojects.com/en/stable/}} is used to build a~simple locally hosted webpage that dynamically loads recorded resources using JavaScript \texttt{fetch}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/Fetch\_API}}.
 
-To monitor request completion, \texttt{fetch()} is overridden to track how many resources have already been loaded and how many are still waiting. These values are stored in the~\textit{window}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/Window}} object, allowing the~connected client to obtain these values to determine whether all requests have been loaded.
+To monitor request completion, \texttt{fetch} is overridden to track how many resources have already been loaded and how many are still waiting. These values are stored in the~\textit{window}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/API/Window}} object, allowing the~connected client to obtain these values to determine whether all requests have been loaded.
 
-However, calling \texttt{fetch()} to load tens of thousands of resources, depending on the~size of the~dataset, may be too intensive in terms of required computing power. Thus, the~requests are fetched in batches to improve performance.
+However, calling \texttt{fetch} to load tens of thousands of resources, depending on the~size of the~dataset, may be too intensive in terms of required computing power. Thus, the~requests are fetched in batches to improve performance.
 
 \subsection{Firewall Rules}
 To minimize network bandwidth usage and to prevent unnecessary \textit{spam} towards the~servers that host the~observed content, firewall rules are configured to block all outgoing \texttt{TCP} traffic on ports \texttt{80} and \texttt{443}, effectively blocking all outgoing \textit{HTTP} and \textit{HTTPS} requests. After the~simulation ends, these firewall rules are removed.
