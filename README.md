@@ -6,8 +6,8 @@ This repository contains source codes and other files used for the thesis ``Comp
 The folder structure is as follows:
 - ``content-blocking/`` -- the implementation source codes and other implementation-related things
 - ``content-blocking-virtual-machine`` -- folder with the exported virtual machine in .ovf format
-- ``excel/`` -- contains abstract, poster and the thumbnail for the Excel@FIT student conference
-- ``sep/`` -- contains first part of the thesis and presentation for semestral project
+- ``excel_at_fit/`` -- contains abstract, poster and the thumbnail for the Excel@FIT student conference
+- ``semestral_project/`` -- contains first part of the thesis and presentation for semestral project
 - ``thesis_text/`` -- the LaTeX source codes of the Thesis and the final .pdf files
 
 To run in a virtual machine, you will need to use virtualization software that supports nested virtualization since the evaluation includes a DNS server that  uses docker (I tested it on Virtual Box, **DOES NOT WORK**).
